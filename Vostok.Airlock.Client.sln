@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2024
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.Airlock.Client", "Vostok.Airlock.Client\Vostok.Airlock.Client.csproj", "{8412F163-B616-4655-A86F-6AC04427662D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.Airlock.Client.Abstractions", "Vostok.Airlock.Client.Abstractions\Vostok.Airlock.Client.Abstractions.csproj", "{05A5D24C-563D-4098-9688-E027B82D263B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8412F163-B616-4655-A86F-6AC04427662D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8412F163-B616-4655-A86F-6AC04427662D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8412F163-B616-4655-A86F-6AC04427662D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8412F163-B616-4655-A86F-6AC04427662D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05A5D24C-563D-4098-9688-E027B82D263B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05A5D24C-563D-4098-9688-E027B82D263B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05A5D24C-563D-4098-9688-E027B82D263B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05A5D24C-563D-4098-9688-E027B82D263B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {370DCA25-8F1D-4995-A955-6C11EB796A4A}
+	EndGlobalSection
+EndGlobal

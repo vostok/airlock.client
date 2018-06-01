@@ -1,0 +1,21 @@
+default:
+  build:
+    target: Vostok.Airlock.Client.sln
+    configuration: Release
+    tool:
+      name: dotnet
+
+  install:
+    - Vostok.Airlock.Client/bin/Release/netstandard2.0/Vostok.Airlock.Client.dll
+    - module vostok.commons
+
+  deps:
+    - vostok.commons@dev
+
+notests *default:
+  build:
+    configuration: NoTests
+
+full-build:
+  build:
+    configuration: Release
