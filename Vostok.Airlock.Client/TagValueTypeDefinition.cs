@@ -1,6 +1,6 @@
-﻿namespace Vostok.Airlock.Client.Abstractions
+﻿namespace Vostok.Airlock.Client
 {
-    public enum TagValueTypeDefinition : byte
+    internal enum TagValueTypeDefinition : byte
     {
         Byte = 1,
         Short = 2,

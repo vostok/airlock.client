@@ -19,7 +19,10 @@ namespace Vostok.Airlock.Client
 
             try
             {
-                var recordBodyLengthPosition = binaryWriter.Position;
+                var timestampPosition = binaryWriter.Position;
+                binaryWriter.Write(0L);
+
+                var recordBodySizePosition = binaryWriter.Position;
                 binaryWriter.Write(0);
 
                 var recordBodyStartingPosition = binaryWriter.Position;
@@ -29,7 +32,7 @@ namespace Vostok.Airlock.Client
 
                 var currentPosition = binaryWriter.Position;
 
-                var recordSize = currentPosition - recordBodyStartingPosition;
+                var recordSize = currentPosition - startingPosition + 1;
 
                 if (recordSize > maxRecordSize)
                 {
@@ -38,13 +41,17 @@ namespace Vostok.Airlock.Client
                     return false;
                 }
 
-                binaryWriter.Position = recordBodyLengthPosition;
-                binaryWriter.Write(recordSize);
+                var timestamp = builder.Timestamp != 0 ? builder.Timestamp : DateTimeOffset.UtcNow.ToUnixTimeNanoseconds();
+
+                binaryWriter.Position = timestampPosition;
+                binaryWriter.Write(timestamp);
+
+                var recordBodySize = currentPosition - recordBodyStartingPosition;
+
+                binaryWriter.Position = recordBodySizePosition;
+                binaryWriter.Write(recordBodySize);
 
                 binaryWriter.Position = currentPosition;
-
-                var timestamp = builder.Timestamp != 0 ? builder.Timestamp : DateTimeOffset.UtcNow.ToUnixTimeNanoseconds();
-                binaryWriter.Write(timestamp);
 
                 return true;
             }
