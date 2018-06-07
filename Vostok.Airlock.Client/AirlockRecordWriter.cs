@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using Vostok.Airlock.Client.Abstractions;
 using Vostok.Commons.Binary;
 
@@ -49,7 +48,7 @@ namespace Vostok.Airlock.Client
 
                 return true;
             }
-            catch (InternalBufferOverflowException)
+            catch
             {
                 binaryWriter.Position = startingPosition;
 

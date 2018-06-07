@@ -8,7 +8,7 @@ namespace Vostok.Airlock.Client.Abstractions
     {
         public static IAirlockRecordBuilder Add(this IAirlockRecordBuilder source, Dictionary<string, TagValue> tags)
         {
-            return tags.Aggregate(source, (builder, tag) => Add(builder, tag.Key, tag.Value));
+            return tags.Aggregate(source, (builder, tag) => builder.Add(tag.Key, tag.Value));
         }
 
         public static IAirlockRecordBuilder Add(this IAirlockRecordBuilder source, string tagKey, TagValue tagValue)

@@ -2,7 +2,7 @@
 
 namespace Vostok.Airlock.Client
 {
-    public class MemoryManager : IMemoryManager
+    internal class MemoryManager : IMemoryManager
     {
         private readonly long maxSize;
         private long currentSize;
