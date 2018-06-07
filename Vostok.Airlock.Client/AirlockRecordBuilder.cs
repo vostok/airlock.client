@@ -17,7 +17,7 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder SetTimestamp(DateTimeOffset timestamp)
         {
-            Timestamp = timestamp.ToUniversalTime().ToUnixTimeMilliseconds();
+            Timestamp = timestamp.ToUniversalTime().ToUnixTimeNanoseconds();
 
             return this;
         }

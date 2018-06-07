@@ -44,7 +44,7 @@ namespace Vostok.Airlock.Client
 
                 binaryWriter.Position = currentPosition;
 
-                var timestamp = builder.Timestamp != 0 ? builder.Timestamp : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                var timestamp = builder.Timestamp != 0 ? builder.Timestamp : DateTimeOffset.UtcNow.ToUnixTimeNanoseconds();
                 binaryWriter.Write(timestamp);
 
                 return true;
