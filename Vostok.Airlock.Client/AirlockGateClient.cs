@@ -6,32 +6,45 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Airlock.Client
 {
-    public class AirlockGateClient : IAirlockGateClient
+    public class AirlockGateClient : IAirlockGateClient, IDisposable
     {
-        private readonly AirlockConfig config;
-        private readonly ILog log;
-
+        private readonly IAirlockRecordsWriter recordsWriter;
         private readonly IMemoryManager memoryManager;
-        private readonly ConcurrentDictionary<string, Lazy<IBufferPool>> bufferPools;
-        private readonly IAirlockRecordWriter recordWriter;
 
+        private readonly int initialPooledBuffersCount;
+        private readonly int initialPooledBufferSize;
+        private readonly ConcurrentDictionary<string, Lazy<IBufferPool>> bufferPools;
+
+        private readonly AirlockRecordsSendingDaemon recordsSendingDaemon;
+
+        private int isDisposed;
         private int lostRecordsCounter;
 
         public AirlockGateClient(ILog log, AirlockConfig config)
         {
-            this.log = log;
-            this.config = config;
+            recordsWriter = new AirlockRecordsWriter(log, (int) config.MaximumRecordSize.Bytes);
 
-            memoryManager = new MemoryManager(this.config.MaximumMemoryConsumption.Bytes);
+            memoryManager = new MemoryManager(config.MaximumMemoryConsumption.Bytes);
+
+            initialPooledBuffersCount = config.InitialPooledBuffersCount;
+            initialPooledBufferSize = (int) config.InitialPooledBufferSize.Bytes;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
-            recordWriter = new AirlockRecordWriter(this.log, (int) this.config.MaximumRecordSize.Bytes);
+
+            var jobSchedule = new AirlockRecordsSendingJobSchedule(memoryManager, (int) config.RequestSendPeriod.TotalMilliseconds, (int) config.RequestSendPeriodCap.TotalMilliseconds);
+            var bufferSlicer = new BufferSliceFactory((int) config.MaximumRequestContentSize.Bytes - sizeof(int));
+            var messageBuffer = new byte[config.MaximumRequestContentSize.Bytes];
+            var requestSender = new RequestSender();
+            var job = new AirlockRecordsSendingJob(log, jobSchedule, bufferPools, bufferSlicer, messageBuffer, requestSender);
+            recordsSendingDaemon = new AirlockRecordsSendingDaemon(log, job);
         }
 
         public int LostRecordsCount => lostRecordsCounter;
 
+        public int SentRecordsCount => recordsSendingDaemon.SentRecordsCount;
+
         public void Put(string stream, Action<IAirlockRecordBuilder> build)
         {
-            var bufferPool = ObtainBufferPool(stream);
+            var bufferPool = GetOrCreate(stream);
 
             if (!bufferPool.TryAcquire(out var buffer))
             {
@@ -43,7 +56,7 @@ namespace Vostok.Airlock.Client
             {
                 var binaryWriter = buffer.BeginRecord();
 
-                if (recordWriter.TryWrite(binaryWriter, build))
+                if (recordsWriter.TryWrite(binaryWriter, build))
                 {
                     buffer.Commit();
                 }
@@ -57,15 +70,23 @@ namespace Vostok.Airlock.Client
                 bufferPool.Release(buffer);
             }
         }
-        
-        private IBufferPool ObtainBufferPool(string stream)
+
+        public void Dispose()
+        {
+            if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 1)
+            {
+                recordsSendingDaemon.Dispose();
+            }
+        }
+
+        private IBufferPool GetOrCreate(string stream)
         {
             return bufferPools.GetOrAdd(stream, _ => new Lazy<IBufferPool>(CreateBufferPool, LazyThreadSafetyMode.ExecutionAndPublication)).Value;
         }
 
         private IBufferPool CreateBufferPool()
         {
-            return new BufferPool(memoryManager, config.InitialPooledBuffersCount, (int) config.InitialPooledBufferSize.Bytes);
+            return new BufferPool(memoryManager, initialPooledBuffersCount, initialPooledBufferSize);
         }
     }
 }

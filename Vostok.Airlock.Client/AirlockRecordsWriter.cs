@@ -7,12 +7,12 @@ using Vostok.Logging.Abstractions.Extensions;
 
 namespace Vostok.Airlock.Client
 {
-    internal class AirlockRecordWriter : IAirlockRecordWriter
+    internal class AirlockRecordsWriter : IAirlockRecordsWriter
     {
         private readonly ILog log;
         private readonly int maxRecordSize;
 
-        public AirlockRecordWriter(ILog log, int maxRecordSize)
+        public AirlockRecordsWriter(ILog log, int maxRecordSize)
         {
             this.log = log;
             this.maxRecordSize = maxRecordSize;
@@ -24,39 +24,44 @@ namespace Vostok.Airlock.Client
 
             try
             {
+                var recordSizePosition = binaryWriter.Position;
+                binaryWriter.Write(0);
+
+                var versionPosition = binaryWriter.Position;
+                binaryWriter.Write((byte) 1);
+
                 var timestampPosition = binaryWriter.Position;
                 binaryWriter.Write(0L);
 
-                var recordBodySizePosition = binaryWriter.Position;
-                binaryWriter.Write(0);
-
-                var recordBodyStartingPosition = binaryWriter.Position;
+                var tagsCountPosition = binaryWriter.Position;
+                binaryWriter.Write((short) 0);
 
                 var builder = new AirlockRecordBuilder(binaryWriter);
                 build.Invoke(builder);
 
                 var currentPosition = binaryWriter.Position;
 
-                var recordSize = currentPosition - startingPosition + 1;
+                var recordSize = currentPosition - versionPosition;
 
                 if (recordSize > maxRecordSize)
                 {
                     log.Warn($"Discarded record with size = {DataSize.FromBytes(recordSize)} larger than max allowed size = {DataSize.FromBytes(maxRecordSize)}");
-
+                    
                     binaryWriter.Position = startingPosition;
 
                     return false;
                 }
+
+                binaryWriter.Position = recordSizePosition;
+                binaryWriter.Write(recordSize);
 
                 var timestamp = builder.Timestamp != 0 ? builder.Timestamp : DateTimeOffset.UtcNow.ToUnixTimeNanoseconds();
 
                 binaryWriter.Position = timestampPosition;
                 binaryWriter.Write(timestamp);
 
-                var recordBodySize = currentPosition - recordBodyStartingPosition;
-
-                binaryWriter.Position = recordBodySizePosition;
-                binaryWriter.Write(recordBodySize);
+                binaryWriter.Position = tagsCountPosition;
+                binaryWriter.Write(builder.TagsCount);
 
                 binaryWriter.Position = currentPosition;
 

@@ -10,15 +10,15 @@ namespace Vostok.Airlock.Client
         private readonly BinaryBufferWriter binaryWriter;
         private readonly IMemoryManager memoryManager;
 
-        public Buffer(BinaryBufferWriter binaryWriter, IMemoryManager memoryManager)
+        private volatile BufferSnapshot snapshot;
+        private volatile int recordsCounter;
+        private volatile bool needGarbageCollection;
+
+        public Buffer(byte[] buffer, IMemoryManager memoryManager)
         {
-            this.binaryWriter = binaryWriter;
+            binaryWriter = new BinaryBufferWriter(buffer);
             this.memoryManager = memoryManager;
         }
-
-        public int CommitedPosition { get; private set; }
-
-        public int WrittenRecords { get; private set; }
 
         public int Position
         {
@@ -33,8 +33,51 @@ namespace Vostok.Airlock.Client
 
         public void Commit()
         {
-            CommitedPosition = Position;
-            WrittenRecords++;
+            ++recordsCounter;
+        }
+
+        public BufferSnapshot MakeSnapshot()
+        {
+            return snapshot = new BufferSnapshot(binaryWriter.Buffer, Position, recordsCounter);
+        }
+
+        public bool IsEmpty()
+        {
+            return Position == 0;
+        }
+
+        public void RequestGarbageCollection()
+        {
+            needGarbageCollection = true;
+        }
+
+        public void CollectGarbage()
+        {
+            if (!needGarbageCollection)
+            {
+                return;
+            }
+
+            if (snapshot.BufferPosition > 0)
+            {
+                if (snapshot.BufferPosition != Position)
+                {
+                    var bytesWrittenAfter = Position - snapshot.BufferPosition;
+                    System.Buffer.BlockCopy(binaryWriter.Buffer, snapshot.BufferPosition, binaryWriter.Buffer, 0, bytesWrittenAfter);
+                    Position = bytesWrittenAfter;
+                }
+                else
+                {
+                    binaryWriter.Reset();
+                }
+            }
+
+            if (snapshot.RecordsCount > 0)
+            {
+                recordsCounter -= snapshot.RecordsCount;
+            }
+
+            needGarbageCollection = false;
         }
 
         public IBinaryWriter Write(int value)

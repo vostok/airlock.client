@@ -4,10 +4,14 @@ namespace Vostok.Airlock.Client
 {
     internal interface IBuffer
     {
-        int CommitedPosition { get; }
-        int WrittenRecords { get; }
-
         IBinaryWriter BeginRecord();
         void Commit();
+
+        void CollectGarbage();
+        void RequestGarbageCollection();
+
+        BufferSnapshot MakeSnapshot();
+
+        bool IsEmpty();
     }
 }

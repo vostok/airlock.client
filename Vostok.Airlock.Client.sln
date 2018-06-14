@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.Airlock.Client", "Vostok.Airlock.Client\Vostok.Airlock.Client.csproj", "{8412F163-B616-4655-A86F-6AC04427662D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Airlock.Client", "Vostok.Airlock.Client\Vostok.Airlock.Client.csproj", "{8412F163-B616-4655-A86F-6AC04427662D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vostok.Airlock.Client.Abstractions", "Vostok.Airlock.Client.Abstractions\Vostok.Airlock.Client.Abstractions.csproj", "{05A5D24C-563D-4098-9688-E027B82D263B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Airlock.Client.Abstractions", "Vostok.Airlock.Client.Abstractions\Vostok.Airlock.Client.Abstractions.csproj", "{05A5D24C-563D-4098-9688-E027B82D263B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

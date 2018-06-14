@@ -31,5 +31,10 @@ namespace Vostok.Airlock.Client
                 }
             }
         }
+
+        public bool IsConsumptionAchievedThreshold(int percent)
+        {
+            return currentSize * (100.0 / percent) > maxSize;
+        }
     }
 }

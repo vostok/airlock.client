@@ -16,6 +16,7 @@ namespace Vostok.Airlock.Client
         }
 
         internal long Timestamp { get; private set; }
+        internal short TagsCount { get; private set; }
 
         public IAirlockRecordBuilder SetTimestamp(DateTimeOffset timestamp)
         {
@@ -26,6 +27,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, byte value)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
             binaryWriter.Write((byte) TagValueTypeDefinition.Byte);
             binaryWriter.Write(value);
@@ -35,6 +38,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, short value)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
             binaryWriter.Write((byte) TagValueTypeDefinition.Short);
             binaryWriter.Write(value);
@@ -44,6 +49,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, int value)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
             binaryWriter.Write((byte) TagValueTypeDefinition.Integer);
             binaryWriter.Write(value);
@@ -53,6 +60,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, long value)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
             binaryWriter.Write((byte) TagValueTypeDefinition.Long);
             binaryWriter.Write(value);
@@ -62,6 +71,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, bool value)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
             binaryWriter.Write((byte) TagValueTypeDefinition.Flag);
             binaryWriter.Write(value);
@@ -71,6 +82,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, float value)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
             binaryWriter.Write((byte) TagValueTypeDefinition.Float);
             binaryWriter.Write(value);
@@ -80,6 +93,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, double value)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
             binaryWriter.Write((byte) TagValueTypeDefinition.Double);
             binaryWriter.Write(value);
@@ -89,6 +104,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, string value)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (value.Length > 255)
@@ -109,6 +126,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, byte[] values)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (values.Length > 255)
@@ -127,6 +146,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, short[] values)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (values.Length > 255)
@@ -145,6 +166,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, int[] values)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (values.Length > 255)
@@ -163,6 +186,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, long[] values)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (values.Length > 255)
@@ -181,6 +206,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, bool[] values)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (values.Length > 255)
@@ -199,6 +226,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, float[] values)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (values.Length > 255)
@@ -217,6 +246,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, double[] values)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (values.Length > 255)
@@ -235,6 +266,8 @@ namespace Vostok.Airlock.Client
 
         public IAirlockRecordBuilder Add(string key, string[] values)
         {
+            TagsCount++;
+
             binaryWriter.Write(key);
 
             if (values.Length > 255)

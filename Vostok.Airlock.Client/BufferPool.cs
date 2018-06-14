@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using Vostok.Commons.Binary;
+using System.Collections.Generic;
 
 namespace Vostok.Airlock.Client
 {
@@ -7,7 +7,9 @@ namespace Vostok.Airlock.Client
     {
         private readonly IMemoryManager memoryManager;
         private readonly int initialBufferSize;
+
         private readonly ConcurrentQueue<IBuffer> buffers;
+        private readonly HashSet<IBuffer> sieve;
 
         public BufferPool(IMemoryManager memoryManager, int initialCount, int initialBufferSize)
         {
@@ -15,6 +17,7 @@ namespace Vostok.Airlock.Client
             this.initialBufferSize = initialBufferSize;
 
             buffers = new ConcurrentQueue<IBuffer>();
+            sieve = new HashSet<IBuffer>();
 
             for (var i = 0; i < initialCount; i++)
             {
@@ -28,12 +31,52 @@ namespace Vostok.Airlock.Client
 
         public bool TryAcquire(out IBuffer buffer)
         {
-            return buffers.TryDequeue(out buffer) || TryCreateBuffer(out buffer);
+            var result = buffers.TryDequeue(out buffer) || TryCreateBuffer(out buffer);
+
+            if (result)
+            {
+                buffer.CollectGarbage();
+            }
+
+            return result;
         }
 
         public void Release(IBuffer buffer)
         {
             buffers.Enqueue(buffer);
+        }
+
+        public List<IBuffer> MakeSnapshot()
+        {
+            sieve.Clear();
+
+            var initialCount = buffers.Count;
+            var snapshot = null as List<IBuffer>;
+
+            for (var i = 0; i < initialCount * 2; i++)
+            {
+                if (!buffers.TryDequeue(out var buffer))
+                {
+                    break;
+                }
+
+                if (!sieve.Add(buffer))
+                {
+                    buffers.Enqueue(buffer);
+                    continue;
+                }
+
+                buffer.CollectGarbage();
+
+                if (!buffer.IsEmpty())
+                {
+                    (snapshot ?? (snapshot = new List<IBuffer>())).Add(buffer);
+                }
+
+                buffers.Enqueue(buffer);
+            }
+
+            return snapshot;
         }
 
         private bool TryCreateBuffer(out IBuffer buffer)
@@ -44,9 +87,7 @@ namespace Vostok.Airlock.Client
                 return false;
             }
 
-            var binaryWriter = new BinaryBufferWriter(new byte[initialBufferSize]);
-
-            buffer = new Buffer(binaryWriter, memoryManager);
+            buffer = new Buffer(new byte[initialBufferSize], memoryManager);
             return true;
         }
     }
