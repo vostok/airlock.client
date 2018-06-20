@@ -12,41 +12,40 @@ namespace Vostok.Airlock.Client
     internal class AirlockRecordsSendingJob : IAirlockRecordsSendingJob
     {
         private readonly ILog log;
-        private readonly AirlockRecordsSendingJobSchedule schedule;
+        private readonly IAirlockRecordsSendingJobScheduler scheduler;
         private readonly IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools;
         private readonly IBufferSliceFactory bufferSlicer;
         private readonly byte[] messageBuffer;
         private readonly IRequestSender requestSender;
 
-        private volatile int attemptsCounter;
+        private readonly Dictionary<string, int> attempts;
+        private readonly Dictionary<string, Task> delays;
+
         private volatile int sentRecordsCounter;
 
         public AirlockRecordsSendingJob(
             ILog log,
-            AirlockRecordsSendingJobSchedule schedule,
+            IAirlockRecordsSendingJobScheduler scheduler,
             IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools,
             IBufferSliceFactory bufferSlicer,
             byte[] messageBuffer,
             IRequestSender requestSender)
         {
             this.log = log;
-            this.schedule = schedule;
+            this.scheduler = scheduler;
             this.bufferPools = bufferPools;
             this.bufferSlicer = bufferSlicer;
             this.messageBuffer = messageBuffer;
             this.requestSender = requestSender;
-        }
 
-        public IAirlockRecordsSendingJobSchedule Schedule => schedule;
+            attempts = new Dictionary<string, int>();
+            delays = new Dictionary<string, Task>();
+        }
 
         public int SentRecordsCount => sentRecordsCounter;
 
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
-            var sw = Stopwatch.StartNew();
-            
-            var result = true;
-
             foreach (var pair in bufferPools)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -54,22 +53,33 @@ namespace Vostok.Airlock.Client
                 var stream = pair.Key;
                 var bufferPoolLazy = pair.Value;
 
-                if (!await PushAsync(stream, bufferPoolLazy.Value, cancellationToken).ConfigureAwait(false))
+                if (delays.TryGetValue(stream, out var delay) && !delay.IsCompleted)
                 {
-                    result = false;
+                    continue;
                 }
+
+                var sw = Stopwatch.StartNew();
+
+                var isSuccess = await PushAsync(stream, bufferPoolLazy.Value, cancellationToken).ConfigureAwait(false);
+
+                attempts[stream] = CalcalateAttempt(stream, isSuccess);
+
+                var jobState = new AirlockRecordsSendingJobState
+                {
+                    IsSuccess = isSuccess,
+                    Attempt = attempts[stream],
+                    Elapsed = sw.Elapsed
+                };
+
+                var schedule = scheduler.GetDelayToNextOccurrence(jobState);
+
+                delays[stream] = schedule.WaitNextOccurrenceAsync(cancellationToken);
             }
+        }
 
-            attemptsCounter = result ? 0 : attemptsCounter + 1;
-
-            var jobState = new AirlockRecordsSendingJobState
-            {
-                Result = result,
-                Attempt = attemptsCounter,
-                Elapsed = sw.Elapsed
-            };
-
-            schedule.SetLastJobRunningState(jobState);
+        public Task WaitNextOccurrenceAsync()
+        {
+            return delays.Count != 0 ? Task.WhenAny(delays.Select(x => x.Value)) : Task.CompletedTask;
         }
 
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
@@ -138,6 +148,15 @@ namespace Vostok.Airlock.Client
             }
 
             return (true, recordsCount);
+        }
+
+        private int CalcalateAttempt(string stream, bool result)
+        {
+            return result
+                ? 0
+                : attempts.TryGetValue(stream, out var attempt)
+                    ? attempt + 1
+                    : 1;
         }
     }
 }

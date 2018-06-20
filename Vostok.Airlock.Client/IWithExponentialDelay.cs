@@ -1,6 +1,6 @@
 ﻿namespace Vostok.Airlock.Client
 {
-    internal interface IWithExpotentialDelay : IWithDelay
+    internal interface IWithExponentialDelay : IWithDelay
     {
         IWithDelay WithFullJitter();
         IWithDelay WithEqualJitter();

@@ -30,11 +30,11 @@ namespace Vostok.Airlock.Client
             initialPooledBufferSize = (int) config.InitialPooledBufferSize.Bytes;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
-            var jobSchedule = new AirlockRecordsSendingJobSchedule(memoryManager, (int) config.RequestSendPeriod.TotalMilliseconds, (int) config.RequestSendPeriodCap.TotalMilliseconds);
+            var jobScheduler = new AirlockRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
             var bufferSlicer = new BufferSliceFactory((int) config.MaximumRequestContentSize.Bytes - sizeof(int));
             var messageBuffer = new byte[config.MaximumRequestContentSize.Bytes];
             var requestSender = new RequestSender();
-            var job = new AirlockRecordsSendingJob(log, jobSchedule, bufferPools, bufferSlicer, messageBuffer, requestSender);
+            var job = new AirlockRecordsSendingJob(log, jobScheduler, bufferPools, bufferSlicer, messageBuffer, requestSender);
             recordsSendingDaemon = new AirlockRecordsSendingDaemon(log, job);
         }
 

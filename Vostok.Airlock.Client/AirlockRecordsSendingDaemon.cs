@@ -40,7 +40,7 @@ namespace Vostok.Airlock.Client
             {
                 while (!daemonCancellation.IsCancellationRequested)
                 {
-                    await job.Schedule.WaitNextOccurrenceAsync(daemonCancellation.Token).ConfigureAwait(false);
+                    await job.WaitNextOccurrenceAsync().ConfigureAwait(false);
                     await job.RunAsync(daemonCancellation.Token).ConfigureAwait(false);
                 }
             }

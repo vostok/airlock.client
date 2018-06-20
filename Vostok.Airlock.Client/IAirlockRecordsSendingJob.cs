@@ -7,7 +7,7 @@ namespace Vostok.Airlock.Client
     {
         int SentRecordsCount { get; }
 
-        IAirlockRecordsSendingJobSchedule Schedule { get; }
+        Task WaitNextOccurrenceAsync();
 
         Task RunAsync(CancellationToken cancellationToken = default);
     }

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Vostok.Airlock.Client
 {
-    internal interface IAirlockRecordsSendingJobSchedule
+    internal interface ISchedule
     {
         Task WaitNextOccurrenceAsync(CancellationToken cancellationToken = default);
     }

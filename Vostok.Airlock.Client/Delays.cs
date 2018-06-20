@@ -8,59 +8,63 @@ namespace Vostok.Airlock.Client
 
         private static Random Random => random ?? (random = new Random());
 
-        public static IWithExpotentialDelay Expotential(int sendPeriodCapMs, int sendPeriodMs, int attempt)
+        public static IWithExponentialDelay Exponential(TimeSpan sendPeriodCap, TimeSpan sendPeriod, int attempt)
         {
-            return new ExpotentialDelayContainer(Math.Min(sendPeriodCapMs, sendPeriodMs * (int) Math.Pow(2, attempt)));
+            var delayMs = Math.Min(sendPeriodCap.TotalMilliseconds, sendPeriod.TotalMilliseconds * Math.Pow(2, attempt));
+            return new ExponentialDelayContainer(TimeSpan.FromMilliseconds(delayMs));
         }
 
-        public static IWithPreviousDelay BasedOnPrevious(int previousDelayMs)
+        public static IWithPreviousDelay BasedOnPrevious(TimeSpan previousDelay)
         {
-            return new PreviousDelayContainer(previousDelayMs);
+            return new PreviousDelayContainer(previousDelay);
         }
 
-        private class ExpotentialDelayContainer : IWithExpotentialDelay
+        private class ExponentialDelayContainer : IWithExponentialDelay
         {
-            public ExpotentialDelayContainer(int delayMs)
+            public ExponentialDelayContainer(TimeSpan delay)
             {
-                DelayMs = delayMs;
+                Value = delay;
             }
 
-            public int DelayMs { get; }
+            public TimeSpan Value { get; }
 
             public IWithDelay WithFullJitter()
             {
-                return new DelayContainer(Random.Next(0, DelayMs));
+                var delayMs = Random.NextDouble() * Value.TotalMilliseconds;
+                return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
 
             public IWithDelay WithEqualJitter()
             {
-                return new DelayContainer(DelayMs / 2 + Random.Next(0, DelayMs / 2));
+                var delayMs = Value.TotalMilliseconds / 2 + Random.NextDouble() * (Value.TotalMilliseconds / 2);
+                return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
         }
 
         private class PreviousDelayContainer : IWithPreviousDelay
         {
-            public PreviousDelayContainer(int delayMs)
+            public PreviousDelayContainer(TimeSpan delay)
             {
-                DelayMs = delayMs;
+                Value = delay;
             }
 
-            public int DelayMs { get; }
+            public TimeSpan Value { get; }
 
-            public IWithDelay WithDecorrelatedJitter(int sendPeriodCapMs, int sendPeriodMs)
+            public IWithDelay WithDecorrelatedJitter(TimeSpan sendPeriodCap, TimeSpan sendPeriod)
             {
-                return new DelayContainer(Math.Min(sendPeriodCapMs, Random.Next(sendPeriodMs, DelayMs * 3)));
+                var delayMs = Math.Min(sendPeriodCap.TotalMilliseconds, Math.Min(Value.TotalMilliseconds * 3, sendPeriod.TotalMilliseconds + Random.NextDouble() * Value.TotalMilliseconds * 3));
+                return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
         }
 
         private class DelayContainer : IWithDelay
         {
-            public DelayContainer(int delayMs)
+            public DelayContainer(TimeSpan delay)
             {
-                DelayMs = delayMs;
+                Value = delay;
             }
 
-            public int DelayMs { get; }
+            public TimeSpan Value { get; }
         }
     }
 }
