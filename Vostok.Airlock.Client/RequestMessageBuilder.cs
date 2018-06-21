@@ -3,9 +3,11 @@ using Vostok.Commons.Binary;
 
 namespace Vostok.Airlock.Client
 {
-    internal class RequestMessageBuilder : IBufferSliceAppender
+    internal class RequestMessageBuilder : IRequestMessageBuilder
     {
         private readonly BinaryBufferWriter writer;
+        
+        private int recordsCounter;
 
         public RequestMessageBuilder(byte[] buffer)
         {
@@ -23,20 +25,14 @@ namespace Vostok.Airlock.Client
 
             writer.WriteWithoutLengthPrefix(slice.Buffer, slice.Offset, slice.Length);
 
-            return true;
-        }
+            recordsCounter += slice.RecordsCount;
 
-        public void WriteRecordsCount(int value)
-        {
             var positionBefore = writer.Position;
             writer.Position = 0;
-            writer.Write(value);
+            writer.Write(recordsCounter);
             writer.Position = positionBefore;
-        }
 
-        public void Reset()
-        {
-            writer.Reset();
+            return true;
         }
 
         private bool IsFit(BufferSlice slice)
@@ -51,7 +47,7 @@ namespace Vostok.Airlock.Client
 
             if (writer.Position == 0)
             {
-                throw new Exception($"Buffer slice of size {slice.Length} does not fit into max message size {writer.Buffer.Length}.");
+                throw new Exception($"Buffer slice of size {slice.Length} does not fit into maximum message size {writer.Buffer.Length}.");
             }
 
             return false;

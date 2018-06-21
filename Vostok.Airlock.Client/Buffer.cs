@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Vostok.Commons.Binary;
 
@@ -9,15 +11,16 @@ namespace Vostok.Airlock.Client
     {
         private readonly BinaryBufferWriter binaryWriter;
         private readonly IMemoryManager memoryManager;
+        private readonly List<BufferGarbageSegment> garbage;
 
         private volatile BufferSnapshot snapshot;
         private volatile int recordsCounter;
-        private volatile bool needGarbageCollection;
 
         public Buffer(byte[] buffer, IMemoryManager memoryManager)
         {
             binaryWriter = new BinaryBufferWriter(buffer);
             this.memoryManager = memoryManager;
+            garbage = new List<BufferGarbageSegment>();
         }
 
         public int Position
@@ -38,7 +41,7 @@ namespace Vostok.Airlock.Client
 
         public BufferSnapshot MakeSnapshot()
         {
-            return snapshot = new BufferSnapshot(binaryWriter.Buffer, Position, recordsCounter);
+            return snapshot = new BufferSnapshot(this, binaryWriter.Buffer, Position, recordsCounter);
         }
 
         public bool IsEmpty()
@@ -46,38 +49,44 @@ namespace Vostok.Airlock.Client
             return Position == 0;
         }
 
-        public void RequestGarbageCollection()
+        public void RequestGarbageCollection(int offset, int length, int recordsCount)
         {
-            needGarbageCollection = true;
+            garbage.Add(new BufferGarbageSegment {Offset = offset, Length = length, RecordsCount = recordsCount});
         }
 
         public void CollectGarbage()
         {
-            if (!needGarbageCollection)
+            if (garbage.Count == 0)
             {
                 return;
             }
 
-            if (snapshot.BufferPosition > 0)
+            if (snapshot.Position > 0)
             {
-                if (snapshot.BufferPosition != Position)
+                garbage.Sort((x, y) => x.Offset.CompareTo(y.Offset));
+
+                garbage.Join();
+
+                var usefulBytesEndingPosition = DefragmentationManager.Run(binaryWriter.Buffer, garbage);
+
+                if (snapshot.Position != Position)
                 {
-                    var bytesWrittenAfter = Position - snapshot.BufferPosition;
-                    System.Buffer.BlockCopy(binaryWriter.Buffer, snapshot.BufferPosition, binaryWriter.Buffer, 0, bytesWrittenAfter);
-                    Position = bytesWrittenAfter;
+                    var bytesWrittenAfter = Position - snapshot.Position;
+                    System.Buffer.BlockCopy(binaryWriter.Buffer, snapshot.Position, binaryWriter.Buffer, usefulBytesEndingPosition, bytesWrittenAfter);
+                    Position = usefulBytesEndingPosition + bytesWrittenAfter;
                 }
                 else
                 {
-                    binaryWriter.Reset();
+                    Position = usefulBytesEndingPosition;
                 }
             }
 
             if (snapshot.RecordsCount > 0)
             {
-                recordsCounter -= snapshot.RecordsCount;
+                recordsCounter -= garbage.Sum(x => x.RecordsCount);
             }
 
-            needGarbageCollection = false;
+            garbage.Clear();
         }
 
         public IBinaryWriter Write(int value)

@@ -6,9 +6,9 @@ namespace Vostok.Airlock.Client
     {
         IBinaryWriter BeginRecord();
         void Commit();
-
+        
         void CollectGarbage();
-        void RequestGarbageCollection();
+        void RequestGarbageCollection(int offset, int length, int recordsCount);
 
         BufferSnapshot MakeSnapshot();
 

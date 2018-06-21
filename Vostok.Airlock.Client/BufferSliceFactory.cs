@@ -17,9 +17,9 @@ namespace Vostok.Airlock.Client
         {
             var binaryReader = new BinaryBufferReader(snapshot.Buffer);
             
-            if (snapshot.BufferPosition <= maxSliceSize)
+            if (snapshot.Position <= maxSliceSize)
             {
-                yield return new BufferSlice(snapshot.Buffer, 0, snapshot.BufferPosition, snapshot.RecordsCount);
+                yield return new BufferSlice(snapshot.Parent, snapshot.Buffer, 0, snapshot.Position, snapshot.RecordsCount);
             }
 
             var currentOffset = 0;
@@ -38,7 +38,7 @@ namespace Vostok.Airlock.Client
 
                 if (currentLength + recordLength > maxSliceSize)
                 {
-                    yield return new BufferSlice(snapshot.Buffer, currentOffset, currentLength, currentCount);
+                    yield return new BufferSlice(snapshot.Parent, snapshot.Buffer, currentOffset, currentLength, currentCount);
                     currentOffset += currentLength;
                     currentLength = 0;
                     currentCount = 0;
@@ -50,7 +50,7 @@ namespace Vostok.Airlock.Client
 
             if (currentLength > 0)
             {
-                yield return new BufferSlice(snapshot.Buffer, currentOffset, currentLength, currentCount);
+                yield return new BufferSlice(snapshot.Parent, snapshot.Buffer, currentOffset, currentLength, currentCount);
             }
         }
     }

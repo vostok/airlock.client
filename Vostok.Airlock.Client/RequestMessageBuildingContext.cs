@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Vostok.Airlock.Client
 {
-    internal class RequestMessageBuildingContext : IBufferSliceAppender
+    internal class RequestMessageBuildingContext : IRequestMessageBuilder
     {
         private readonly RequestMessageBuilder builder;
         private readonly List<BufferSlice> slices;
-
-        private int recordsCounter;
 
         public RequestMessageBuildingContext(byte[] messageBuffer)
         {
@@ -15,9 +14,13 @@ namespace Vostok.Airlock.Client
             slices = new List<BufferSlice>();
         }
 
-        public IBufferSliceAppender Appender => this;
+        public ArraySegment<byte> Message => builder.Message;
 
-        bool IBufferSliceAppender.TryAppend(BufferSlice slice)
+        public IRequestMessageBuilder Builder => this;
+
+        public IReadOnlyList<BufferSlice> Slices => slices;
+
+        bool IRequestMessageBuilder.TryAppend(BufferSlice slice)
         {
             if (!builder.TryAppend(slice))
             {
@@ -25,22 +28,7 @@ namespace Vostok.Airlock.Client
             }
 
             slices.Add(slice);
-            recordsCounter += slice.Count;
             return true;
-        }
-
-        public RequestMessage Build()
-        {
-            builder.WriteRecordsCount(recordsCounter);
-
-            return new RequestMessage {Message = builder.Message, ParticipatingSlices = slices, RecordsCount = recordsCounter};
-        }
-
-        public void Reset()
-        {
-            builder.Reset();
-            slices.Clear();
-            recordsCounter = 0;
         }
     }
 }

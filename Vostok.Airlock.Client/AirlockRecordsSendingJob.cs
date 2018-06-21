@@ -84,70 +84,69 @@ namespace Vostok.Airlock.Client
 
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
         {
-            var sw = Stopwatch.StartNew();
-
             var buffers = bufferPool.MakeSnapshot();
             var snapshots = buffers.Select(x => x.MakeSnapshot());
 
-            var messages = BuildMessages(snapshots);
+            var isSuccess = true;
 
-            var (result, recordsCount) = await PushAsync(stream, messages, cancellationToken).ConfigureAwait(false);
+            foreach (var context in BuildMessages(snapshots))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            if (!result)
+                if (!await PushAsync(stream, context, cancellationToken).ConfigureAwait(false))
+                {
+                    isSuccess = false;
+                }
+            }
+
+            return isSuccess;
+        }
+
+        private IEnumerable<RequestMessageBuildingContext> BuildMessages(IEnumerable<BufferSnapshot> snapshots)
+        {
+            RequestMessageBuildingContext context = null;
+
+            foreach (var slice in snapshots.SelectMany(snapshot => bufferSlicer.Cut(snapshot)))
+            {
+                if (context == null)
+                {
+                    context = new RequestMessageBuildingContext(messageBuffer);
+                }
+
+                if (context.Builder.TryAppend(slice))
+                {
+                    continue;
+                }
+
+                yield return context;
+
+                context = null;
+            }
+        }
+
+        private async Task<bool> PushAsync(string stream, RequestMessageBuildingContext context, CancellationToken cancellationToken)
+        {
+            var sw = Stopwatch.StartNew();
+
+            if (!await requestSender.SendAsync(stream, context.Message, cancellationToken).ConfigureAwait(false))
             {
                 log.Warn($"Sending to stream {stream} failed after {sw.Elapsed}.");
 
                 return false;
             }
 
-            log.Info($"Successfully sent {recordsCount} records to stream {stream} in {sw.Elapsed}.");
+            foreach (var slice in context.Slices)
+            {
+                slice.Parrent.RequestGarbageCollection(slice.Offset, slice.Length, slice.RecordsCount);
+            }
+
+            var recordsCount = context.Slices.Sum(x => x.RecordsCount);
 
             sentRecordsCounter += recordsCount;
 
-            foreach (var buffer in buffers)
-            {
-                buffer.RequestGarbageCollection();
-            }
+            log.Info($"Successfully sent {recordsCount} records to stream {stream} in {sw.Elapsed}.");
 
             return true;
-        }
-
-        private IEnumerable<RequestMessage> BuildMessages(IEnumerable<BufferSnapshot> snapshots)
-        {
-            var context = new RequestMessageBuildingContext(messageBuffer);
-
-            foreach (var slice in snapshots.SelectMany(snapshot => bufferSlicer.Cut(snapshot)))
-            {
-                if (context.Appender.TryAppend(slice))
-                {
-                    continue;
-                }
-
-                yield return context.Build();
-
-                context.Reset();
-            }
-        }
-
-        private async Task<(bool result, int recordsCount)> PushAsync(string stream, IEnumerable<RequestMessage> messages, CancellationToken cancellationToken)
-        {
-            var recordsCount = 0;
-
-            foreach (var message in messages)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (await requestSender.SendAsync(stream, message.Message, cancellationToken).ConfigureAwait(false))
-                {
-                    recordsCount += message.RecordsCount;
-                }
-                else
-                {
-                    return (false, 0);
-                }
-            }
-
-            return (true, recordsCount);
         }
 
         private int CalcalateAttempt(string stream, bool result)

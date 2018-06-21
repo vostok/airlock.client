@@ -2,15 +2,17 @@
 {
     internal class BufferSnapshot
     {
-        public BufferSnapshot(byte[] buffer, int bufferPosition, int recordsCount)
+        public BufferSnapshot(IBuffer parent, byte[] buffer, int position, int recordsCount)
         {
+            Parent = parent;
             Buffer = buffer;
-            BufferPosition = bufferPosition;
+            Position = position;
             RecordsCount = recordsCount;
         }
 
+        public IBuffer Parent { get; }
         public byte[] Buffer { get; }
-        public int BufferPosition { get; }
+        public int Position { get; }
         public int RecordsCount { get; }
     }
 }
