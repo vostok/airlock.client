@@ -47,7 +47,7 @@ namespace Vostok.Airlock.Client
 
             if (writer.Position == 0)
             {
-                throw new Exception($"Buffer slice of size {slice.Length} does not fit into maximum message size {writer.Buffer.Length}.");
+                throw new Exception($"Buffer slice of size {slice.Length} does not fit into maximum message size {writer.Buffer.Length}");
             }
 
             return false;

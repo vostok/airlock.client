@@ -45,7 +45,7 @@ namespace Vostok.Airlock.Client
 
                 if (recordSize > maxRecordSize)
                 {
-                    log.Warn($"Discarded record with size = {DataSize.FromBytes(recordSize)} larger than max allowed size = {DataSize.FromBytes(maxRecordSize)}");
+                    log.Warn($"Discarded record with size {DataSize.FromBytes(recordSize)} larger than maximum allowed size {DataSize.FromBytes(maxRecordSize)}");
                     
                     binaryWriter.Position = startingPosition;
 

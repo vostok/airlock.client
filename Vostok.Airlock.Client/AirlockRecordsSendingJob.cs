@@ -62,7 +62,7 @@ namespace Vostok.Airlock.Client
 
                 var isSuccess = await PushAsync(stream, bufferPoolLazy.Value, cancellationToken).ConfigureAwait(false);
 
-                attempts[stream] = CalcalateAttempt(stream, isSuccess);
+                attempts[stream] = CalculateAttempt(stream, isSuccess);
 
                 var jobState = new AirlockRecordsSendingJobState
                 {
@@ -106,7 +106,7 @@ namespace Vostok.Airlock.Client
         {
             RequestMessageBuildingContext context = null;
 
-            foreach (var slice in snapshots.SelectMany(snapshot => bufferSlicer.Cut(snapshot)))
+            foreach (var slice in snapshots.SelectMany(snapshot => bufferSlicer.Cut(snapshot)).OrderByDescending(x => x.Length))
             {
                 if (context == null)
                 {
@@ -130,7 +130,7 @@ namespace Vostok.Airlock.Client
 
             if (!await requestSender.SendAsync(stream, context.Message, cancellationToken).ConfigureAwait(false))
             {
-                log.Warn($"Sending to stream {stream} failed after {sw.Elapsed}.");
+                log.Warn($"Sending to stream {stream} failed after {sw.Elapsed}");
 
                 return false;
             }
@@ -144,12 +144,12 @@ namespace Vostok.Airlock.Client
 
             sentRecordsCounter += recordsCount;
 
-            log.Info($"Successfully sent {recordsCount} records to stream {stream} in {sw.Elapsed}.");
+            log.Info($"Successfully sent {recordsCount} records to stream {stream} in {sw.Elapsed}");
 
             return true;
         }
 
-        private int CalcalateAttempt(string stream, bool result)
+        private int CalculateAttempt(string stream, bool result)
         {
             return result
                 ? 0

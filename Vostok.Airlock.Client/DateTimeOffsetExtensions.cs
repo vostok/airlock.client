@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Vostok.Airlock.Client.Abstractions
+namespace Vostok.Airlock.Client
 {
-    public static class DateTimeOffsetExtensions
+    internal static class DateTimeOffsetExtensions
     {
         private static readonly long unixEpochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
 

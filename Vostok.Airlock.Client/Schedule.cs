@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Vostok.Airlock.Client
 {
-    public class Schedule : ISchedule
+    internal class Schedule : ISchedule
     {
         private readonly TimeSpan delayToNextOccurrence;
 

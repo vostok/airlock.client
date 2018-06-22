@@ -33,7 +33,7 @@ namespace Vostok.Airlock.Client
 
                 if (recordLength > maxSliceSize)
                 {
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException($"Encountered a record with length {recordLength} greater than maximum buffer slice size {maxSliceSize}");
                 }
 
                 if (currentLength + recordLength > maxSliceSize)

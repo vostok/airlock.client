@@ -23,10 +23,10 @@ namespace Vostok.Airlock.Client
             garbage = new List<BufferGarbageSegment>();
         }
 
-        public int Position
+        long IBinaryWriter.Position
         {
             get => binaryWriter.Position;
-            set => binaryWriter.Position = value;
+            set => binaryWriter.Position = (int) value;
         }
 
         public IBinaryWriter BeginRecord()
@@ -41,12 +41,12 @@ namespace Vostok.Airlock.Client
 
         public BufferSnapshot MakeSnapshot()
         {
-            return snapshot = new BufferSnapshot(this, binaryWriter.Buffer, Position, recordsCounter);
+            return snapshot = new BufferSnapshot(this, binaryWriter.Buffer, binaryWriter.Position, recordsCounter);
         }
 
         public bool IsEmpty()
         {
-            return Position == 0;
+            return binaryWriter.Position == 0;
         }
 
         public void RequestGarbageCollection(int offset, int length, int recordsCount)
@@ -69,15 +69,15 @@ namespace Vostok.Airlock.Client
 
                 var usefulBytesEndingPosition = DefragmentationManager.Run(binaryWriter.Buffer, garbage);
 
-                if (snapshot.Position != Position)
+                if (snapshot.Position != binaryWriter.Position)
                 {
-                    var bytesWrittenAfter = Position - snapshot.Position;
+                    var bytesWrittenAfter = binaryWriter.Position - snapshot.Position;
                     System.Buffer.BlockCopy(binaryWriter.Buffer, snapshot.Position, binaryWriter.Buffer, usefulBytesEndingPosition, bytesWrittenAfter);
-                    Position = usefulBytesEndingPosition + bytesWrittenAfter;
+                    binaryWriter.Position = usefulBytesEndingPosition + bytesWrittenAfter;
                 }
                 else
                 {
-                    Position = usefulBytesEndingPosition;
+                    binaryWriter.Position = usefulBytesEndingPosition;
                 }
             }
 

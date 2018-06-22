@@ -6,9 +6,7 @@ namespace Vostok.Airlock.Client
 {
     internal static class BinaryWriterExtensions
     {
-        internal static IBinaryWriter WriteVector<T>(this IBinaryWriter writer,
-                                                     IReadOnlyCollection<T> values,
-                                                     Action<IBinaryWriter, T> writeSingleValue)
+        internal static IBinaryWriter WriteVector<T>(this IBinaryWriter writer, IReadOnlyCollection<T> values, Action<IBinaryWriter, T> writeSingleValue)
         {
             if (values == null)
             {
