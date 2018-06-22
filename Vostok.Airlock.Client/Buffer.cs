@@ -65,8 +65,6 @@ namespace Vostok.Airlock.Client
             {
                 garbage.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
-                garbage.Join();
-
                 var usefulBytesEndingPosition = DefragmentationManager.Run(binaryWriter.Buffer, garbage);
 
                 if (snapshot.Position != binaryWriter.Position)
