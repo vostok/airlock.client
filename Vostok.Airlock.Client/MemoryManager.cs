@@ -21,20 +21,14 @@ namespace Vostok.Airlock.Client
                 if (newSize <= maxSize)
                 {
                     if (Interlocked.CompareExchange(ref currentSize, newSize, tCurrentSize) == tCurrentSize)
-                    {
                         return true;
-                    }
                 }
                 else
-                {
                     return false;
-                }
             }
         }
 
-        public bool IsConsumptionAchievedThreshold(int percent)
-        {
-            return currentSize * (100.0 / percent) > maxSize;
-        }
+        public bool IsConsumptionAchievedThreshold(int percent) =>
+            currentSize * (100.0 / percent) > maxSize;
     }
 }

@@ -9,16 +9,12 @@ namespace Vostok.Airlock.Client
         internal static IBinaryWriter WriteVector<T>(this IBinaryWriter writer, IReadOnlyCollection<T> values, Action<IBinaryWriter, T> writeSingleValue)
         {
             if (values == null)
-            {
                 throw new ArgumentNullException(nameof(values));
-            }
 
-            writer.Write((byte) values.Count);
+            writer.Write((byte)values.Count);
 
             foreach (var value in values)
-            {
                 writeSingleValue(writer, value);
-            }
 
             return writer;
         }

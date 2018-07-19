@@ -4,7 +4,8 @@ namespace Vostok.Airlock.Client
 {
     internal static class Delays
     {
-        [ThreadStatic] private static Random random;
+        [ThreadStatic]
+        private static Random random;
 
         private static Random Random => random ?? (random = new Random());
 
@@ -14,17 +15,12 @@ namespace Vostok.Airlock.Client
             return new ExponentialDelayContainer(TimeSpan.FromMilliseconds(delayMs));
         }
 
-        public static IWithPreviousDelay BasedOnPrevious(TimeSpan previousDelay)
-        {
-            return new PreviousDelayContainer(previousDelay);
-        }
+        public static IWithPreviousDelay BasedOnPrevious(TimeSpan previousDelay) =>
+            new PreviousDelayContainer(previousDelay);
 
         private class ExponentialDelayContainer : IWithExponentialDelay
         {
-            public ExponentialDelayContainer(TimeSpan delay)
-            {
-                Value = delay;
-            }
+            public ExponentialDelayContainer(TimeSpan delay) => Value = delay;
 
             public TimeSpan Value { get; }
 
@@ -43,10 +39,7 @@ namespace Vostok.Airlock.Client
 
         private class PreviousDelayContainer : IWithPreviousDelay
         {
-            public PreviousDelayContainer(TimeSpan delay)
-            {
-                Value = delay;
-            }
+            public PreviousDelayContainer(TimeSpan delay) => Value = delay;
 
             public TimeSpan Value { get; }
 
@@ -59,10 +52,7 @@ namespace Vostok.Airlock.Client
 
         private class DelayContainer : IWithDelay
         {
-            public DelayContainer(TimeSpan delay)
-            {
-                Value = delay;
-            }
+            public DelayContainer(TimeSpan delay) => Value = delay;
 
             public TimeSpan Value { get; }
         }

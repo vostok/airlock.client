@@ -32,9 +32,7 @@ namespace Vostok.Airlock.Client
                 binaryReader.Position += recordLength;
 
                 if (recordLength > maxSliceSize)
-                {
                     throw new InvalidOperationException($"Encountered a record with length {recordLength} greater than maximum buffer slice size {maxSliceSize}");
-                }
 
                 if (currentLength + recordLength > maxSliceSize)
                 {
@@ -49,9 +47,7 @@ namespace Vostok.Airlock.Client
             }
 
             if (currentLength > 0)
-            {
                 yield return new BufferSlice(snapshot.Parent, snapshot.Buffer, currentOffset, currentLength, currentCount);
-            }
         }
     }
 }

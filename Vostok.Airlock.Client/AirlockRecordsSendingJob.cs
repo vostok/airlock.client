@@ -54,9 +54,7 @@ namespace Vostok.Airlock.Client
                 var bufferPoolLazy = pair.Value;
 
                 if (delays.TryGetValue(stream, out var delay) && !delay.IsCompleted)
-                {
                     continue;
-                }
 
                 var sw = Stopwatch.StartNew();
 
@@ -77,10 +75,8 @@ namespace Vostok.Airlock.Client
             }
         }
 
-        public Task WaitNextOccurrenceAsync()
-        {
-            return delays.Count != 0 ? Task.WhenAny(delays.Select(x => x.Value)) : Task.CompletedTask;
-        }
+        public Task WaitNextOccurrenceAsync() =>
+            delays.Count != 0 ? Task.WhenAny(delays.Select(x => x.Value)) : Task.CompletedTask;
 
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
         {
@@ -94,9 +90,7 @@ namespace Vostok.Airlock.Client
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (!await PushAsync(stream, context, cancellationToken).ConfigureAwait(false))
-                {
                     isSuccess = false;
-                }
             }
 
             return isSuccess;
@@ -109,14 +103,10 @@ namespace Vostok.Airlock.Client
             foreach (var slice in snapshots.SelectMany(snapshot => bufferSlicer.Cut(snapshot)).OrderByDescending(x => x.Length))
             {
                 if (context == null)
-                {
                     context = new RequestMessageBuildingContext(messageBuffer);
-                }
 
                 if (context.Builder.TryAppend(slice))
-                {
                     continue;
-                }
 
                 yield return context;
 
@@ -131,14 +121,11 @@ namespace Vostok.Airlock.Client
             if (!await requestSender.SendAsync(stream, context.Message, cancellationToken).ConfigureAwait(false))
             {
                 log.Warn($"Sending to stream {stream} failed after {sw.Elapsed}");
-
                 return false;
             }
 
             foreach (var slice in context.Slices)
-            {
                 slice.Parrent.RequestGarbageCollection(slice.Offset, slice.Length, slice.RecordsCount);
-            }
 
             var recordsCount = context.Slices.Sum(x => x.RecordsCount);
 
@@ -149,13 +136,11 @@ namespace Vostok.Airlock.Client
             return true;
         }
 
-        private int CalculateAttempt(string stream, bool result)
-        {
-            return result
+        private int CalculateAttempt(string stream, bool result) =>
+            result
                 ? 0
                 : attempts.TryGetValue(stream, out var attempt)
                     ? attempt + 1
                     : 1;
-        }
     }
 }

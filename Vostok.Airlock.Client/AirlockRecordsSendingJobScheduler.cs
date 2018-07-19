@@ -18,12 +18,9 @@ namespace Vostok.Airlock.Client
         public ISchedule GetDelayToNextOccurrence(AirlockRecordsSendingJobState jobState)
         {
             if (jobState.IsSuccess && memoryManager.IsConsumptionAchievedThreshold(50))
-            {
                 return new Schedule(TimeSpan.Zero);
-            }
 
             var sendPeriod = Delays.Exponential(requestSendPeriodCap, requestSendPeriod, jobState.Attempt).WithEqualJitter().Value;
-
             var delayToNextOccurrence = jobState.IsSuccess ? sendPeriod - jobState.Elapsed : sendPeriod;
 
             return new Schedule(delayToNextOccurrence);

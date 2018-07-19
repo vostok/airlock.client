@@ -4,7 +4,8 @@ namespace Vostok.Airlock.Client
 {
     internal static class DefragmentationManager
     {
-        public static int Run<T>(byte[] buffer, IReadOnlyList<T> sequentialGarbageSegments) where T : ILineSegment
+        public static int Run<T>(byte[] buffer, IReadOnlyList<T> sequentialGarbageSegments)
+            where T : ILineSegment
         {
             var currentPosition = sequentialGarbageSegments[0].Offset;
 

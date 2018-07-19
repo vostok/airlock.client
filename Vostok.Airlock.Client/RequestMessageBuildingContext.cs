@@ -23,9 +23,7 @@ namespace Vostok.Airlock.Client
         bool IRequestMessageBuilder.TryAppend(BufferSlice slice)
         {
             if (!builder.TryAppend(slice))
-            {
                 return false;
-            }
 
             slices.Add(slice);
             return true;

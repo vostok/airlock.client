@@ -13,6 +13,7 @@ default:
   deps:
     - vostok.commons@dev
     - vostok.logging@dev
+    - vostok.devtools
 
 notests *default:
   build:

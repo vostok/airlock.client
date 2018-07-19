@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Commons.Extensions;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Abstractions.Extensions;
 

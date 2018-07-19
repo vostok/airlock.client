@@ -26,40 +26,25 @@ namespace Vostok.Airlock.Client
         long IBinaryWriter.Position
         {
             get => binaryWriter.Position;
-            set => binaryWriter.Position = (int) value;
+            set => binaryWriter.Position = (int)value;
         }
 
-        public IBinaryWriter BeginRecord()
-        {
-            return this;
-        }
+        public IBinaryWriter BeginRecord() => this;
 
-        public void Commit()
-        {
-            ++recordsCounter;
-        }
+        public void Commit() => ++recordsCounter;
 
-        public BufferSnapshot MakeSnapshot()
-        {
-            return snapshot = new BufferSnapshot(this, binaryWriter.Buffer, binaryWriter.Position, recordsCounter);
-        }
+        public BufferSnapshot MakeSnapshot() =>
+            snapshot = new BufferSnapshot(this, binaryWriter.Buffer, binaryWriter.Position, recordsCounter);
 
-        public bool IsEmpty()
-        {
-            return binaryWriter.Position == 0;
-        }
+        public bool IsEmpty() => binaryWriter.Position == 0;
 
-        public void RequestGarbageCollection(int offset, int length, int recordsCount)
-        {
+        public void RequestGarbageCollection(int offset, int length, int recordsCount) =>
             garbage.Add(new BufferGarbageSegment {Offset = offset, Length = length, RecordsCount = recordsCount});
-        }
 
         public void CollectGarbage()
         {
             if (garbage.Count == 0)
-            {
                 return;
-            }
 
             if (snapshot.Position > 0)
             {
@@ -74,15 +59,11 @@ namespace Vostok.Airlock.Client
                     binaryWriter.Position = usefulBytesEndingPosition + bytesWrittenAfter;
                 }
                 else
-                {
                     binaryWriter.Position = usefulBytesEndingPosition;
-                }
             }
 
             if (snapshot.RecordsCount > 0)
-            {
                 recordsCounter -= garbage.Sum(x => x.RecordsCount);
-            }
 
             garbage.Clear();
         }
@@ -212,17 +193,13 @@ namespace Vostok.Airlock.Client
             var expectedLength = binaryWriter.Position + amount;
 
             if (currentLength >= expectedLength)
-            {
                 return;
-            }
 
             var remainingBytes = currentLength - binaryWriter.Position;
             var reserveAmount = Math.Max(currentLength, amount - remainingBytes);
 
             if (!memoryManager.TryReserveBytes(reserveAmount))
-            {
                 throw new InternalBufferOverflowException();
-            }
         }
     }
 }

@@ -28,13 +28,13 @@ namespace Vostok.Airlock.Client
                 binaryWriter.Write(0);
 
                 var versionPosition = binaryWriter.Position;
-                binaryWriter.Write((byte) 1);
+                binaryWriter.Write((byte)1);
 
                 var timestampPosition = binaryWriter.Position;
                 binaryWriter.Write(0L);
 
                 var tagsCountPosition = binaryWriter.Position;
-                binaryWriter.Write((short) 0);
+                binaryWriter.Write((short)0);
 
                 var builder = new AirlockRecordBuilder(binaryWriter);
                 build.Invoke(builder);
@@ -46,9 +46,7 @@ namespace Vostok.Airlock.Client
                 if (recordSize > maxRecordSize)
                 {
                     log.Warn($"Discarded record with size {DataSize.FromBytes(recordSize)} larger than maximum allowed size {DataSize.FromBytes(maxRecordSize)}");
-                    
                     binaryWriter.Position = startingPosition;
-
                     return false;
                 }
 
@@ -70,9 +68,7 @@ namespace Vostok.Airlock.Client
             catch (Exception exception)
             {
                 log.Error(exception);
-
                 binaryWriter.Position = startingPosition;
-
                 return false;
             }
         }

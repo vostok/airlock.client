@@ -22,16 +22,16 @@ namespace Vostok.Airlock.Client
 
         public AirlockGateClient(ILog log, AirlockConfig config)
         {
-            recordsWriter = new AirlockRecordsWriter(log, (int) config.MaximumRecordSize.Bytes);
+            recordsWriter = new AirlockRecordsWriter(log, (int)config.MaximumRecordSize.Bytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumption.Bytes);
 
             initialPooledBuffersCount = config.InitialPooledBuffersCount;
-            initialPooledBufferSize = (int) config.InitialPooledBufferSize.Bytes;
+            initialPooledBufferSize = (int)config.InitialPooledBufferSize.Bytes;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
             var jobScheduler = new AirlockRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
-            var bufferSlicer = new BufferSliceFactory((int) config.MaximumRequestContentSize.Bytes - sizeof(int));
+            var bufferSlicer = new BufferSliceFactory((int)config.MaximumRequestContentSize.Bytes - sizeof(int));
             var messageBuffer = new byte[config.MaximumRequestContentSize.Bytes];
             var requestSender = new RequestSender();
             var job = new AirlockRecordsSendingJob(log, jobScheduler, bufferPools, bufferSlicer, messageBuffer, requestSender);
@@ -57,13 +57,9 @@ namespace Vostok.Airlock.Client
                 var binaryWriter = buffer.BeginRecord();
 
                 if (recordsWriter.TryWrite(binaryWriter, build))
-                {
                     buffer.Commit();
-                }
                 else
-                {
                     Interlocked.Increment(ref lostRecordsCounter);
-                }
             }
             finally
             {
@@ -74,19 +70,13 @@ namespace Vostok.Airlock.Client
         public void Dispose()
         {
             if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 1)
-            {
                 recordsSendingDaemon.Dispose();
-            }
         }
 
-        private IBufferPool GetOrCreate(string stream)
-        {
-            return bufferPools.GetOrAdd(stream, _ => new Lazy<IBufferPool>(CreateBufferPool, LazyThreadSafetyMode.ExecutionAndPublication)).Value;
-        }
+        private IBufferPool GetOrCreate(string stream) =>
+            bufferPools.GetOrAdd(stream, _ => new Lazy<IBufferPool>(CreateBufferPool, LazyThreadSafetyMode.ExecutionAndPublication)).Value;
 
-        private IBufferPool CreateBufferPool()
-        {
-            return new BufferPool(memoryManager, initialPooledBuffersCount, initialPooledBufferSize);
-        }
+        private IBufferPool CreateBufferPool() =>
+            new BufferPool(memoryManager, initialPooledBuffersCount, initialPooledBufferSize);
     }
 }

@@ -14,37 +14,37 @@ namespace Vostok.Airlock.Client.Abstractions
 
         public TagValueType Type { get; }
 
-        public static explicit operator byte(TagValue source) => (byte) source.UnderlyingValue;
+        public static explicit operator byte(TagValue source) => (byte)source.UnderlyingValue;
 
-        public static explicit operator short(TagValue source) => (short) source.UnderlyingValue;
+        public static explicit operator short(TagValue source) => (short)source.UnderlyingValue;
 
-        public static explicit operator int(TagValue source) => (int) source.UnderlyingValue;
+        public static explicit operator int(TagValue source) => (int)source.UnderlyingValue;
 
-        public static explicit operator long(TagValue source) => (long) source.UnderlyingValue;
+        public static explicit operator long(TagValue source) => (long)source.UnderlyingValue;
 
-        public static explicit operator bool(TagValue source) => (bool) source.UnderlyingValue;
+        public static explicit operator bool(TagValue source) => (bool)source.UnderlyingValue;
 
-        public static explicit operator float(TagValue source) => (float) source.UnderlyingValue;
+        public static explicit operator float(TagValue source) => (float)source.UnderlyingValue;
 
-        public static explicit operator double(TagValue source) => (double) source.UnderlyingValue;
+        public static explicit operator double(TagValue source) => (double)source.UnderlyingValue;
 
-        public static explicit operator string(TagValue source) => (string) source.UnderlyingValue;
+        public static explicit operator string(TagValue source) => (string)source.UnderlyingValue;
 
-        public static explicit operator byte[](TagValue source) => (byte[]) source.UnderlyingValue;
+        public static explicit operator byte[](TagValue source) => (byte[])source.UnderlyingValue;
 
-        public static explicit operator short[](TagValue source) => (short[]) source.UnderlyingValue;
+        public static explicit operator short[](TagValue source) => (short[])source.UnderlyingValue;
 
-        public static explicit operator int[](TagValue source) => (int[]) source.UnderlyingValue;
+        public static explicit operator int[](TagValue source) => (int[])source.UnderlyingValue;
 
-        public static explicit operator long[](TagValue source) => (long[]) source.UnderlyingValue;
+        public static explicit operator long[](TagValue source) => (long[])source.UnderlyingValue;
 
-        public static explicit operator bool[](TagValue source) => (bool[]) source.UnderlyingValue;
+        public static explicit operator bool[](TagValue source) => (bool[])source.UnderlyingValue;
 
-        public static explicit operator float[](TagValue source) => (float[]) source.UnderlyingValue;
+        public static explicit operator float[](TagValue source) => (float[])source.UnderlyingValue;
 
-        public static explicit operator double[](TagValue source) => (double[]) source.UnderlyingValue;
+        public static explicit operator double[](TagValue source) => (double[])source.UnderlyingValue;
 
-        public static explicit operator string[](TagValue source) => (string[]) source.UnderlyingValue;
+        public static explicit operator string[](TagValue source) => (string[])source.UnderlyingValue;
 
         private static TagValueType GetValueType(object value)
         {

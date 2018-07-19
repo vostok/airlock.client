@@ -16,9 +16,7 @@ namespace Vostok.Airlock.Client
         public async Task WaitNextOccurrenceAsync(CancellationToken cancellationToken = default)
         {
             if (delayToNextOccurrence > TimeSpan.Zero)
-            {
                 await Task.Delay(delayToNextOccurrence, cancellationToken).ConfigureAwait(false);
-            }
         }
     }
 }

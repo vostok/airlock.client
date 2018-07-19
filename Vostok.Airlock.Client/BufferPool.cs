@@ -20,13 +20,10 @@ namespace Vostok.Airlock.Client
             sieve = new HashSet<IBuffer>();
 
             for (var i = 0; i < initialCount; i++)
-            {
                 if (TryCreateBuffer(out var buffer))
-                {
                     buffers.Enqueue(buffer);
-                }
-                else break;
-            }
+                else
+                    break;
         }
 
         public bool TryAcquire(out IBuffer buffer)
@@ -34,17 +31,12 @@ namespace Vostok.Airlock.Client
             var result = buffers.TryDequeue(out buffer) || TryCreateBuffer(out buffer);
 
             if (result)
-            {
                 buffer.CollectGarbage();
-            }
 
             return result;
         }
 
-        public void Release(IBuffer buffer)
-        {
-            buffers.Enqueue(buffer);
-        }
+        public void Release(IBuffer buffer) => buffers.Enqueue(buffer);
 
         public List<IBuffer> MakeSnapshot()
         {
@@ -56,9 +48,7 @@ namespace Vostok.Airlock.Client
             for (var i = 0; i < initialCount * 2; i++)
             {
                 if (!buffers.TryDequeue(out var buffer))
-                {
                     break;
-                }
 
                 if (!sieve.Add(buffer))
                 {
@@ -69,9 +59,7 @@ namespace Vostok.Airlock.Client
                 buffer.CollectGarbage();
 
                 if (!buffer.IsEmpty())
-                {
                     (snapshot ?? (snapshot = new List<IBuffer>())).Add(buffer);
-                }
 
                 buffers.Enqueue(buffer);
             }
