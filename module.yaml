@@ -13,6 +13,8 @@ notests *default:
     - vostok.commons@dev
     - vostok.logging.abstractions@dev
     - vostok.devtools
+    - vostok.clusterclient.core@dev
+    - vostok.clusterclient.transport.webrequest@dev
 
 full-build > notests:
   build:

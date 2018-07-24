@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\vostok.devtools\git-commit-to-assembly-title\Vostok.Tools.GitCommit2AssemblyTitle.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Debug;Release;NoTests</Configurations>
     <LangVersion>7.2</LangVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -43,8 +43,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Vostok.Airlock.Client.Abstractions">
       <HintPath>..\..\vostok.airlock.client.abstractions\Vostok.Airlock.Client.Abstractions\bin\Release\netstandard2.0\Vostok.Airlock.Client.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.ClusterClient.Core">
+      <HintPath>..\..\vostok.clusterclient.core\Vostok.ClusterClient.Core\bin\Release\netstandard2.0\Vostok.ClusterClient.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.ClusterClient.Transport.Webrequest">
+      <HintPath>..\..\vostok.clusterclient.transport.webrequest\Vostok.ClusterClient.Transport.Webrequest\bin\Release\netstandard2.0\Vostok.ClusterClient.Transport.Webrequest.dll</HintPath>
     </Reference>
     <Reference Include="Vostok.Commons">
       <HintPath>..\..\vostok.commons\Vostok.Commons\bin\Release\netstandard2.0\Vostok.Commons.dll</HintPath>

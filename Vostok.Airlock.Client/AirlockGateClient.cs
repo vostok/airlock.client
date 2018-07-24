@@ -33,12 +33,12 @@ namespace Vostok.Airlock.Client
             var jobScheduler = new AirlockRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
             var bufferSlicer = new BufferSliceFactory((int)config.MaximumRequestContentSize.Bytes - sizeof(int));
             var messageBuffer = new byte[config.MaximumRequestContentSize.Bytes];
-            var requestSender = new RequestSender();
+            var requestSender = new RequestSender(log, config.GateName, config.GateUri, config.GateApiKey, config.RequestTimeout);
             var job = new AirlockRecordsSendingJob(log, jobScheduler, bufferPools, bufferSlicer, messageBuffer, requestSender);
             recordsSendingDaemon = new AirlockRecordsSendingDaemon(log, job);
         }
 
-        public int LostRecordsCount => lostRecordsCounter;
+        public int LostRecordsCount => Interlocked.Add(ref lostRecordsCounter, recordsSendingDaemon.LostRecordsCount);
 
         public int SentRecordsCount => recordsSendingDaemon.SentRecordsCount;
 

@@ -20,10 +20,12 @@ namespace Vostok.Airlock.Client
             sieve = new HashSet<IBuffer>();
 
             for (var i = 0; i < initialCount; i++)
+            {
                 if (TryCreateBuffer(out var buffer))
                     buffers.Enqueue(buffer);
                 else
                     break;
+            }
         }
 
         public bool TryAcquire(out IBuffer buffer)

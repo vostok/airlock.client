@@ -25,6 +25,8 @@ namespace Vostok.Airlock.Client
 
         public int SentRecordsCount => job.SentRecordsCount;
 
+        public int LostRecordsCount => job.LostRecordsCount;
+
         public void Dispose()
         {
             daemonCancellation.Cancel();

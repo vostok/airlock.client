@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Commons.ValueObjects;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Airlock.Client
@@ -17,10 +18,10 @@ namespace Vostok.Airlock.Client
         private readonly byte[] messageBuffer;
         private readonly IRequestSender requestSender;
 
-        private readonly Dictionary<string, int> attempts;
         private readonly Dictionary<string, Task> delays;
 
         private volatile int sentRecordsCounter;
+        private volatile int lostRecordsCounter;
 
         public AirlockRecordsSendingJob(
             ILog log,
@@ -37,11 +38,12 @@ namespace Vostok.Airlock.Client
             this.messageBuffer = messageBuffer;
             this.requestSender = requestSender;
 
-            attempts = new Dictionary<string, int>();
             delays = new Dictionary<string, Task>();
         }
 
         public int SentRecordsCount => sentRecordsCounter;
+
+        public int LostRecordsCount => lostRecordsCounter;
 
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
@@ -57,18 +59,9 @@ namespace Vostok.Airlock.Client
 
                 var sw = Stopwatch.StartNew();
 
-                var isSuccess = await PushAsync(stream, bufferPoolLazy.Value, cancellationToken).ConfigureAwait(false);
+                var sendingResult = await PushAsync(stream, bufferPoolLazy.Value, cancellationToken).ConfigureAwait(false);
 
-                attempts[stream] = CalculateAttempt(stream, isSuccess);
-
-                var jobState = new AirlockRecordsSendingJobState
-                {
-                    IsSuccess = isSuccess,
-                    Attempt = attempts[stream],
-                    Elapsed = sw.Elapsed
-                };
-
-                var schedule = scheduler.GetDelayToNextOccurrence(jobState);
+                var schedule = scheduler.GetDelayToNextOccurrence(stream, sendingResult, sw.Elapsed);
 
                 delays[stream] = schedule.WaitNextOccurrenceAsync(cancellationToken);
             }
@@ -85,18 +78,16 @@ namespace Vostok.Airlock.Client
                 return true;
 
             var snapshots = buffers.Select(x => x.MakeSnapshot());
-
-            var isSuccess = true;
-
+            
             foreach (var context in BuildMessages(snapshots))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (!await PushAsync(stream, context, cancellationToken).ConfigureAwait(false))
-                    isSuccess = false;
+                    return false;
             }
 
-            return isSuccess;
+            return true;
         }
 
         private IEnumerable<RequestMessageBuildingContext> BuildMessages(IEnumerable<BufferSnapshot> snapshots)
@@ -127,29 +118,42 @@ namespace Vostok.Airlock.Client
         {
             var sw = Stopwatch.StartNew();
 
-            if (!await requestSender.SendAsync(stream, context.Message, cancellationToken).ConfigureAwait(false))
+            var sendingResult = await requestSender.SendAsync(stream, context.Message, cancellationToken).ConfigureAwait(false);
+
+            var recordsCount = context.Slices.Sum(x => x.RecordsCount);
+
+            LogSendingResult(sendingResult, recordsCount, context.Message.Count, stream, sw.Elapsed);
+
+            switch (sendingResult)
             {
-                log.Warn($"Sending to stream {stream} failed after {sw.Elapsed}");
-                return false;
+                case RequestSendingResult.Success:
+                    sentRecordsCounter += recordsCount;
+                    break;
+                case RequestSendingResult.DefinitiveFailure:
+                    lostRecordsCounter += recordsCount;
+                    break;
+                case RequestSendingResult.IntermittentFailure:
+                    return false;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sendingResult));
             }
 
             foreach (var slice in context.Slices)
                 slice.Parrent.RequestGarbageCollection(slice.Offset, slice.Length, slice.RecordsCount);
 
-            var recordsCount = context.Slices.Sum(x => x.RecordsCount);
-
-            sentRecordsCounter += recordsCount;
-
-            log.Info($"Successfully sent {recordsCount} records to stream {stream} in {sw.Elapsed}");
-
             return true;
         }
 
-        private int CalculateAttempt(string stream, bool result) =>
-            result
-                ? 0
-                : attempts.TryGetValue(stream, out var attempt)
-                    ? attempt + 1
-                    : 1;
+        private void LogSendingResult(RequestSendingResult result, int recordsCount, int bytesCount, string stream, TimeSpan elapsed)
+        {
+            if (result == RequestSendingResult.Success)
+            {
+                log.Info($"Sending {recordsCount} records of size {DataSize.FromBytes(bytesCount)} to stream {stream} succeeded in {elapsed}");
+            }
+            else
+            {
+                log.Warn($"Sending {recordsCount} records of size {DataSize.FromBytes(bytesCount)} to stream {stream} failed after {elapsed}");
+            }
+        }
     }
 }

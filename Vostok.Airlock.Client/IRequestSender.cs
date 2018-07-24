@@ -6,6 +6,6 @@ namespace Vostok.Airlock.Client
 {
     internal interface IRequestSender
     {
-        Task<bool> SendAsync(string stream, ArraySegment<byte> message, CancellationToken cancellationToken = default);
+        Task<RequestSendingResult> SendAsync(string stream, ArraySegment<byte> message, CancellationToken cancellationToken = default);
     }
 }
