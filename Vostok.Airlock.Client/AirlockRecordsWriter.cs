@@ -1,9 +1,8 @@
 ﻿using System;
 using Vostok.Airlock.Client.Abstractions;
-using Vostok.Commons;
 using Vostok.Commons.Binary;
+using Vostok.Commons.ValueObjects;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.Abstractions.Extensions;
 
 namespace Vostok.Airlock.Client
 {

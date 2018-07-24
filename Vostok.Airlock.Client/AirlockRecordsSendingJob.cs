@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Logging.Abstractions;
-using Vostok.Logging.Abstractions.Extensions;
 
 namespace Vostok.Airlock.Client
 {
@@ -81,6 +80,10 @@ namespace Vostok.Airlock.Client
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
         {
             var buffers = bufferPool.MakeSnapshot();
+
+            if (buffers == null)
+                return true;
+
             var snapshots = buffers.Select(x => x.MakeSnapshot());
 
             var isSuccess = true;
@@ -100,7 +103,10 @@ namespace Vostok.Airlock.Client
         {
             RequestMessageBuildingContext context = null;
 
-            foreach (var slice in snapshots.SelectMany(snapshot => bufferSlicer.Cut(snapshot)).OrderByDescending(x => x.Length))
+            var slices = snapshots.SelectMany(snapshot => bufferSlicer.Cut(snapshot))
+                                  .OrderByDescending(x => x.Length);
+
+            foreach (var slice in slices)
             {
                 if (context == null)
                     context = new RequestMessageBuildingContext(messageBuffer);
@@ -112,6 +118,9 @@ namespace Vostok.Airlock.Client
 
                 context = null;
             }
+
+            if (context != null)
+                yield return context;
         }
 
         private async Task<bool> PushAsync(string stream, RequestMessageBuildingContext context, CancellationToken cancellationToken)

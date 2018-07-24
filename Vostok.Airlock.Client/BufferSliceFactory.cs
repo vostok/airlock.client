@@ -15,11 +15,15 @@ namespace Vostok.Airlock.Client
 
         public IEnumerable<BufferSlice> Cut(BufferSnapshot snapshot)
         {
+            if (snapshot.RecordsCount == 0)
+                yield break;
+
             var binaryReader = new BinaryBufferReader(snapshot.Buffer);
             
             if (snapshot.Position <= maxSliceSize)
             {
                 yield return new BufferSlice(snapshot.Parent, snapshot.Buffer, 0, snapshot.Position, snapshot.RecordsCount);
+                yield break;
             }
 
             var currentOffset = 0;

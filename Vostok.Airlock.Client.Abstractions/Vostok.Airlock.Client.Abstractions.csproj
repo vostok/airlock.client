@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.0.0</Version>
+    <TargetFramework>netstandard2.0</TargetFramework> 
+    <Configurations>Debug;Release;NoTests</Configurations>
+    <Version>1.0.0</Version>
     <Authors>Vostok team</Authors>
     <Company>SKB Kontur</Company>
     <Product>Vostok</Product>
     <Copyright>Copyright (c) 2017-2018 SKB Kontur</Copyright>
-    <PackageLicenseUrl>https://github.com/vostok/airlock.client/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/vostok/airlock.client</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/vostok/airlock.client/blob/master/LICENSE</PackageLicenseUrl> 
+    <Description>Airlock client abstractions library for microservice toolkit http://vostok.tools/</Description>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
 
 </Project>

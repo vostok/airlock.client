@@ -1,6 +1,6 @@
 ﻿using System;
-using Vostok.Commons;
 using Vostok.Commons.Conversions;
+using Vostok.Commons.ValueObjects;
 
 namespace Vostok.Airlock.Client
 {
