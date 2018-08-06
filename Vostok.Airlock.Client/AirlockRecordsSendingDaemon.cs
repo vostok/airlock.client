@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.Commons.Extensions;
+using Vostok.Commons.Helpers.Extensions;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Airlock.Client

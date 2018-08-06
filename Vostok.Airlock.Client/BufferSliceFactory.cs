@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Vostok.Commons.Binary;
+using Vostok.Airlock.Client.Binary;
 
 namespace Vostok.Airlock.Client
 {

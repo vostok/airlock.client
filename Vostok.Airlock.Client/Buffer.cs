@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Vostok.Commons.Binary;
+using Vostok.Airlock.Client.Binary;
 
 namespace Vostok.Airlock.Client
 {

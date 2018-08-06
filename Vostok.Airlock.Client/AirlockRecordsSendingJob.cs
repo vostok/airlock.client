@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.Commons.ValueObjects;
+using Vostok.Commons.Primitives;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Airlock.Client

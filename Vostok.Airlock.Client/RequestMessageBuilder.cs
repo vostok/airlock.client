@@ -1,5 +1,5 @@
 ﻿using System;
-using Vostok.Commons.Binary;
+using Vostok.Airlock.Client.Binary;
 
 namespace Vostok.Airlock.Client
 {

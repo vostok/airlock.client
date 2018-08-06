@@ -1,6 +1,6 @@
 ﻿using System;
 using Vostok.Airlock.Client.Abstractions;
-using Vostok.Commons.Binary;
+using Vostok.Airlock.Client.Binary;
 
 namespace Vostok.Airlock.Client
 {

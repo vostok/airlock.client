@@ -10,11 +10,12 @@ notests *default:
 
   deps:
     - vostok.airlock.client.abstractions@dev
-    - vostok.commons@dev
-    - vostok.logging.abstractions@dev
-    - vostok.devtools
     - vostok.clusterclient.core@dev
     - vostok.clusterclient.transport.webrequest@dev
+    - vostok.commons.helpers
+    - vostok.commons.primitives
+    - vostok.devtools
+    - vostok.logging.abstractions
 
 full-build > notests:
   build:

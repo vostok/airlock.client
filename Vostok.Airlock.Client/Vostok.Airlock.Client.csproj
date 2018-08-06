@@ -58,8 +58,11 @@
     <Reference Include="Vostok.ClusterClient.Transport.Webrequest">
       <HintPath>..\..\vostok.clusterclient.transport.webrequest\Vostok.ClusterClient.Transport.Webrequest\bin\Release\netstandard2.0\Vostok.ClusterClient.Transport.Webrequest.dll</HintPath>
     </Reference>
-    <Reference Include="Vostok.Commons">
-      <HintPath>..\..\vostok.commons\Vostok.Commons\bin\Release\netstandard2.0\Vostok.Commons.dll</HintPath>
+    <Reference Include="Vostok.Commons.Helpers">
+      <HintPath>..\..\vostok.commons.helpers\Vostok.Commons.Helpers\bin\Release\netstandard2.0\Vostok.Commons.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.Commons.Primitives">
+      <HintPath>..\..\vostok.commons.primitives\Vostok.Commons.Primitives\bin\Release\netstandard2.0\Vostok.Commons.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="Vostok.Logging.Abstractions">
       <HintPath>..\..\vostok.logging.abstractions\Vostok.Logging.Abstractions\bin\Release\netstandard2.0\Vostok.Logging.Abstractions.dll</HintPath>

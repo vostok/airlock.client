@@ -7,7 +7,7 @@ using Vostok.ClusterClient.Core.Ordering.Weighed;
 using Vostok.ClusterClient.Core.Strategies;
 using Vostok.ClusterClient.Core.Topology;
 using Vostok.ClusterClient.Transport.Webrequest;
-using Vostok.Commons.Conversions;
+using Vostok.Commons.Helpers.Conversions;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Airlock.Client
