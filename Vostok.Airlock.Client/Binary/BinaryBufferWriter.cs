@@ -12,7 +12,7 @@ namespace Vostok.Airlock.Client.Binary
         public BinaryBufferWriter(byte[] buffer)
         {
             this.buffer = buffer;
-
+            
             Reset();
         }
 
@@ -47,44 +47,6 @@ namespace Vostok.Airlock.Client.Binary
         public int Length => length;
 
         public ArraySegment<byte> FilledSegment => new ArraySegment<byte>(buffer, 0, length);
-
-        public void Reset(int neededCapacity = 0)
-        {
-            if (buffer == null || buffer.Length < neededCapacity)
-                buffer = new byte[neededCapacity];
-
-            offset = 0;
-            length = 0;
-        }
-
-        public void EnsureCapacity(int neededBytes)
-        {
-            var remainingBytes = buffer.Length - offset;
-            if (remainingBytes >= neededBytes)
-                return;
-
-            var newCapacity = buffer.Length + Math.Max(neededBytes - remainingBytes, buffer.Length);
-            var newBuffer = new byte[newCapacity];
-
-            System.Buffer.BlockCopy(buffer, 0, newBuffer, 0, length);
-
-            buffer = newBuffer;
-        }
-
-        public void Seek(int position)
-        {
-            Position = position;
-        }
-
-        public void SeekToStart()
-        {
-            Seek(0);
-        }
-
-        public void SeekToEnd()
-        {
-            Seek(length);
-        }
 
         public unsafe IBinaryWriter Write(int value)
         {
@@ -129,13 +91,13 @@ namespace Vostok.Airlock.Client.Binary
             return this;
         }
 
-        public unsafe IBinaryWriter Write(uint value)
+        public unsafe IBinaryWriter Write(double value)
         {
-            EnsureCapacity(sizeof(uint));
+            EnsureCapacity(sizeof(double));
 
             fixed (byte* ptr = &buffer[offset])
-                *(uint*)ptr = value;
-            offset += sizeof(uint);
+                *(double*)ptr = value;
+            offset += sizeof(double);
 
             if (offset > length)
                 length = offset;
@@ -143,27 +105,13 @@ namespace Vostok.Airlock.Client.Binary
             return this;
         }
 
-        public unsafe IBinaryWriter Write(ulong value)
+        public unsafe IBinaryWriter Write(float value)
         {
-            EnsureCapacity(sizeof(ulong));
+            EnsureCapacity(sizeof(float));
 
             fixed (byte* ptr = &buffer[offset])
-                *(ulong*)ptr = value;
-            offset += sizeof(ulong);
-
-            if (offset > length)
-                length = offset;
-
-            return this;
-        }
-
-        public unsafe IBinaryWriter Write(ushort value)
-        {
-            EnsureCapacity(sizeof(ushort));
-
-            fixed (byte* ptr = &buffer[offset])
-                *(ushort*)ptr = value;
-            offset += sizeof(ushort);
+                *(float*)ptr = value;
+            offset += sizeof(float);
 
             if (offset > length)
                 length = offset;
@@ -186,48 +134,6 @@ namespace Vostok.Airlock.Client.Binary
         public IBinaryWriter Write(bool value)
         {
             Write(value ? (byte)1 : (byte)0);
-            return this;
-        }
-
-        public unsafe IBinaryWriter Write(float value)
-        {
-            EnsureCapacity(sizeof(float));
-
-            fixed (byte* ptr = &buffer[offset])
-                *(float*)ptr = value;
-            offset += sizeof(float);
-
-            if (offset > length)
-                length = offset;
-
-            return this;
-        }
-
-        public unsafe IBinaryWriter Write(double value)
-        {
-            EnsureCapacity(sizeof(double));
-
-            fixed (byte* ptr = &buffer[offset])
-                *(double*)ptr = value;
-            offset += sizeof(double);
-
-            if (offset > length)
-                length = offset;
-
-            return this;
-        }
-
-        public unsafe IBinaryWriter Write(Guid value)
-        {
-            EnsureCapacity(sizeof(Guid));
-
-            fixed (byte* ptr = &buffer[offset])
-                *(Guid*)ptr = value;
-            offset += sizeof(Guid);
-
-            if (offset > length)
-                length = offset;
-
             return this;
         }
 
@@ -257,12 +163,6 @@ namespace Vostok.Airlock.Client.Binary
             return this;
         }
 
-        public IBinaryWriter Write(byte[] value)
-        {
-            Write(value, 0, value.Length);
-            return this;
-        }
-
         public IBinaryWriter Write(byte[] value, int off, int len)
         {
             EnsureCapacity(len + sizeof(int));
@@ -277,12 +177,6 @@ namespace Vostok.Airlock.Client.Binary
             return this;
         }
 
-        public IBinaryWriter WriteWithoutLengthPrefix(byte[] value)
-        {
-            WriteWithoutLengthPrefix(value, 0, value.Length);
-            return this;
-        }
-
         public IBinaryWriter WriteWithoutLengthPrefix(byte[] value, int off, int len)
         {
             EnsureCapacity(len);
@@ -294,6 +188,29 @@ namespace Vostok.Airlock.Client.Binary
                 length = offset;
 
             return this;
+        }
+
+        private void Reset(int neededCapacity = 0)
+        {
+            if (buffer == null || buffer.Length < neededCapacity)
+                buffer = new byte[neededCapacity];
+
+            offset = 0;
+            length = 0;
+        }
+
+        private void EnsureCapacity(int neededBytes)
+        {
+            var remainingBytes = buffer.Length - offset;
+            if (remainingBytes >= neededBytes)
+                return;
+
+            var newCapacity = buffer.Length + Math.Max(neededBytes - remainingBytes, buffer.Length);
+            var newBuffer = new byte[newCapacity];
+
+            System.Buffer.BlockCopy(buffer, 0, newBuffer, 0, length);
+
+            buffer = newBuffer;
         }
     }
 }

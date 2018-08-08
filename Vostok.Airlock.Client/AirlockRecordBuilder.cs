@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using Vostok.Airlock.Client.Abstractions;
 using Vostok.Airlock.Client.Binary;
 
@@ -28,9 +27,9 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
-            binaryWriter.Write((byte)TagValueTypeDefinition.Byte);
-            binaryWriter.Write(value);
+            binaryWriter.WriteWithByteLengthPrefix(key)
+                        .Write((byte)TagValueTypeDefinition.Byte)
+                        .Write(value);
 
             return this;
         }
@@ -39,9 +38,9 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
-            binaryWriter.Write((byte)TagValueTypeDefinition.Short);
-            binaryWriter.Write(value);
+            binaryWriter.WriteWithByteLengthPrefix(key)
+                        .Write((byte)TagValueTypeDefinition.Short)
+                        .WriteInNetworkByteOrder(value);
 
             return this;
         }
@@ -50,9 +49,9 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
-            binaryWriter.Write((byte)TagValueTypeDefinition.Integer);
-            binaryWriter.Write(value);
+            binaryWriter.WriteWithByteLengthPrefix(key)
+                        .Write((byte)TagValueTypeDefinition.Integer)
+                        .WriteInNetworkByteOrder(value);
 
             return this;
         }
@@ -61,9 +60,9 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
-            binaryWriter.Write((byte)TagValueTypeDefinition.Long);
-            binaryWriter.Write(value);
+            binaryWriter.WriteWithByteLengthPrefix(key)
+                        .Write((byte)TagValueTypeDefinition.Long)
+                        .WriteInNetworkByteOrder(value);
 
             return this;
         }
@@ -72,9 +71,9 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
-            binaryWriter.Write((byte)TagValueTypeDefinition.Flag);
-            binaryWriter.Write(value);
+            binaryWriter.WriteWithByteLengthPrefix(key)
+                        .Write((byte)TagValueTypeDefinition.Flag)
+                        .Write(value);
 
             return this;
         }
@@ -83,9 +82,9 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
-            binaryWriter.Write((byte)TagValueTypeDefinition.Float);
-            binaryWriter.Write(value);
+            binaryWriter.WriteWithByteLengthPrefix(key)
+                        .Write((byte)TagValueTypeDefinition.Float)
+                        .WriteInNetworkByteOrder(value);
 
             return this;
         }
@@ -94,9 +93,9 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
-            binaryWriter.Write((byte)TagValueTypeDefinition.Double);
-            binaryWriter.Write(value);
+            binaryWriter.WriteWithByteLengthPrefix(key)
+                        .Write((byte)TagValueTypeDefinition.Double)
+                        .WriteInNetworkByteOrder(value);
 
             return this;
         }
@@ -105,19 +104,17 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (value.Length > 255)
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.Text);
-                binaryWriter.Write(value);
+                binaryWriter.Write((byte)TagValueTypeDefinition.Text)
+                            .Write(value);
             }
             else
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.String);
-
-                binaryWriter.Write((byte)Encoding.UTF8.GetByteCount(value));
-                binaryWriter.WriteWithoutLengthPrefix(value);
+                binaryWriter.Write((byte)TagValueTypeDefinition.String)
+                            .WriteWithByteLengthPrefix(value);
             }
 
             return this;
@@ -127,17 +124,17 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (values.Length > 255)
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.ByteArray);
-                binaryWriter.WriteCollection(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.ByteArray)
+                            .Write(values);
             }
             else
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.ByteVector);
-                binaryWriter.WriteVector(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.ByteVector)
+                            .WriteWithByteLengthPrefix(values);
             }
 
             return this;
@@ -147,17 +144,17 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (values.Length > 255)
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.ShortArray);
-                binaryWriter.WriteCollection(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.ShortArray)
+                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.ShortVector);
-                binaryWriter.WriteVector(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.ShortVector)
+                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
@@ -167,17 +164,17 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (values.Length > 255)
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.IntegerArray);
-                binaryWriter.WriteCollection(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.IntegerArray)
+                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.IntegerVector);
-                binaryWriter.WriteVector(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.IntegerVector)
+                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
@@ -187,17 +184,17 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (values.Length > 255)
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.LongArray);
-                binaryWriter.WriteCollection(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.LongArray)
+                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.LongVector);
-                binaryWriter.WriteVector(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.LongVector)
+                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
@@ -207,17 +204,17 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (values.Length > 255)
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.FlagArray);
-                binaryWriter.WriteCollection(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.FlagArray)
+                            .WriteCollection(values, (writer, item) => writer.Write(item));
             }
             else
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.FlagVector);
-                binaryWriter.WriteVector(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.FlagVector)
+                            .WriteVector(values, (writer, item) => writer.Write(item));
             }
 
             return this;
@@ -227,17 +224,17 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (values.Length > 255)
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.FloatArray);
-                binaryWriter.WriteCollection(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.FloatArray)
+                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.FloatVector);
-                binaryWriter.WriteVector(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.FloatVector)
+                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
@@ -247,17 +244,17 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (values.Length > 255)
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.DoubleArray);
-                binaryWriter.WriteCollection(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.DoubleArray)
+                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
-                binaryWriter.Write((byte)TagValueTypeDefinition.DoubleVector);
-                binaryWriter.WriteVector(values, (writer, item) => writer.Write(item));
+                binaryWriter.Write((byte)TagValueTypeDefinition.DoubleVector)
+                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
@@ -267,44 +264,32 @@ namespace Vostok.Airlock.Client
         {
             TagsCount++;
 
-            binaryWriter.Write(key);
+            binaryWriter.WriteWithByteLengthPrefix(key);
 
             if (values.Length > 255)
             {
                 if (values.Any(x => x.Length > 255))
                 {
-                    binaryWriter.Write((byte)TagValueTypeDefinition.TextArray);
-                    binaryWriter.WriteCollection(values, (writer, item) => writer.Write(item));
+                    binaryWriter.Write((byte)TagValueTypeDefinition.TextArray)
+                                .WriteCollection(values, (writer, item) => writer.Write(item));
                 }
                 else
                 {
-                    binaryWriter.Write((byte)TagValueTypeDefinition.StringArray);
-                    binaryWriter.WriteCollection(
-                        values,
-                        (writer, item) =>
-                        {
-                            writer.Write((byte)Encoding.UTF8.GetByteCount(item));
-                            writer.WriteWithoutLengthPrefix(item);
-                        });
+                    binaryWriter.Write((byte)TagValueTypeDefinition.StringArray)
+                                .WriteCollection(values, (writer, item) => writer.WriteWithByteLengthPrefix(item));
                 }
             }
             else
             {
                 if (values.Any(x => x.Length > 255))
                 {
-                    binaryWriter.Write((byte)TagValueTypeDefinition.TextVector);
-                    binaryWriter.WriteVector(values, (writer, item) => writer.Write(item));
+                    binaryWriter.Write((byte)TagValueTypeDefinition.TextVector)
+                                .WriteVector(values, (writer, item) => writer.Write(item));
                 }
                 else
                 {
-                    binaryWriter.Write((byte)TagValueTypeDefinition.StringVector);
-                    binaryWriter.WriteVector(
-                        values,
-                        (writer, item) =>
-                        {
-                            writer.Write((byte)Encoding.UTF8.GetByteCount(item));
-                            writer.WriteWithoutLengthPrefix(item);
-                        });
+                    binaryWriter.Write((byte)TagValueTypeDefinition.StringVector)
+                                .WriteVector(values, (writer, item) => writer.WriteWithByteLengthPrefix(item));
                 }
             }
 

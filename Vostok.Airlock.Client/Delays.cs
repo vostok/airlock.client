@@ -4,11 +4,6 @@ namespace Vostok.Airlock.Client
 {
     internal static class Delays
     {
-        [ThreadStatic]
-        private static Random random;
-
-        private static Random Random => random ?? (random = new Random());
-
         public static IWithExponentialDelay Exponential(TimeSpan sendPeriodCap, TimeSpan sendPeriod, int attempt)
         {
             var delayMs = Math.Min(sendPeriodCap.TotalMilliseconds, sendPeriod.TotalMilliseconds * Math.Pow(2, attempt));
@@ -26,13 +21,13 @@ namespace Vostok.Airlock.Client
 
             public IWithDelay WithFullJitter()
             {
-                var delayMs = Random.NextDouble() * Value.TotalMilliseconds;
+                var delayMs = ThreadLocalRandom.Instance.NextDouble() * Value.TotalMilliseconds;
                 return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
 
             public IWithDelay WithEqualJitter()
             {
-                var delayMs = Value.TotalMilliseconds / 2 + Random.NextDouble() * (Value.TotalMilliseconds / 2);
+                var delayMs = Value.TotalMilliseconds / 2 + ThreadLocalRandom.Instance.NextDouble() * (Value.TotalMilliseconds / 2);
                 return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
         }
@@ -45,7 +40,7 @@ namespace Vostok.Airlock.Client
 
             public IWithDelay WithDecorrelatedJitter(TimeSpan sendPeriodCap, TimeSpan sendPeriod)
             {
-                var delayMs = Math.Min(sendPeriodCap.TotalMilliseconds, Math.Min(Value.TotalMilliseconds * 3, sendPeriod.TotalMilliseconds + Random.NextDouble() * Value.TotalMilliseconds * 3));
+                var delayMs = Math.Min(sendPeriodCap.TotalMilliseconds, Math.Min(Value.TotalMilliseconds * 3, sendPeriod.TotalMilliseconds + ThreadLocalRandom.Instance.NextDouble() * Value.TotalMilliseconds * 3));
                 return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
         }

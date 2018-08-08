@@ -11,7 +11,7 @@ namespace Vostok.Airlock.Client
 
         public RequestMessageBuilder(byte[] buffer)
         {
-            writer = new BinaryBufferWriter(buffer) {Position = 1};
+            writer = new BinaryBufferWriter(buffer) {Position = sizeof(int)};
         }
 
         public ArraySegment<byte> Message => writer.FilledSegment;
@@ -27,7 +27,7 @@ namespace Vostok.Airlock.Client
 
             var positionBefore = writer.Position;
             writer.Position = 0;
-            writer.Write(recordsCounter);
+            writer.WriteInNetworkByteOrder(recordsCounter);
             writer.Position = positionBefore;
 
             return true;

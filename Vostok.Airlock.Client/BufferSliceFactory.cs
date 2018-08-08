@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Vostok.Airlock.Client.Binary;
 
 namespace Vostok.Airlock.Client
 {
@@ -18,8 +17,6 @@ namespace Vostok.Airlock.Client
             if (snapshot.RecordsCount == 0)
                 yield break;
 
-            var binaryReader = new BinaryBufferReader(snapshot.Buffer);
-            
             if (snapshot.Position <= maxSliceSize)
             {
                 yield return new BufferSlice(snapshot.Parent, snapshot.Buffer, 0, snapshot.Position, snapshot.RecordsCount);
@@ -30,10 +27,12 @@ namespace Vostok.Airlock.Client
             var currentLength = 0;
             var currentCount = 0;
 
+            var position = 0;
+
             for (var i = 0; i < snapshot.RecordsCount; i++)
             {
-                var recordLength = binaryReader.ReadInt32();
-                binaryReader.Position += recordLength;
+                var recordLength = AirlockRecordLengthCalculator.Calculate(snapshot.Buffer, position);
+                position += recordLength;
 
                 if (recordLength > maxSliceSize)
                     throw new InvalidOperationException($"Encountered a record with length {recordLength} greater than maximum buffer slice size {maxSliceSize}");

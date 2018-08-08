@@ -89,23 +89,16 @@ namespace Vostok.Airlock.Client
             return this;
         }
 
-        public IBinaryWriter Write(uint value)
+        public IBinaryWriter Write(double value)
         {
-            EnsureAvailableBytes(sizeof(uint));
+            EnsureAvailableBytes(sizeof(double));
             binaryWriter.Write(value);
             return this;
         }
 
-        public IBinaryWriter Write(ulong value)
+        public IBinaryWriter Write(float value)
         {
-            EnsureAvailableBytes(sizeof(ulong));
-            binaryWriter.Write(value);
-            return this;
-        }
-
-        public IBinaryWriter Write(ushort value)
-        {
-            EnsureAvailableBytes(sizeof(ushort));
+            EnsureAvailableBytes(sizeof(float));
             binaryWriter.Write(value);
             return this;
         }
@@ -124,27 +117,6 @@ namespace Vostok.Airlock.Client
             return this;
         }
 
-        public IBinaryWriter Write(float value)
-        {
-            EnsureAvailableBytes(sizeof(float));
-            binaryWriter.Write(value);
-            return this;
-        }
-
-        public IBinaryWriter Write(double value)
-        {
-            EnsureAvailableBytes(sizeof(double));
-            binaryWriter.Write(value);
-            return this;
-        }
-
-        public unsafe IBinaryWriter Write(Guid value)
-        {
-            EnsureAvailableBytes(sizeof(Guid));
-            binaryWriter.Write(value);
-            return this;
-        }
-
         public IBinaryWriter Write(string value, Encoding encoding)
         {
             EnsureAvailableBytes(sizeof(int) + encoding.GetMaxByteCount(value.Length));
@@ -159,24 +131,10 @@ namespace Vostok.Airlock.Client
             return this;
         }
 
-        public IBinaryWriter Write(byte[] value)
-        {
-            EnsureAvailableBytes(sizeof(int) + value.Length);
-            binaryWriter.Write(value);
-            return this;
-        }
-
         public IBinaryWriter Write(byte[] value, int offset, int length)
         {
             EnsureAvailableBytes(sizeof(int) + length);
             binaryWriter.Write(value, offset, length);
-            return this;
-        }
-
-        public IBinaryWriter WriteWithoutLengthPrefix(byte[] value)
-        {
-            EnsureAvailableBytes(value.Length);
-            binaryWriter.WriteWithoutLengthPrefix(value);
             return this;
         }
 

@@ -148,11 +148,11 @@ namespace Vostok.Airlock.Client
         {
             if (result == RequestSendingResult.Success)
             {
-                log.Info($"Sending {recordsCount} records of size {DataSize.FromBytes(bytesCount)} to stream {stream} succeeded in {elapsed}");
+                log.Info($"Sending {recordsCount.ToString()} records of size {DataSize.FromBytes(bytesCount).ToString()} to stream {stream} succeeded in {elapsed.ToString()}");
             }
             else
             {
-                log.Warn($"Sending {recordsCount} records of size {DataSize.FromBytes(bytesCount)} to stream {stream} failed after {elapsed}");
+                log.Warn($"Sending {recordsCount.ToString()} records of size {DataSize.FromBytes(bytesCount).ToString()} to stream {stream} failed after {elapsed.ToString()}");
             }
         }
     }
