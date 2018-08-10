@@ -10,14 +10,16 @@ notests *default:
 
   deps:
     - vostok.airlock.client.abstractions@dev
-    - vostok.clusterclient.core@dev
-    - vostok.clusterclient.transport.webrequest@dev
-    - vostok.commons.helpers
+    - vostok.clusterclient.core
+    - vostok.clusterclient.transport.webrequest
+    - vostok.commons.helpers/src
     - vostok.commons.primitives
     - vostok.devtools
     - vostok.logging.abstractions
 
-full-build > notests:
+full-build > notests: 
+  deps:
+    - vostok.logging.console
   build:
     target: Vostok.Airlock.Client.sln
     configuration: Release
