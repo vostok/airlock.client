@@ -9,26 +9,26 @@ namespace Vostok.Airlock.Client.Binary
     {
         public static IBinaryWriter WriteCollection<T>(
             this IBinaryWriter writer,
-            IReadOnlyCollection<T> values,
+            IReadOnlyCollection<T> value,
             Action<IBinaryWriter, T> writeSingleValue)
         {
-            writer.WriteInNetworkByteOrder(values.Count);
+            writer.WriteInNetworkByteOrder(value.Count);
 
-            foreach (var value in values)
-                writeSingleValue(writer, value);
+            foreach (var singleValue in value)
+                writeSingleValue(writer, singleValue);
 
             return writer;
         }
 
         public static IBinaryWriter WriteVector<T>(
             this IBinaryWriter writer,
-            IReadOnlyCollection<T> values,
+            IReadOnlyCollection<T> value,
             Action<IBinaryWriter, T> writeSingleValue)
         {
-            writer.Write((byte)values.Count);
+            writer.Write((byte)value.Count);
 
-            foreach (var value in values)
-                writeSingleValue(writer, value);
+            foreach (var singleValue in value)
+                writeSingleValue(writer, singleValue);
 
             return writer;
         }

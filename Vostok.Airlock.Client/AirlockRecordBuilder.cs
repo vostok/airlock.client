@@ -120,176 +120,176 @@ namespace Vostok.Airlock.Client
             return this;
         }
 
-        public IAirlockRecordBuilder Add(string key, byte[] values)
+        public IAirlockRecordBuilder Add(string key, byte[] value)
         {
             TagsCount++;
 
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (values.Length > 255)
+            if (value.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ByteArray)
-                            .WriteWithInt32LengthPrefix(values);
+                            .WriteWithInt32LengthPrefix(value);
             }
             else
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ByteVector)
-                            .WriteWithByteLengthPrefix(values);
+                            .WriteWithByteLengthPrefix(value);
             }
 
             return this;
         }
 
-        public IAirlockRecordBuilder Add(string key, short[] values)
+        public IAirlockRecordBuilder Add(string key, short[] value)
         {
             TagsCount++;
 
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (values.Length > 255)
+            if (value.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ShortArray)
-                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ShortVector)
-                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteVector(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
         }
 
-        public IAirlockRecordBuilder Add(string key, int[] values)
+        public IAirlockRecordBuilder Add(string key, int[] value)
         {
             TagsCount++;
 
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (values.Length > 255)
+            if (value.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.IntegerArray)
-                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.IntegerVector)
-                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteVector(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
         }
 
-        public IAirlockRecordBuilder Add(string key, long[] values)
+        public IAirlockRecordBuilder Add(string key, long[] value)
         {
             TagsCount++;
 
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (values.Length > 255)
+            if (value.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.LongArray)
-                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.LongVector)
-                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteVector(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
         }
 
-        public IAirlockRecordBuilder Add(string key, bool[] values)
+        public IAirlockRecordBuilder Add(string key, bool[] value)
         {
             TagsCount++;
 
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (values.Length > 255)
+            if (value.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.FlagArray)
-                            .WriteCollection(values, (writer, item) => writer.Write(item));
+                            .WriteCollection(value, (writer, item) => writer.Write(item));
             }
             else
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.FlagVector)
-                            .WriteVector(values, (writer, item) => writer.Write(item));
+                            .WriteVector(value, (writer, item) => writer.Write(item));
             }
 
             return this;
         }
 
-        public IAirlockRecordBuilder Add(string key, float[] values)
+        public IAirlockRecordBuilder Add(string key, float[] value)
         {
             TagsCount++;
 
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (values.Length > 255)
+            if (value.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.FloatArray)
-                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.FloatVector)
-                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteVector(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
         }
 
-        public IAirlockRecordBuilder Add(string key, double[] values)
+        public IAirlockRecordBuilder Add(string key, double[] value)
         {
             TagsCount++;
 
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (values.Length > 255)
+            if (value.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.DoubleArray)
-                            .WriteCollection(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
             else
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.DoubleVector)
-                            .WriteVector(values, (writer, item) => writer.WriteInNetworkByteOrder(item));
+                            .WriteVector(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
             }
 
             return this;
         }
 
-        public IAirlockRecordBuilder Add(string key, string[] values)
+        public IAirlockRecordBuilder Add(string key, string[] value)
         {
             TagsCount++;
 
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (values.Length > 255)
+            if (value.Length > 255)
             {
-                if (values.Any(x => x.Length > 255))
+                if (value.Any(x => x.Length > 255))
                 {
                     binaryWriter.Write((byte)TagValueTypeDefinition.TextArray)
-                                .WriteCollection(values, (writer, item) => writer.WriteWithInt32LengthPrefix(item));
+                                .WriteCollection(value, (writer, item) => writer.WriteWithInt32LengthPrefix(item));
                 }
                 else
                 {
                     binaryWriter.Write((byte)TagValueTypeDefinition.StringArray)
-                                .WriteCollection(values, (writer, item) => writer.WriteWithByteLengthPrefix(item));
+                                .WriteCollection(value, (writer, item) => writer.WriteWithByteLengthPrefix(item));
                 }
             }
             else
             {
-                if (values.Any(x => x.Length > 255))
+                if (value.Any(x => x.Length > 255))
                 {
                     binaryWriter.Write((byte)TagValueTypeDefinition.TextVector)
-                                .WriteVector(values, (writer, item) => writer.WriteWithInt32LengthPrefix(item));
+                                .WriteVector(value, (writer, item) => writer.WriteWithInt32LengthPrefix(item));
                 }
                 else
                 {
                     binaryWriter.Write((byte)TagValueTypeDefinition.StringVector)
-                                .WriteVector(values, (writer, item) => writer.WriteWithByteLengthPrefix(item));
+                                .WriteVector(value, (writer, item) => writer.WriteWithByteLengthPrefix(item));
                 }
             }
 
