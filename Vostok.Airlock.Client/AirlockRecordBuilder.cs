@@ -109,7 +109,7 @@ namespace Vostok.Airlock.Client
             if (value.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.Text)
-                            .Write(value);
+                            .WriteWithInt32LengthPrefix(value);
             }
             else
             {
@@ -129,7 +129,7 @@ namespace Vostok.Airlock.Client
             if (values.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ByteArray)
-                            .Write(values);
+                            .WriteWithInt32LengthPrefix(values);
             }
             else
             {
@@ -271,7 +271,7 @@ namespace Vostok.Airlock.Client
                 if (values.Any(x => x.Length > 255))
                 {
                     binaryWriter.Write((byte)TagValueTypeDefinition.TextArray)
-                                .WriteCollection(values, (writer, item) => writer.Write(item));
+                                .WriteCollection(values, (writer, item) => writer.WriteWithInt32LengthPrefix(item));
                 }
                 else
                 {
@@ -284,7 +284,7 @@ namespace Vostok.Airlock.Client
                 if (values.Any(x => x.Length > 255))
                 {
                     binaryWriter.Write((byte)TagValueTypeDefinition.TextVector)
-                                .WriteVector(values, (writer, item) => writer.Write(item));
+                                .WriteVector(values, (writer, item) => writer.WriteWithInt32LengthPrefix(item));
                 }
                 else
                 {

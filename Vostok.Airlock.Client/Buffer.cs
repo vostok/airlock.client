@@ -119,29 +119,15 @@ namespace Vostok.Airlock.Client
 
         public IBinaryWriter Write(string value, Encoding encoding)
         {
-            EnsureAvailableBytes(sizeof(int) + encoding.GetMaxByteCount(value.Length));
-            binaryWriter.Write(value, encoding);
-            return this;
-        }
-
-        public IBinaryWriter WriteWithoutLengthPrefix(string value, Encoding encoding)
-        {
             EnsureAvailableBytes(encoding.GetMaxByteCount(value.Length));
-            binaryWriter.WriteWithoutLengthPrefix(value, encoding);
+            binaryWriter.Write(value, encoding);
             return this;
         }
 
         public IBinaryWriter Write(byte[] value, int offset, int length)
         {
-            EnsureAvailableBytes(sizeof(int) + length);
-            binaryWriter.Write(value, offset, length);
-            return this;
-        }
-
-        public IBinaryWriter WriteWithoutLengthPrefix(byte[] value, int offset, int length)
-        {
             EnsureAvailableBytes(length);
-            binaryWriter.WriteWithoutLengthPrefix(value, offset, length);
+            binaryWriter.Write(value, offset, length);
             return this;
         }
 

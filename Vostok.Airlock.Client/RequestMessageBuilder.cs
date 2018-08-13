@@ -21,7 +21,7 @@ namespace Vostok.Airlock.Client
             if (!IsFit(slice))
                 return false;
 
-            writer.WriteWithoutLengthPrefix(slice.Buffer, slice.Offset, slice.Length);
+            writer.Write(slice.Buffer, slice.Offset, slice.Length);
 
             recordsCounter += slice.RecordsCount;
 

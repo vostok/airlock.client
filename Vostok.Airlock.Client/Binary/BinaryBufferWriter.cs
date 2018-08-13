@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Text;
 
 namespace Vostok.Airlock.Client.Binary
@@ -139,20 +140,6 @@ namespace Vostok.Airlock.Client.Binary
 
         public IBinaryWriter Write(string value, Encoding encoding)
         {
-            EnsureCapacity(encoding.GetMaxByteCount(value.Length) + sizeof(int));
-
-            var byteCount = encoding.GetBytes(value, 0, value.Length, buffer, offset + sizeof(int));
-            Write(byteCount);
-            offset += byteCount;
-
-            if (offset > length)
-                length = offset;
-
-            return this;
-        }
-
-        public IBinaryWriter WriteWithoutLengthPrefix(string value, Encoding encoding)
-        {
             EnsureCapacity(encoding.GetMaxByteCount(value.Length));
 
             offset += encoding.GetBytes(value, 0, value.Length, buffer, offset);
@@ -164,20 +151,6 @@ namespace Vostok.Airlock.Client.Binary
         }
 
         public IBinaryWriter Write(byte[] value, int off, int len)
-        {
-            EnsureCapacity(len + sizeof(int));
-
-            Write(len);
-            System.Buffer.BlockCopy(value, off, buffer, offset, len);
-            offset += len;
-
-            if (offset > length)
-                length = offset;
-
-            return this;
-        }
-
-        public IBinaryWriter WriteWithoutLengthPrefix(byte[] value, int off, int len)
         {
             EnsureCapacity(len);
 

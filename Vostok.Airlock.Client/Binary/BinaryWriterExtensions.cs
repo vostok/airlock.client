@@ -12,7 +12,7 @@ namespace Vostok.Airlock.Client.Binary
             IReadOnlyCollection<T> values,
             Action<IBinaryWriter, T> writeSingleValue)
         {
-            writer.Write(values.Count);
+            writer.WriteInNetworkByteOrder(values.Count);
 
             foreach (var value in values)
                 writeSingleValue(writer, value);
@@ -33,36 +33,33 @@ namespace Vostok.Airlock.Client.Binary
             return writer;
         }
 
-        public static IBinaryWriter Write(this IBinaryWriter writer, string value)
+        public static IBinaryWriter WriteWithInt32LengthPrefix(this IBinaryWriter writer, string value)
         {
-            return writer.Write(value, Encoding.UTF8);
-        }
-
-        public static IBinaryWriter WriteWithoutLengthPrefix(this IBinaryWriter writer, string value)
-        {
-            return writer.WriteWithoutLengthPrefix(value, Encoding.UTF8);
+            return writer.WriteInNetworkByteOrder(Encoding.UTF8.GetByteCount(value))
+                         .Write(value, Encoding.UTF8);
         }
 
         public static IBinaryWriter WriteWithByteLengthPrefix(this IBinaryWriter writer, string value)
         {
             return writer.Write((byte)Encoding.UTF8.GetByteCount(value))
-                         .WriteWithoutLengthPrefix(value, Encoding.UTF8);
+                         .Write(value, Encoding.UTF8);
         }
 
-        public static IBinaryWriter Write(this IBinaryWriter writer, byte[] value)
+        public static IBinaryWriter WriteWithInt32LengthPrefix(this IBinaryWriter writer, byte[] value)
         {
-            return writer.Write(value, 0, value.Length);
+            return writer.WriteInNetworkByteOrder(value.Length)
+                         .Write(value, 0, value.Length);
         }
 
         public static IBinaryWriter WriteWithoutLengthPrefix(this IBinaryWriter writer, byte[] value)
         {
-            return writer.WriteWithoutLengthPrefix(value, 0, value.Length);
+            return writer.Write(value, 0, value.Length);
         }
 
         public static IBinaryWriter WriteWithByteLengthPrefix(this IBinaryWriter writer, byte[] value)
         {
             return writer.Write((byte)value.Length)
-                         .WriteWithoutLengthPrefix(value, 0, value.Length);
+                         .Write(value, 0, value.Length);
         }
 
         public static IBinaryWriter WriteInNetworkByteOrder(this IBinaryWriter writer, int value)
