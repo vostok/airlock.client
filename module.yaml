@@ -9,7 +9,7 @@ notests *default:
     - Vostok.Airlock.Client/bin/Release/netstandard2.0/Vostok.Airlock.Client.dll
 
   deps:
-    - vostok.airlock.client.abstractions@dev
+    - vostok.airlock.client.abstractions
     - vostok.clusterclient.core
     - vostok.clusterclient.transport.webrequest
     - vostok.commons.helpers/src
