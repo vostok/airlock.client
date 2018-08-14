@@ -1,0 +1,25 @@
+notests *default:
+  build:
+    target: Vostok.Airlock.Client.sln
+    configuration: NoTests
+    tool:
+      name: dotnet
+
+  install:
+    - Vostok.Airlock.Client/bin/Release/netstandard2.0/Vostok.Airlock.Client.dll
+
+  deps:
+    - vostok.airlock.client.abstractions@dev
+    - vostok.clusterclient.core
+    - vostok.clusterclient.transport.webrequest
+    - vostok.commons.helpers/src
+    - vostok.commons.primitives
+    - vostok.devtools
+    - vostok.logging.abstractions
+
+full-build > notests: 
+  deps:
+    - vostok.logging.console
+  build:
+    target: Vostok.Airlock.Client.sln
+    configuration: Release
