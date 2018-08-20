@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Text;
 
 namespace Vostok.Airlock.Client.Binary
