@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Vostok.Airlock.Client
+namespace Vostok.Airlock.Client.Backoff
 {
     internal static class Delays
     {

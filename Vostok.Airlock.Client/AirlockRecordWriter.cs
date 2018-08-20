@@ -7,14 +7,14 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Airlock.Client
 {
-    internal class AirlockRecordsWriter : IAirlockRecordsWriter
+    internal class AirlockRecordWriter : IAirlockRecordWriter
     {
         private static readonly byte[] timeGuidBytesCap = new byte[TimeGuid.Size];
 
         private readonly ILog log;
         private readonly int maxRecordSize;
 
-        public AirlockRecordsWriter(ILog log, int maxRecordSize)
+        public AirlockRecordWriter(ILog log, int maxRecordSize)
         {
             this.log = log;
             this.maxRecordSize = maxRecordSize;

@@ -8,7 +8,7 @@ namespace Vostok.Airlock.Client
 {
     public class AirlockGateClient : IAirlockGateClient, IDisposable
     {
-        private readonly IAirlockRecordsWriter recordsWriter;
+        private readonly IAirlockRecordWriter recordWriter;
         private readonly IMemoryManager memoryManager;
 
         private readonly int initialPooledBuffersCount;
@@ -22,7 +22,7 @@ namespace Vostok.Airlock.Client
 
         public AirlockGateClient(ILog log, AirlockConfig config)
         {
-            recordsWriter = new AirlockRecordsWriter(log, (int)config.MaximumRecordSize.Bytes);
+            recordWriter = new AirlockRecordWriter(log, (int)config.MaximumRecordSize.Bytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumption.Bytes);
 
@@ -56,7 +56,7 @@ namespace Vostok.Airlock.Client
             {
                 var binaryWriter = buffer.BeginRecord();
 
-                if (recordsWriter.TryWrite(binaryWriter, build))
+                if (recordWriter.TryWrite(binaryWriter, build))
                     buffer.Commit();
                 else
                     Interlocked.Increment(ref lostRecordsCounter);

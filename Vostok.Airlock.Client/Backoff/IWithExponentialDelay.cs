@@ -1,4 +1,4 @@
-﻿namespace Vostok.Airlock.Client
+﻿namespace Vostok.Airlock.Client.Backoff
 {
     internal interface IWithExponentialDelay : IWithDelay
     {

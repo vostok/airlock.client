@@ -4,9 +4,9 @@ namespace Vostok.Airlock.Client
 {
     internal static class DateTimeOffsetExtensions
     {
-        private static readonly long UnixEpochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
+        private static readonly long unixEpochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
 
         public static long ToUnixTimeNanoseconds(this DateTimeOffset source) =>
-            (source.UtcTicks - UnixEpochTicks) * 100;
+            (source.UtcTicks - unixEpochTicks) * 100;
     }
 }

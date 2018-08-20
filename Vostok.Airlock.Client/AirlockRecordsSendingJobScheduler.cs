@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Vostok.Airlock.Client.Backoff;
 
 namespace Vostok.Airlock.Client
 {
