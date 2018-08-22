@@ -1,0 +1,11 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=94123A1FEB0B5F40AC1270DAB1748826/AbsolutePath/@EntryValue">C:\Programming\Cement\vostok.devtools\code-style-csharp\CSharpCodeStyle.DotSettings</s:String>
+	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=94123A1FEB0B5F40AC1270DAB1748826/RelativePath/@EntryValue">..\..\vostok.devtools\code-style-csharp\CSharpCodeStyle.DotSettings</s:String>
+	<s:Boolean x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=94123A1FEB0B5F40AC1270DAB1748826/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=F2E3387BC0016945A1A1836DB3B2AE4F/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=F2E3387BC0016945A1A1836DB3B2AE4F/AbsolutePath/@EntryValue">C:\Programming\Cement\vostok.devtools\code-style-csharp\CSharpCodeStyle.SpaceIndent.DotSettings</s:String>
+	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=F2E3387BC0016945A1A1836DB3B2AE4F/RelativePath/@EntryValue">..\..\vostok.devtools\code-style-csharp\CSharpCodeStyle.SpaceIndent.DotSettings</s:String>
+	<s:Boolean x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File94123A1FEB0B5F40AC1270DAB1748826/@KeyIndexDefined">True</s:Boolean>
+	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File94123A1FEB0B5F40AC1270DAB1748826/RelativePriority/@EntryValue">1</s:Double>
+	<s:Boolean x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=FileF2E3387BC0016945A1A1836DB3B2AE4F/@KeyIndexDefined">True</s:Boolean>
+	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=FileF2E3387BC0016945A1A1836DB3B2AE4F/RelativePriority/@EntryValue">2</s:Double></wpf:ResourceDictionary>
