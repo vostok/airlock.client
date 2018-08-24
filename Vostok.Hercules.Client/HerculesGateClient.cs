@@ -20,8 +20,9 @@ namespace Vostok.Hercules.Client
         private int isDisposed;
         private int lostRecordsCounter;
 
-        public HerculesGateClient(ILog log, HerculesConfig config)
+        public HerculesGateClient(HerculesConfig config)
         {
+            var log = new SilentLog();
             recordWriter = new HerculesRecordWriter(log, (int) config.MaximumRecordSize.Bytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumption.Bytes);

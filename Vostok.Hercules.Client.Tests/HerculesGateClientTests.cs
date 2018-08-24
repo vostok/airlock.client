@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using NUnit.Framework;
-using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests
 {
@@ -16,7 +15,7 @@ namespace Vostok.Hercules.Client.Tests
                 GateApiKey = ""
             };
 
-            var client = new HerculesGateClient(new ConsoleLog(), config);
+            var client = new HerculesGateClient(config);
 
             client.Put("", x => { x.Add("key", true); });
 
