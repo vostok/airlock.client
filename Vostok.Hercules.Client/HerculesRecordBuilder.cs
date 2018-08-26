@@ -10,7 +10,7 @@ namespace Vostok.Hercules.Client
         private static readonly byte[] timeGuidBytesCap = new byte[TimeGuid.Size];
 
         private readonly IBinaryWriter binaryWriter;
-        private readonly long timeGuidPosition;
+        private readonly int timeGuidPosition;
         private readonly HerculesRecordPayloadBuilderWithCounter builder;
 
         private DateTimeOffset timestampInternal;
@@ -20,7 +20,7 @@ namespace Vostok.Hercules.Client
             this.binaryWriter = binaryWriter;
 
             timeGuidPosition = binaryWriter.Position;
-            binaryWriter.WriteWithoutLengthPrefix(timeGuidBytesCap);
+            binaryWriter.Write(timeGuidBytesCap);
 
             builder = new HerculesRecordPayloadBuilderWithCounter(binaryWriter);
         }
@@ -129,7 +129,7 @@ namespace Vostok.Hercules.Client
             var timeGuid = timestampInternal != default
                 ? TimeGuid.New(timestampInternal.ToUniversalTime().ToUnixTimeNanoseconds())
                 : TimeGuid.Now();
-            binaryWriter.WriteWithoutLengthPrefix(timeGuid.ToByteArray());
+            binaryWriter.Write(timeGuid.ToByteArray());
 
             binaryWriter.Position = currentPosition;
 

@@ -7,7 +7,7 @@ namespace Vostok.Hercules.Client
     internal class HerculesRecordPayloadBuilderWithCounter : IHerculesRecordPayloadBuilder, IDisposable
     {
         private readonly IBinaryWriter binaryWriter;
-        private readonly long countPosition;
+        private readonly int countPosition;
         private readonly HerculesRecordPayloadBuilder builder;
 
         private short counter;

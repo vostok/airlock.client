@@ -6,6 +6,7 @@ namespace Vostok.Hercules.Client
 {
     public class HerculesConfig
     {
+        public byte RecordVersion => 1;
         public DataSize MaximumRecordSize { get; set; } = 1.Megabytes();
         public DataSize MaximumMemoryConsumption { get; set; } = 128.Megabytes();
         public DataSize InitialPooledBufferSize { get; set; } = 16.Kilobytes();

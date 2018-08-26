@@ -9,42 +9,43 @@ namespace Vostok.Hercules.Client
     internal class HerculesRecordWriter : IHerculesRecordWriter
     {
         private readonly ILog log;
+        private readonly byte recordVersion;
         private readonly int maxRecordSize;
 
-        public HerculesRecordWriter(ILog log, int maxRecordSize)
+        public HerculesRecordWriter(ILog log, byte recordVersion, int maxRecordSize)
         {
             this.log = log;
+            this.recordVersion = recordVersion;
             this.maxRecordSize = maxRecordSize;
         }
 
-        public bool TryWrite(IBinaryWriter binaryWriter, Action<IHerculesRecordBuilder> build)
+        public bool TryWrite(IBinaryWriter binaryWriter, Action<IHerculesRecordBuilder> build, out int recordSize)
         {
             var startingPosition = binaryWriter.Position;
 
             try
             {
-                var versionPosition = binaryWriter.Position;
-                binaryWriter.Write((byte)1);
+                binaryWriter.Write(recordVersion);
 
                 using (var builder = new HerculesRecordBuilder(binaryWriter))
                     build.Invoke(builder);
-
-                var recordSize = binaryWriter.Position - versionPosition;
-
-                if (recordSize <= maxRecordSize)
-                    return true;
-
-                log.Warn($"Discarded record with size {DataSize.FromBytes(recordSize)} larger than maximum allowed size {DataSize.FromBytes(maxRecordSize)}");
-                binaryWriter.Position = startingPosition;
-                return false;
-
             }
             catch (Exception exception)
             {
                 log.Error(exception);
                 binaryWriter.Position = startingPosition;
+                recordSize = 0;
                 return false;
             }
+
+            recordSize = binaryWriter.Position - startingPosition;
+
+            if (recordSize <= maxRecordSize)
+                return true;
+
+            log.Warn($"Discarded record with size {DataSize.FromBytes(recordSize)} larger than maximum allowed size {DataSize.FromBytes(maxRecordSize)}");
+            binaryWriter.Position = startingPosition;
+            return false;
         }
     }
 }
