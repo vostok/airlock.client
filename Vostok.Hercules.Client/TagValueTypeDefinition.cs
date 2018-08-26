@@ -2,6 +2,7 @@
 {
     internal enum TagValueTypeDefinition : byte
     {
+        Container = 0,
         Byte = 1,
         Short = 2,
         Integer = 3,
@@ -11,6 +12,7 @@
         Double = 7,
         String = 8,
         Text = 9,
+        ContainerArray = 10,
         ByteArray = 11,
         ShortArray = 12,
         IntegerArray = 13,
@@ -20,6 +22,7 @@
         DoubleArray = 17,
         StringArray = 18,
         TextArray = 19,
+        ContainerVector = 20,
         ByteVector = 21,
         ShortVector = 22,
         IntegerVector = 23,
