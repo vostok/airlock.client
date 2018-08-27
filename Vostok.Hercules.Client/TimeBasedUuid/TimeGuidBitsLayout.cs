@@ -49,23 +49,23 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
         private const int UshortSize = sizeof(ushort);
 
         // min timestamp representable by time-based UUID is gregorian calendar 0-time (1582-10-15 00:00:00Z)
-        private static readonly long GregorianCalendarStart = new DateTime(1582, 10, 15, 0, 0, 0, DateTimeKind.Utc).Ticks;
+        private static readonly long gregorianCalendarStart = new DateTime(1582, 10, 15, 0, 0, 0, DateTimeKind.Utc).Ticks;
 
         // max timestamp representable by time-based UUID (~5236-03-31 21:21:00Z)
-        private static readonly long GregorianCalendarEnd = new DateTime(1652084544606846975L, DateTimeKind.Utc).Ticks;
+        private static readonly long gregorianCalendarEnd = new DateTime(1652084544606846975L, DateTimeKind.Utc).Ticks;
 
         public static byte[] Format(long timestamp, ushort clockSequence, byte[] node)
         {
             if (node.Length != NodeSize)
                 throw new ArgumentException($"Node must be {NodeSize} bytes long", nameof(node));
-            if (timestamp < GregorianCalendarStart)
-                throw new ArgumentException($"Timestamp must not be less than {GregorianCalendarStart}", nameof(timestamp));
-            if (timestamp > GregorianCalendarEnd)
-                throw new ArgumentException($"Timestamp must not be greater than {GregorianCalendarEnd}", nameof(timestamp));
+            if (timestamp < gregorianCalendarStart)
+                throw new ArgumentException($"Timestamp must not be less than {gregorianCalendarStart}", nameof(timestamp));
+            if (timestamp > gregorianCalendarEnd)
+                throw new ArgumentException($"Timestamp must not be greater than {gregorianCalendarEnd}", nameof(timestamp));
             if (clockSequence > MaxClockSequence)
                 throw new ArgumentException($"ClockSequence must not be greater than {MaxClockSequence}", nameof(clockSequence));
 
-            var timestampTicks = timestamp - GregorianCalendarStart;
+            var timestampTicks = timestamp - gregorianCalendarStart;
 
             var timestampBytes = BitConverter.GetBytes(timestampTicks);
             if (!BitConverter.IsLittleEndian)

@@ -8,11 +8,12 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
     {
         private const long TicksPerMicrosecond = 10;
 
-        private static readonly double StopwatchTickFrequency = (double) TicksPerMicrosecond * 1000 * 1000 / Stopwatch.Frequency;
-        private static readonly object SyncLock = new object();
+        private static readonly double stopwatchTickFrequency = (double) TicksPerMicrosecond * 1000 * 1000 / Stopwatch.Frequency;
+        private static readonly object syncLock = new object();
 
         private readonly long syncPeriodTicks;
         private readonly long maxAllowedDivergenceTicks;
+
         private long baseTimestampTicks, lastTimestampTicks, stopwatchStartTimestamp;
 
         public PreciseTimestampGenerator(TimeSpan syncPeriod, TimeSpan maxAllowedDivergence)
@@ -42,7 +43,7 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
         private static long GetDateTimeTicks(long stopwatchTicks)
         {
             double dticks = stopwatchTicks;
-            dticks *= StopwatchTickFrequency;
+            dticks *= stopwatchTickFrequency;
             return unchecked((long) dticks);
         }
 
@@ -54,7 +55,7 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
             var stopwatchElapsedTicks = GetDateTimeTicks(Stopwatch.GetTimestamp() - stopwatchStartTimestamp);
             if (stopwatchElapsedTicks > syncPeriodTicks)
             {
-                lock (SyncLock)
+                lock (syncLock)
                 {
                     baseTimestampTicks = localBaseTimestampTicks = nowTicks;
                     stopwatchStartTimestamp = Stopwatch.GetTimestamp();
