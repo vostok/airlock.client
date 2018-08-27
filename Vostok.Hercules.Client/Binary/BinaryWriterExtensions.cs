@@ -35,22 +35,22 @@ namespace Vostok.Hercules.Client.Binary
 
         public static IBinaryWriter WriteWithInt32LengthPrefix(this IBinaryWriter writer, string value) =>
             writer.WriteInNetworkByteOrder(Encoding.UTF8.GetByteCount(value))
-                .Write(value, Encoding.UTF8);
+                  .Write(value, Encoding.UTF8);
 
         public static IBinaryWriter WriteWithByteLengthPrefix(this IBinaryWriter writer, string value) =>
             writer.Write((byte) Encoding.UTF8.GetByteCount(value))
-                .Write(value, Encoding.UTF8);
+                  .Write(value, Encoding.UTF8);
+
+        public static IBinaryWriter Write(this IBinaryWriter writer, byte[] value) =>
+            writer.Write(value, 0, value.Length);
 
         public static IBinaryWriter WriteWithInt32LengthPrefix(this IBinaryWriter writer, byte[] value) =>
             writer.WriteInNetworkByteOrder(value.Length)
                 .Write(value, 0, value.Length);
 
-        public static IBinaryWriter WriteWithoutLengthPrefix(this IBinaryWriter writer, byte[] value) =>
-            writer.Write(value, 0, value.Length);
-
         public static IBinaryWriter WriteWithByteLengthPrefix(this IBinaryWriter writer, byte[] value) =>
             writer.Write((byte) value.Length)
-                .Write(value, 0, value.Length);
+                  .Write(value, 0, value.Length);
 
         public static IBinaryWriter WriteInNetworkByteOrder(this IBinaryWriter writer, int value) =>
             writer.Write(IPAddress.HostToNetworkOrder(value));

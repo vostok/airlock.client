@@ -23,7 +23,7 @@ namespace Vostok.Hercules.Client
         public HerculesGateClient(HerculesConfig config)
         {
             var log = new SilentLog();
-            recordWriter = new HerculesRecordWriter(log, (int) config.MaximumRecordSize.Bytes);
+            recordWriter = new HerculesRecordWriter(log, config.RecordVersion, (int) config.MaximumRecordSize.Bytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumption.Bytes);
 
@@ -59,8 +59,8 @@ namespace Vostok.Hercules.Client
             {
                 var binaryWriter = buffer.BeginRecord();
 
-                if (recordWriter.TryWrite(binaryWriter, build))
-                    buffer.Commit();
+                if (recordWriter.TryWrite(binaryWriter, build, out var recordSize))
+                    buffer.Commit(recordSize);
                 else
                     Interlocked.Increment(ref lostRecordsCounter);
             }

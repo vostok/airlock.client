@@ -4,7 +4,7 @@ namespace Vostok.Hercules.Client.Binary
 {
     internal interface IBinaryWriter
     {
-        long Position { get; set; }
+        int Position { get; set; }
 
         IBinaryWriter Write(int value);
         IBinaryWriter Write(long value);

@@ -13,24 +13,27 @@ namespace Vostok.Hercules.Client
         private readonly IMemoryManager memoryManager;
         private readonly List<BufferGarbageSegment> garbage;
 
+        private volatile Dictionary<int, int> records;
         private volatile BufferSnapshot snapshot;
-        private volatile int recordsCounter;
 
         public Buffer(byte[] buffer, IMemoryManager memoryManager)
         {
             binaryWriter = new BinaryBufferWriter(buffer);
             this.memoryManager = memoryManager;
             garbage = new List<BufferGarbageSegment>();
+            records = new Dictionary<int, int>();
         }
 
         public IBinaryWriter BeginRecord() => this;
 
-        public void Commit() => ++recordsCounter;
+        public void Commit(int recordSize) => records.Add(binaryWriter.Position - recordSize, recordSize);
 
-        public BufferSnapshot MakeSnapshot() =>
-            snapshot = new BufferSnapshot(this, binaryWriter.Buffer, binaryWriter.Position, recordsCounter);
+        public int GetRecordSize(int offset) => records[offset];
 
         public bool IsEmpty() => binaryWriter.Position == 0;
+
+        public BufferSnapshot MakeSnapshot() =>
+            snapshot = new BufferSnapshot(this, binaryWriter.Buffer, binaryWriter.Position, records.Count);
 
         public void RequestGarbageCollection(int offset, int length, int recordsCount) =>
             garbage.Add(new BufferGarbageSegment {Offset = offset, Length = length, RecordsCount = recordsCount});
@@ -57,9 +60,42 @@ namespace Vostok.Hercules.Client
             }
 
             if (snapshot.RecordsCount > 0)
-                recordsCounter -= garbage.Sum(x => x.RecordsCount);
+            {
+                var garbageRecordsCount = garbage.Sum(x => x.RecordsCount);
+
+                Dictionary<int, int> usefulRecords;
+
+                if (snapshot.RecordsCount != garbageRecordsCount)
+                {
+                    var garbageRecords = new Dictionary<int, byte>(garbageRecordsCount);
+
+                    foreach (var garbageSegment in garbage)
+                    {
+                        var currentOffset = garbageSegment.Offset;
+                        for (var i = 0; i < garbageSegment.RecordsCount; i++)
+                        {
+                            garbageRecords.Add(currentOffset, 0);
+                            currentOffset += GetRecordSize(currentOffset);
+                        }
+                    }
+
+                    usefulRecords = records.Where(x => !garbageRecords.ContainsKey(x.Key)).ToDictionary(x => x.Key, x => x.Value);
+                }
+                else
+                {
+                    usefulRecords = records.Where(x => x.Key > snapshot.Position).ToDictionary(x => x.Key, x => x.Value);
+                }
+
+                records = usefulRecords;
+            }
 
             garbage.Clear();
+        }
+
+        public int Position
+        {
+            get => binaryWriter.Position;
+            set => binaryWriter.Position = value;
         }
 
         public IBinaryWriter Write(int value)
@@ -123,12 +159,6 @@ namespace Vostok.Hercules.Client
             EnsureAvailableBytes(length);
             binaryWriter.Write(value, offset, length);
             return this;
-        }
-
-        long IBinaryWriter.Position
-        {
-            get => binaryWriter.Position;
-            set => binaryWriter.Position = (int) value;
         }
 
         private void EnsureAvailableBytes(int amount)

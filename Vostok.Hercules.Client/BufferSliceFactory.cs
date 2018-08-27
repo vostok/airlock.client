@@ -31,7 +31,7 @@ namespace Vostok.Hercules.Client
 
             for (var i = 0; i < snapshot.RecordsCount; i++)
             {
-                var recordLength = HerculesRecordLengthCalculator.Calculate(snapshot.Buffer, position);
+                var recordLength = snapshot.Parent.GetRecordSize(position);
                 position += recordLength;
 
                 if (recordLength > maxSliceSize)

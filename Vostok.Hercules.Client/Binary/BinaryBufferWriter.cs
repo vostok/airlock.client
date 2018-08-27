@@ -36,12 +36,6 @@ namespace Vostok.Hercules.Client.Binary
             }
         }
 
-        long IBinaryWriter.Position
-        {
-            get => Position;
-            set => Position = (int)value;
-        }
-
         public byte[] Buffer => buffer;
 
         public int Length => length;

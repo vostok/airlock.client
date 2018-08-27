@@ -5,10 +5,11 @@ namespace Vostok.Hercules.Client
     internal interface IBuffer
     {
         IBinaryWriter BeginRecord();
-        void Commit();
+        void Commit(int recordSize);
+        int GetRecordSize(int offset);
+        bool IsEmpty();
+        BufferSnapshot MakeSnapshot();
         void CollectGarbage();
         void RequestGarbageCollection(int offset, int length, int recordsCount);
-        BufferSnapshot MakeSnapshot();
-        bool IsEmpty();
     }
 }
