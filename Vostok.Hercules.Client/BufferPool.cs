@@ -40,7 +40,7 @@ namespace Vostok.Hercules.Client
 
         public void Release(IBuffer buffer) => buffers.Enqueue(buffer);
 
-        public List<IBuffer> MakeSnapshot()
+        public IReadOnlyCollection<IBuffer> MakeSnapshot()
         {
             sieve.Clear();
 
