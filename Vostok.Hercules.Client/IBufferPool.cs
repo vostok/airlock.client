@@ -6,6 +6,6 @@ namespace Vostok.Hercules.Client
     {
         bool TryAcquire(out IBuffer buffer);
         void Release(IBuffer buffer);
-        List<IBuffer> MakeSnapshot();
+        IReadOnlyCollection<IBuffer> MakeSnapshot();
     }
 }

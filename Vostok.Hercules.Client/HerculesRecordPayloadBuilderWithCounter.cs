@@ -17,7 +17,7 @@ namespace Vostok.Hercules.Client
             this.binaryWriter = binaryWriter;
 
             countPosition = binaryWriter.Position;
-            binaryWriter.WriteInNetworkByteOrder((short)0);
+            binaryWriter.WriteInNetworkByteOrder((short) 0);
 
             builder = new HerculesRecordPayloadBuilder(binaryWriter);
         }

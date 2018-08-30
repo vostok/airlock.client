@@ -7,7 +7,7 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
     {
         public const int Size = 16;
 
-        private static readonly TimeGuidGenerator GuidGenerator =
+        private static readonly TimeGuidGenerator guidGenerator =
             new TimeGuidGenerator(new PreciseTimestampGenerator(TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(100)));
 
         private readonly byte[] bytes;
@@ -20,10 +20,10 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
         }
 
         public static TimeGuid Now() =>
-            new TimeGuid(GuidGenerator.NewGuid());
+            new TimeGuid(guidGenerator.NewGuid());
 
         public static TimeGuid New(long timestamp) =>
-            new TimeGuid(GuidGenerator.NewGuid(timestamp));
+            new TimeGuid(guidGenerator.NewGuid(timestamp));
 
         public byte[] ToByteArray() => bytes;
     }
