@@ -133,7 +133,7 @@ namespace Vostok.Hercules.Client.Binary
 
         public IBinaryWriter Write(string value, Encoding encoding)
         {
-            EnsureCapacity(encoding.GetMaxByteCount(value.Length));
+            EnsureCapacity(encoding.GetByteCount(value));
 
             offset += encoding.GetBytes(value, 0, value.Length, buffer, offset);
 

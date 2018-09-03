@@ -149,7 +149,7 @@ namespace Vostok.Hercules.Client
 
         public IBinaryWriter Write(string value, Encoding encoding)
         {
-            EnsureAvailableBytes(encoding.GetMaxByteCount(value.Length));
+            EnsureAvailableBytes(encoding.GetByteCount(value));
             binaryWriter.Write(value, encoding);
             return this;
         }
