@@ -47,7 +47,7 @@ namespace Vostok.Hercules.Client
             {
                 garbage.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
-                var usefulBytesEndingPosition = DefragmentationManager.Run(binaryWriter.Buffer, garbage);
+                var usefulBytesEndingPosition = DefragmentationManager.Run(binaryWriter.FilledSegment, garbage);
 
                 if (snapshot.Position != binaryWriter.Position)
                 {
