@@ -5,14 +5,11 @@ namespace Vostok.Hercules.Client
 {
     internal static class DefragmentationManager
     {
-        public static int Run<T>(ArraySegment<byte> segment, IReadOnlyList<T> sequentialGarbageSegments)
+        public static int Run<T>(ArraySegment<byte> source, IReadOnlyList<T> sequentialGarbageSegments)
             where T : ILineSegment
         {
-            if (segment == null)
-                throw new ArgumentNullException(nameof(segment));
-
-            if (segment.Array == null)
-                throw new ArgumentException("Underlying array cannot be null", nameof(segment));
+            if (source.Array == null)
+                throw new ArgumentException("Underlying array cannot be null", nameof(source));
 
             var currentPosition = sequentialGarbageSegments[0].Offset;
 
@@ -22,11 +19,11 @@ namespace Vostok.Hercules.Client
                 var garbageBytesCount = sequentialGarbageSegments[i].Offset - currentPosition + sequentialGarbageSegments[i].Length;
 
                 var usefulBytesStartingPosition = garbageBytesStartingPosition + garbageBytesCount;
-                var usefulBytesEndingPosition = sequentialGarbageSegments.HasNext(i) ? sequentialGarbageSegments[i + 1].Offset : segment.Offset + segment.Count;
+                var usefulBytesEndingPosition = sequentialGarbageSegments.HasNext(i) ? sequentialGarbageSegments[i + 1].Offset : source.Offset + source.Count;
 
                 var usefulBytesCount = usefulBytesEndingPosition - usefulBytesStartingPosition;
 
-                System.Buffer.BlockCopy(segment.Array, usefulBytesStartingPosition, segment.Array, garbageBytesStartingPosition, usefulBytesCount);
+                System.Buffer.BlockCopy(source.Array, usefulBytesStartingPosition, source.Array, garbageBytesStartingPosition, usefulBytesCount);
 
                 currentPosition = garbageBytesStartingPosition + usefulBytesCount;
             }
