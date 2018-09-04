@@ -8,9 +8,6 @@ namespace Vostok.Hercules.Client
         public static int Run<T>(ArraySegment<byte> source, IReadOnlyList<T> sequentialGarbageSegments)
             where T : ILineSegment
         {
-            if (source.Array == null)
-                throw new ArgumentException("Underlying array cannot be null", nameof(source));
-
             var currentPosition = sequentialGarbageSegments[0].Offset;
 
             for (var i = 0; i < sequentialGarbageSegments.Count; i++)
