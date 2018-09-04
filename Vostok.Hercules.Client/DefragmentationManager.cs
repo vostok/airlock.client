@@ -8,11 +8,11 @@ namespace Vostok.Hercules.Client
         public static int Run<T>(ArraySegment<byte> segment, IReadOnlyList<T> sequentialGarbageSegments)
             where T : ILineSegment
         {
-            if (segment.Array == null)
+            if (segment == null)
                 throw new ArgumentNullException(nameof(segment));
 
-            if (sequentialGarbageSegments == null)
-                throw new ArgumentNullException(nameof(sequentialGarbageSegments));
+            if (segment.Array == null)
+                throw new ArgumentException("Underlying array cannot be null", nameof(segment));
 
             var currentPosition = sequentialGarbageSegments[0].Offset;
 
@@ -34,7 +34,7 @@ namespace Vostok.Hercules.Client
             return currentPosition;
         }
 
-        private static bool HasNext<T>(this IReadOnlyCollection<T> segments, int currentIndex) => 
-            segments.Count - 1 != currentIndex;
+        private static bool HasNext<T>(this IReadOnlyCollection<T> source, int currentIndex) => 
+            source.Count - 1 != currentIndex;
     }
 }
