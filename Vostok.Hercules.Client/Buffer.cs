@@ -47,7 +47,7 @@ namespace Vostok.Hercules.Client
             {
                 garbage.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
-                var usefulBytesEndingPosition = DefragmentationManager.Run(binaryWriter.Buffer, garbage);
+                var usefulBytesEndingPosition = DefragmentationManager.Run(binaryWriter.FilledSegment, garbage);
 
                 if (snapshot.Position != binaryWriter.Position)
                 {
@@ -149,7 +149,7 @@ namespace Vostok.Hercules.Client
 
         public IBinaryWriter Write(string value, Encoding encoding)
         {
-            EnsureAvailableBytes(encoding.GetMaxByteCount(value.Length));
+            EnsureAvailableBytes(encoding.GetByteCount(value));
             binaryWriter.Write(value, encoding);
             return this;
         }
