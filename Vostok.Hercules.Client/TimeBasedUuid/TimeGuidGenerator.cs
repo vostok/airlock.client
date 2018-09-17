@@ -1,22 +1,16 @@
-﻿namespace Vostok.Hercules.Client.TimeBasedUuid
+﻿using Vostok.Commons.Helpers.Conversions;
+
+namespace Vostok.Hercules.Client.TimeBasedUuid
 {
-    internal class TimeGuidGenerator
+    internal class TimeGuidGenerator : ITimeGuidGenerator
     {
-        private readonly PreciseTimestampGenerator preciseTimestampGenerator;
+        private readonly PreciseTimestampGenerator preciseTimestampGenerator = new PreciseTimestampGenerator(1.Seconds(), 100.Milliseconds());
 
-        public TimeGuidGenerator(PreciseTimestampGenerator preciseTimestampGenerator)
-        {
-            this.preciseTimestampGenerator = preciseTimestampGenerator;
-        }
+        public TimeGuid NewGuid() =>
+            new TimeGuid(TimeGuidBitsLayout.Format(preciseTimestampGenerator.NowTicks(), GenerateRandomClockSequence(), GenerateRandomNode()));
 
-        public byte[] NewGuid()
-        {
-            var nowTimestamp = preciseTimestampGenerator.NowTicks();
-            return TimeGuidBitsLayout.Format(nowTimestamp, GenerateRandomClockSequence(), GenerateRandomNode());
-        }
-
-        public byte[] NewGuid(long timestamp) =>
-            TimeGuidBitsLayout.Format(timestamp, GenerateRandomClockSequence(), GenerateRandomNode());
+        public TimeGuid NewGuid(long timestamp) =>
+            new TimeGuid(TimeGuidBitsLayout.Format(timestamp, GenerateRandomClockSequence(), GenerateRandomNode()));
 
         private static byte[] GenerateRandomNode()
         {

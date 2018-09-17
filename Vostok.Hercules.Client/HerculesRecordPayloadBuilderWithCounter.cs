@@ -151,10 +151,8 @@ namespace Vostok.Hercules.Client
         public void Dispose()
         {
             var currentPosition = binaryWriter.Position;
-
             binaryWriter.Position = countPosition;
             binaryWriter.WriteInNetworkByteOrder(counter);
-
             binaryWriter.Position = currentPosition;
         }
     }

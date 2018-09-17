@@ -1,30 +1,15 @@
-﻿using System;
-using System.Linq;
-
-namespace Vostok.Hercules.Client.TimeBasedUuid
+﻿namespace Vostok.Hercules.Client.TimeBasedUuid
 {
     internal class TimeGuid
     {
         public const int Size = 16;
 
-        private static readonly TimeGuidGenerator guidGenerator =
-            new TimeGuidGenerator(new PreciseTimestampGenerator(TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(100)));
+        public static TimeGuid Empty { get; } = new TimeGuid(new byte[Size]);
 
         private readonly byte[] bytes;
 
-        private TimeGuid(byte[] bytes)
-        {
-            if (TimeGuidBitsLayout.GetVersion(bytes) != GuidVersion.TimeBased)
-                throw new ArgumentException($"Invalid timeguid: [{string.Join(", ", bytes.Select(x => x.ToString("x2")))}]");
-            this.bytes = bytes;
-        }
+        public TimeGuid(byte[] bytes) => this.bytes = bytes;
 
-        public static TimeGuid Now() =>
-            new TimeGuid(guidGenerator.NewGuid());
-
-        public static TimeGuid New(long timestamp) =>
-            new TimeGuid(guidGenerator.NewGuid(timestamp));
-
-        public byte[] ToByteArray() => bytes;
+        public static implicit operator byte[](TimeGuid timeGuid) => timeGuid.bytes;
     }
 }

@@ -7,20 +7,20 @@ namespace Vostok.Hercules.Client
 {
     internal class HerculesRecordBuilder : IHerculesRecordBuilder, IDisposable
     {
-        private static readonly byte[] timeGuidBytesCap = new byte[TimeGuid.Size];
-
         private readonly IBinaryWriter binaryWriter;
+        private readonly ITimeGuidGenerator timeGuidGenerator;
         private readonly int timeGuidPosition;
         private readonly HerculesRecordPayloadBuilderWithCounter builder;
 
         private DateTimeOffset timestampInternal;
 
-        public HerculesRecordBuilder(IBinaryWriter binaryWriter)
+        public HerculesRecordBuilder(IBinaryWriter binaryWriter, ITimeGuidGenerator timeGuidGenerator)
         {
             this.binaryWriter = binaryWriter;
+            this.timeGuidGenerator = timeGuidGenerator;
 
             timeGuidPosition = binaryWriter.Position;
-            binaryWriter.Write(timeGuidBytesCap);
+            binaryWriter.Write(TimeGuid.Empty);
 
             builder = new HerculesRecordPayloadBuilderWithCounter(binaryWriter);
         }
@@ -123,17 +123,18 @@ namespace Vostok.Hercules.Client
 
         public void Dispose()
         {
+            builder.Dispose();
+
             var currentPosition = binaryWriter.Position;
 
             binaryWriter.Position = timeGuidPosition;
+
             var timeGuid = timestampInternal != default
-                ? TimeGuid.New(timestampInternal.ToUniversalTime().ToUnixTimeNanoseconds())
-                : TimeGuid.Now();
-            binaryWriter.Write(timeGuid.ToByteArray());
+                ? timeGuidGenerator.NewGuid(timestampInternal.ToUniversalTime().ToUnixTimeNanoseconds())
+                : timeGuidGenerator.NewGuid();
+            binaryWriter.Write(timeGuid);
 
             binaryWriter.Position = currentPosition;
-
-            builder.Dispose();
         }
     }
 }

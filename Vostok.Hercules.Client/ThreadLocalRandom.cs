@@ -8,11 +8,12 @@ namespace Vostok.Hercules.Client
         private static readonly ThreadLocal<Random> threadLocalRandom = new ThreadLocal<Random>(
             () =>
             {
-                lock (GlobalRandom)
-                    return new Random(GlobalRandom.Next());
+                lock (globalRandom)
+                    return new Random(globalRandom.Next());
             });
 
-        private static readonly Random GlobalRandom = new Random(Environment.TickCount);
+        private static readonly Random globalRandom = new Random(Environment.TickCount);
+
         public static Random Instance => threadLocalRandom.Value;
     }
 }

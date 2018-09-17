@@ -67,8 +67,8 @@ namespace Vostok.Hercules.Client.Binary
         public static IBinaryWriter WriteInNetworkByteOrder(this IBinaryWriter writer, float value) =>
             writer.Write(Int32BitsToSingle(IPAddress.HostToNetworkOrder(SingleToInt32Bits(value))));
 
-        private static unsafe int SingleToInt32Bits(float value) => *((int*) &value);
+        private static unsafe int SingleToInt32Bits(float value) => *(int*) &value;
 
-        private static unsafe float Int32BitsToSingle(int value) => *((float*) &value);
+        private static unsafe float Int32BitsToSingle(int value) => *(float*) &value;
     }
 }

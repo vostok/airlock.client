@@ -2,6 +2,7 @@
 using Vostok.Commons.Primitives;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Binary;
+using Vostok.Hercules.Client.TimeBasedUuid;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -9,12 +10,14 @@ namespace Vostok.Hercules.Client
     internal class HerculesRecordWriter : IHerculesRecordWriter
     {
         private readonly ILog log;
+        private readonly ITimeGuidGenerator timeGuidGenerator;
         private readonly byte recordVersion;
         private readonly int maxRecordSize;
 
-        public HerculesRecordWriter(ILog log, byte recordVersion, int maxRecordSize)
+        public HerculesRecordWriter(ILog log, ITimeGuidGenerator timeGuidGenerator, byte recordVersion, int maxRecordSize)
         {
             this.log = log;
+            this.timeGuidGenerator = timeGuidGenerator;
             this.recordVersion = recordVersion;
             this.maxRecordSize = maxRecordSize;
         }
@@ -27,7 +30,7 @@ namespace Vostok.Hercules.Client
             {
                 binaryWriter.Write(recordVersion);
 
-                using (var builder = new HerculesRecordBuilder(binaryWriter))
+                using (var builder = new HerculesRecordBuilder(binaryWriter, timeGuidGenerator))
                     build.Invoke(builder);
             }
             catch (Exception exception)

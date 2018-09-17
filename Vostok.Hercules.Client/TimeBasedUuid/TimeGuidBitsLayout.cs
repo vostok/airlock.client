@@ -36,6 +36,7 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
 
         public const ushort MinClockSequence = 0;
         public const ushort MaxClockSequence = 16383; /* = 0x3fff */
+
         private const int SignBitMask = 0x80;
 
         private const int VersionOffset = 6;
@@ -45,8 +46,6 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
         private const int VariantOffset = 8;
         private const byte VariantByteMask = 0x3f;
         private const byte VariantBitsValue = 0x80;
-
-        private const int UshortSize = sizeof(ushort);
 
         // min timestamp representable by time-based UUID is gregorian calendar 0-time (1582-10-15 00:00:00Z)
         private static readonly long gregorianCalendarStart = new DateTime(1582, 10, 15, 0, 0, 0, DateTimeKind.Utc).Ticks;
@@ -91,7 +90,7 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
 
             // xor octets 8-15 with 10000000 for cassandra compatibility as it compares these octets as signed bytes
             var offset = 8;
-            for (var i = 0; i < UshortSize; i++)
+            for (var i = 0; i < sizeof(ushort); i++)
                 bytes[offset++] = (byte) (clockSequencebytes[i] ^ SignBitMask);
             for (var i = 0; i < NodeSize; i++)
                 bytes[offset++] = (byte) (node[i] ^ SignBitMask);
@@ -105,13 +104,6 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
             bytes[VariantOffset] |= VariantBitsValue;
 
             return bytes;
-        }
-
-        public static GuidVersion GetVersion(byte[] bytes)
-        {
-            if (bytes.Length != TimeGuid.Size)
-                throw new ArgumentException($"Bytes must be {TimeGuid.Size} bytes long", nameof(bytes));
-            return (GuidVersion) (bytes[VersionOffset] >> VersionByteShift);
         }
     }
 }

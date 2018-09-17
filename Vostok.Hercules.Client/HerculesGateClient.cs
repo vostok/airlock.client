@@ -2,12 +2,15 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.TimeBasedUuid;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
 {
     public class HerculesGateClient : IHerculesGateClient, IDisposable
     {
+        private readonly ILog log = new SilentLog();
+
         private readonly IHerculesRecordWriter recordWriter;
         private readonly IMemoryManager memoryManager;
 
@@ -22,8 +25,7 @@ namespace Vostok.Hercules.Client
 
         public HerculesGateClient(HerculesConfig config)
         {
-            var log = new SilentLog();
-            recordWriter = new HerculesRecordWriter(log, config.RecordVersion, (int) config.MaximumRecordSize.Bytes);
+            recordWriter = new HerculesRecordWriter(log, new TimeGuidGenerator(), config.RecordVersion, (int) config.MaximumRecordSize.Bytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumption.Bytes);
 
