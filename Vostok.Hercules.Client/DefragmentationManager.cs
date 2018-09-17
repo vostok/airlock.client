@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Vostok.Hercules.Client
 {
@@ -8,6 +9,9 @@ namespace Vostok.Hercules.Client
         public static int Run<T>(ArraySegment<byte> source, IReadOnlyList<T> sequentialGarbageSegments)
             where T : ILineSegment
         {
+            if (!sequentialGarbageSegments.Any())
+                return source.Offset + source.Count;
+
             var currentPosition = sequentialGarbageSegments[0].Offset;
 
             for (var i = 0; i < sequentialGarbageSegments.Count; i++)
