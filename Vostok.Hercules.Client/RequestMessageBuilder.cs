@@ -35,13 +35,12 @@ namespace Vostok.Hercules.Client
 
         private bool IsFit(BufferSlice slice)
         {
-            var required = sizeof(int) + slice.Length;
-            var remaining = writer.Buffer.Length - writer.Position;
+            var remaining = writer.Buffer.Length - writer.Position - sizeof(int);
 
-            if (required <= remaining)
+            if (slice.Length <= remaining)
                 return true;
 
-            if (writer.Position == 0)
+            if (recordsCounter == 0)
                 throw new Exception($"Buffer slice of size {slice.Length} does not fit into maximum message size {writer.Buffer.Length}");
 
             return false;
