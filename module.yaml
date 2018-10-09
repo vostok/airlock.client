@@ -13,6 +13,7 @@ notests *default:
     - vostok.clusterclient.core
     - vostok.clusterclient.transport.webrequest
     - vostok.commons.helpers/src
+    - vostok.commons.time/src
     - vostok.commons.primitives
     - vostok.devtools
     - vostok.logging.abstractions

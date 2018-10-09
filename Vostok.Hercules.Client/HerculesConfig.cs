@@ -1,6 +1,6 @@
 ﻿using System;
-using Vostok.Commons.Helpers.Conversions;
 using Vostok.Commons.Primitives;
+using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client
 {

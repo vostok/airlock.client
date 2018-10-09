@@ -1,4 +1,4 @@
-﻿using Vostok.Commons.Helpers.Conversions;
+﻿using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client.TimeBasedUuid
 {
