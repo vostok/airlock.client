@@ -77,7 +77,7 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
             {
                 Array.Reverse(clockSequencebytes);
             }
-
+            
             var bytes = new byte[TimeGuid.Size];
             bytes[0] = timestampBytes[3];
             bytes[1] = timestampBytes[2];

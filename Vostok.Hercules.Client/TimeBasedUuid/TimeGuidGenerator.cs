@@ -1,4 +1,5 @@
-﻿using Vostok.Commons.Time;
+﻿using Vostok.Commons.Threading;
+using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client.TimeBasedUuid
 {
@@ -15,11 +16,11 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
         private static byte[] GenerateRandomNode()
         {
             var buffer = new byte[TimeGuidBitsLayout.NodeSize];
-            ThreadLocalRandom.Instance.NextBytes(buffer);
+            ThreadSafeRandom.NextBytes(buffer);
             return buffer;
         }
 
         private static ushort GenerateRandomClockSequence() =>
-            (ushort) ThreadLocalRandom.Instance.Next(TimeGuidBitsLayout.MinClockSequence, TimeGuidBitsLayout.MaxClockSequence + 1);
+            (ushort) ThreadSafeRandom.Next(TimeGuidBitsLayout.MinClockSequence, TimeGuidBitsLayout.MaxClockSequence + 1);
     }
 }

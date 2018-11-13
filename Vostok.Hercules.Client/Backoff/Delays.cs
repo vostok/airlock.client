@@ -1,4 +1,5 @@
 ﻿using System;
+using Vostok.Commons.Threading;
 
 namespace Vostok.Hercules.Client.Backoff
 {
@@ -24,13 +25,13 @@ namespace Vostok.Hercules.Client.Backoff
 
             public IWithDelay WithFullJitter()
             {
-                var delayMs = ThreadLocalRandom.Instance.NextDouble() * Value.TotalMilliseconds;
+                var delayMs = ThreadSafeRandom.NextDouble() * Value.TotalMilliseconds;
                 return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
 
             public IWithDelay WithEqualJitter()
             {
-                var delayMs = Value.TotalMilliseconds / 2 + ThreadLocalRandom.Instance.NextDouble() * (Value.TotalMilliseconds / 2);
+                var delayMs = Value.TotalMilliseconds / 2 + ThreadSafeRandom.NextDouble() * (Value.TotalMilliseconds / 2);
                 return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
         }
@@ -46,7 +47,7 @@ namespace Vostok.Hercules.Client.Backoff
 
             public IWithDelay WithDecorrelatedJitter(TimeSpan sendPeriodCap, TimeSpan sendPeriod)
             {
-                var delayMs = Math.Min(sendPeriodCap.TotalMilliseconds, Math.Min(Value.TotalMilliseconds * 3, sendPeriod.TotalMilliseconds + ThreadLocalRandom.Instance.NextDouble() * Value.TotalMilliseconds * 3));
+                var delayMs = Math.Min(sendPeriodCap.TotalMilliseconds, Math.Min(Value.TotalMilliseconds * 3, sendPeriod.TotalMilliseconds + ThreadSafeRandom.NextDouble() * Value.TotalMilliseconds * 3));
                 return new DelayContainer(TimeSpan.FromMilliseconds(delayMs));
             }
         }
