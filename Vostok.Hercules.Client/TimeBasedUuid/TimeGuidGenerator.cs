@@ -5,10 +5,8 @@ namespace Vostok.Hercules.Client.TimeBasedUuid
 {
     internal class TimeGuidGenerator : ITimeGuidGenerator
     {
-        private readonly PreciseTimestampGenerator preciseTimestampGenerator = new PreciseTimestampGenerator(1.Seconds(), 100.Milliseconds());
-
         public TimeGuid NewGuid() =>
-            new TimeGuid(TimeGuidBitsLayout.Format(preciseTimestampGenerator.NowTicks(), GenerateRandomClockSequence(), GenerateRandomNode()));
+            new TimeGuid(TimeGuidBitsLayout.Format(PreciseDateTime.UtcNow.UtcTicks, GenerateRandomClockSequence(), GenerateRandomNode()));
 
         public TimeGuid NewGuid(long timestamp) =>
             new TimeGuid(TimeGuidBitsLayout.Format(timestamp, GenerateRandomClockSequence(), GenerateRandomNode()));
