@@ -12,7 +12,7 @@ notests *default:
   deps:
     - vostok.hercules.client.abstractions
     - vostok.clusterclient.core
-    - vostok.clusterclient.transport.webrequest
+    - vostok.clusterclient.transport
     - vostok.commons.helpers/src
     - vostok.commons.time/src
     - vostok.commons.threading/src

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.ClusterClient.Core;
-using Vostok.ClusterClient.Core.Model;
-using Vostok.ClusterClient.Core.Ordering.Weighed;
-using Vostok.ClusterClient.Core.Strategies;
-using Vostok.ClusterClient.Core.Topology;
-using Vostok.ClusterClient.Transport.Webrequest;
+using Vostok.Clusterclient.Core;
+using Vostok.Clusterclient.Core.Model;
+using Vostok.Clusterclient.Core.Ordering.Weighed;
+using Vostok.Clusterclient.Core.Strategies;
+using Vostok.Clusterclient.Core.Topology;
+using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Time;
 using Vostok.Logging.Abstractions;
 
@@ -21,13 +21,13 @@ namespace Vostok.Hercules.Client
         {
             this.gateApiKey = gateApiKey;
 
-            client = new ClusterClient.Core.ClusterClient(
+            client = new ClusterClient(
                 log,
                 configuration =>
                 {
                     configuration.ServiceName = gateName;
                     configuration.ClusterProvider = new FixedClusterProvider(gateUri);
-                    configuration.Transport = new WebRequestTransport(log);
+                    configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = requestTimeout;
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
                     
