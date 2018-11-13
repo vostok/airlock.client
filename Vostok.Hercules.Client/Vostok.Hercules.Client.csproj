@@ -15,10 +15,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageReleaseNotes>TODO</PackageReleaseNotes>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <Title>Vostok hercules client library</Title>
     <Description>Hercules client library for microservice toolkit http://vostok.tools/</Description>
   </PropertyGroup>
