@@ -28,6 +28,8 @@ namespace Vostok.Hercules.Client
 
         public int GetRecordSize(int offset) => records[offset];
 
+        public int EstimateRecordsCountForMonitoring() => records.Count;
+
         public bool IsEmpty() => binaryWriter.Position == 0;
 
         public BufferSnapshot MakeSnapshot() =>

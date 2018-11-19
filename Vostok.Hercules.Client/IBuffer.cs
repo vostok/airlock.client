@@ -7,6 +7,7 @@ namespace Vostok.Hercules.Client
         IBinaryWriter BeginRecord();
         void Commit(int recordSize);
         int GetRecordSize(int offset);
+        int EstimateRecordsCountForMonitoring();
         bool IsEmpty();
         BufferSnapshot MakeSnapshot();
         void CollectGarbage();

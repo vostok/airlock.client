@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.TimeBasedUuid;
@@ -45,6 +46,14 @@ namespace Vostok.Hercules.Client
 
         public long SentRecordsCount =>
             recordsSendingDaemon.SentRecordsCount;
+
+        public long StoredRecordsCount
+            => bufferPools
+                .Where(x => x.Value.IsValueCreated)
+                .Select(x => x.Value.Value)
+                .Select(x => x.MakeSnapshot())
+                .SelectMany(x => x)
+                .Sum(x => x.EstimateRecordsCountForMonitoring());
 
         public void Put(string stream, Action<IHerculesRecordBuilder> build)
         {
