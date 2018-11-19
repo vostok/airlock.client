@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Hercules.Client", "V
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vostok.Hercules.Client.Tests", "Vostok.Hercules.Client.Tests\Vostok.Hercules.Client.Tests.csproj", "{A2E38A3B-30B8-417D-B28D-7F446D25D77C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{95EC3F79-7B80-449A-B8E5-10727A41E0D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,12 @@ Global
 		{A2E38A3B-30B8-417D-B28D-7F446D25D77C}.NoTests|Any CPU.ActiveCfg = Release|Any CPU
 		{A2E38A3B-30B8-417D-B28D-7F446D25D77C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2E38A3B-30B8-417D-B28D-7F446D25D77C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95EC3F79-7B80-449A-B8E5-10727A41E0D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95EC3F79-7B80-449A-B8E5-10727A41E0D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95EC3F79-7B80-449A-B8E5-10727A41E0D0}.NoTests|Any CPU.ActiveCfg = Debug|Any CPU
+		{95EC3F79-7B80-449A-B8E5-10727A41E0D0}.NoTests|Any CPU.Build.0 = Debug|Any CPU
+		{95EC3F79-7B80-449A-B8E5-10727A41E0D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95EC3F79-7B80-449A-B8E5-10727A41E0D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

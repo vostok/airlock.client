@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,7 +14,6 @@ namespace Vostok.Hercules.Client
         private readonly List<BufferGarbageSegment> garbage;
 
         private volatile Dictionary<int, int> records;
-        private volatile BufferSnapshot snapshot;
 
         public Buffer(byte[] buffer, IMemoryManager memoryManager)
         {
@@ -33,7 +32,7 @@ namespace Vostok.Hercules.Client
         public bool IsEmpty() => binaryWriter.Position == 0;
 
         public BufferSnapshot MakeSnapshot() =>
-            snapshot = new BufferSnapshot(this, binaryWriter.Buffer, binaryWriter.Position, records.Count);
+            new BufferSnapshot(this, binaryWriter.Buffer, binaryWriter.Position, records.Count);
 
         public void RequestGarbageCollection(int offset, int length, int recordsCount) =>
             garbage.Add(new BufferGarbageSegment {Offset = offset, Length = length, RecordsCount = recordsCount});
@@ -43,53 +42,48 @@ namespace Vostok.Hercules.Client
             if (garbage.Count == 0)
                 return;
 
-            if (snapshot.Position > 0)
+            if (binaryWriter.Position > 0)
             {
                 garbage.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
                 var usefulBytesEndingPosition = DefragmentationManager.Run(binaryWriter.FilledSegment, garbage);
 
-                if (snapshot.Position != binaryWriter.Position)
+                binaryWriter.Position = usefulBytesEndingPosition;
+
+                if (records.Count > 0)
                 {
-                    var bytesWrittenAfter = binaryWriter.Position - snapshot.Position;
-                    System.Buffer.BlockCopy(binaryWriter.Buffer, snapshot.Position, binaryWriter.Buffer, usefulBytesEndingPosition, bytesWrittenAfter);
-                    binaryWriter.Position = usefulBytesEndingPosition + bytesWrittenAfter;
+                    var garbageRecordsCount = garbage.Sum(x => x.RecordsCount);
+
+                    records = RemoveGarbageRecords(garbageRecordsCount);
                 }
-                else
-                    binaryWriter.Position = usefulBytesEndingPosition;
-            }
-
-            if (snapshot.RecordsCount > 0)
-            {
-                var garbageRecordsCount = garbage.Sum(x => x.RecordsCount);
-
-                Dictionary<int, int> usefulRecords;
-
-                if (snapshot.RecordsCount != garbageRecordsCount)
-                {
-                    var garbageRecords = new Dictionary<int, byte>(garbageRecordsCount);
-
-                    foreach (var garbageSegment in garbage)
-                    {
-                        var currentOffset = garbageSegment.Offset;
-                        for (var i = 0; i < garbageSegment.RecordsCount; i++)
-                        {
-                            garbageRecords.Add(currentOffset, 0);
-                            currentOffset += GetRecordSize(currentOffset);
-                        }
-                    }
-
-                    usefulRecords = records.Where(x => !garbageRecords.ContainsKey(x.Key)).ToDictionary(x => x.Key, x => x.Value);
-                }
-                else
-                {
-                    usefulRecords = records.Where(x => x.Key > snapshot.Position).ToDictionary(x => x.Key, x => x.Value);
-                }
-
-                records = usefulRecords;
             }
 
             garbage.Clear();
+        }
+
+        private Dictionary<int, int> RemoveGarbageRecords(int garbageRecordsCount)
+        {
+            var garbageRecords = new Dictionary<int, byte>(garbageRecordsCount);
+
+            foreach (var garbageSegment in garbage)
+            {
+                var currentOffset = garbageSegment.Offset;
+                for (var i = 0; i < garbageSegment.RecordsCount; i++)
+                {
+                    garbageRecords.Add(currentOffset, 0);
+                    currentOffset += GetRecordSize(currentOffset);
+                }
+            }
+            
+            int GetNewOffsetForRecord(int oldOffset)
+            {
+                //TODO: use binary search
+                return oldOffset - garbage.Where(x => x.Offset < oldOffset).Sum(x => x.Length);
+            }
+            
+            return records
+                .Where(x => !garbageRecords.ContainsKey(x.Key))
+                .ToDictionary(x => GetNewOffsetForRecord(x.Key), x => x.Value);
         }
 
         public int Position

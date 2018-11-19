@@ -40,7 +40,7 @@ namespace Vostok.Hercules.Client.Binary
 
         public int Length => length;
 
-        public ArraySegment<byte> FilledSegment => new ArraySegment<byte>(buffer, 0, length);
+        public ArraySegment<byte> FilledSegment => new ArraySegment<byte>(buffer, 0, offset);
 
         public unsafe IBinaryWriter Write(int value)
         {

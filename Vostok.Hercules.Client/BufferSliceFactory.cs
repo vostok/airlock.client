@@ -17,12 +17,6 @@ namespace Vostok.Hercules.Client
             if (snapshot.RecordsCount == 0)
                 yield break;
 
-            if (snapshot.Position <= maxSliceSize)
-            {
-                yield return new BufferSlice(snapshot.Parent, snapshot.Buffer, 0, snapshot.Position, snapshot.RecordsCount);
-                yield break;
-            }
-
             var currentOffset = 0;
             var currentLength = 0;
             var currentCount = 0;
