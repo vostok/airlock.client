@@ -25,17 +25,17 @@ namespace Vostok.Hercules.Client
 
         public HerculesGateClient(HerculesConfig config)
         {
-            recordWriter = new HerculesRecordWriter(log, new TimeGuidGenerator(), config.RecordVersion, (int) config.MaximumRecordSize.Bytes);
+            recordWriter = new HerculesRecordWriter(log, new TimeGuidGenerator(), config.RecordVersion, (int) config.MaximumRecordSizeBytes);
 
-            memoryManager = new MemoryManager(config.MaximumMemoryConsumption.Bytes);
+            memoryManager = new MemoryManager(config.MaximumMemoryConsumptionBytes);
 
             initialPooledBuffersCount = config.InitialPooledBuffersCount;
-            initialPooledBufferSize = (int) config.InitialPooledBufferSize.Bytes;
+            initialPooledBufferSize = (int) config.InitialPooledBufferSizeBytes;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
             var jobScheduler = new HerculesRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
-            var bufferSlicer = new BufferSliceFactory((int) config.MaximumRequestContentSize.Bytes - sizeof(int));
-            var messageBuffer = new byte[config.MaximumRequestContentSize.Bytes];
+            var bufferSlicer = new BufferSliceFactory((int) config.MaximumRequestContentSizeBytes - sizeof(int));
+            var messageBuffer = new byte[config.MaximumRequestContentSizeBytes];
             var requestSender = new RequestSender(log, config.GateName, config.GateUri, config.GateApiKey, config.RequestTimeout);
             var job = new HerculesRecordsSendingJob(log, jobScheduler, bufferPools, bufferSlicer, messageBuffer, requestSender);
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);

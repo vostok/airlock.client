@@ -1,5 +1,4 @@
 ﻿using System;
-using Vostok.Commons.Primitives;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Binary;
 using Vostok.Hercules.Client.TimeBasedUuid;
