@@ -74,18 +74,27 @@ namespace Vostok.Hercules.Client
             var buffers = bufferPool.MakeSnapshot();
 
             if (buffers == null)
-                return true;
+                return false;
 
             var snapshots = buffers.Select(x => x.MakeSnapshot());
+
+            var sendAny = false;
+            
             foreach (var context in BuildMessages(snapshots))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (context.Slices.Count == 0)
+                    continue;
+
                 if (!await PushAsync(stream, context, cancellationToken).ConfigureAwait(false))
                     return false;
+                
+                sendAny = true;
             }
 
-            return true;
+            return sendAny;
+
         }
 
         private IEnumerable<RequestMessageBuildingContext> BuildMessages(IEnumerable<BufferSnapshot> snapshots)
