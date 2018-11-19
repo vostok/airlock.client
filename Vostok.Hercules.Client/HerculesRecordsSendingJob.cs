@@ -19,8 +19,8 @@ namespace Vostok.Hercules.Client
 
         private readonly Dictionary<string, Task> delays;
 
-        private volatile int sentRecordsCounter;
-        private volatile int lostRecordsCounter;
+        private long sentRecordsCounter;
+        private long lostRecordsCounter;
 
         public HerculesRecordsSendingJob(
             ILog log,
@@ -40,9 +40,9 @@ namespace Vostok.Hercules.Client
             delays = new Dictionary<string, Task>();
         }
 
-        public int SentRecordsCount => sentRecordsCounter;
+        public long SentRecordsCount => Interlocked.Read(ref sentRecordsCounter);
 
-        public int LostRecordsCount => lostRecordsCounter;
+        public long LostRecordsCount => Interlocked.Read(ref lostRecordsCounter);
 
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {

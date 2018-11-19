@@ -23,9 +23,9 @@ namespace Vostok.Hercules.Client
             daemonTask = Task.Run(StartAsync, daemonCancellation.Token);
         }
 
-        public int SentRecordsCount => job.SentRecordsCount;
-
-        public int LostRecordsCount => job.LostRecordsCount;
+        public long SentRecordsCount => job.SentRecordsCount;
+        
+        public long LostRecordsCount => job.LostRecordsCount;
 
         public void Dispose()
         {

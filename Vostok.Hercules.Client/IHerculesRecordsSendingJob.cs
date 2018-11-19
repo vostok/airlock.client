@@ -5,8 +5,8 @@ namespace Vostok.Hercules.Client
 {
     internal interface IHerculesRecordsSendingJob
     {
-        int SentRecordsCount { get; }
-        int LostRecordsCount { get; }
+        long SentRecordsCount { get; }
+        long LostRecordsCount { get; }
         Task WaitNextOccurrenceAsync();
         Task RunAsync(CancellationToken cancellationToken = default);
     }

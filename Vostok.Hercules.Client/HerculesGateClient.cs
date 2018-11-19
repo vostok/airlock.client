@@ -21,7 +21,7 @@ namespace Vostok.Hercules.Client
         private readonly HerculesRecordsSendingDaemon recordsSendingDaemon;
 
         private int isDisposed;
-        private int lostRecordsCounter;
+        private long lostRecordsCounter;
 
         public HerculesGateClient(HerculesConfig config)
         {
@@ -41,9 +41,9 @@ namespace Vostok.Hercules.Client
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);
         }
 
-        public int LostRecordsCount => lostRecordsCounter + recordsSendingDaemon.LostRecordsCount;
+        public long LostRecordsCount => Interlocked.Read(ref lostRecordsCounter) + recordsSendingDaemon.LostRecordsCount;
 
-        public int SentRecordsCount =>
+        public long SentRecordsCount =>
             recordsSendingDaemon.SentRecordsCount;
 
         public void Put(string stream, Action<IHerculesRecordBuilder> build)
