@@ -36,6 +36,8 @@ namespace Vostok.Hercules.Client.Binary
             }
         }
 
+        public bool IsOverflowed { get; set; } = false;
+
         public byte[] Buffer => buffer;
 
         public int Length => length;

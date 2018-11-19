@@ -5,6 +5,7 @@ namespace Vostok.Hercules.Client.Binary
     internal interface IBinaryWriter
     {
         int Position { get; set; }
+        bool IsOverflowed { get; set; }
 
         IBinaryWriter Write(int value);
         IBinaryWriter Write(long value);

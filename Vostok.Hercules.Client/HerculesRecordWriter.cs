@@ -27,10 +27,20 @@ namespace Vostok.Hercules.Client
 
             try
             {
+                binaryWriter.IsOverflowed = false;
                 binaryWriter.Write(recordVersion);
 
                 using (var builder = new HerculesRecordBuilder(binaryWriter, timeGuidGenerator))
                     build.Invoke(builder);
+
+                if (binaryWriter.IsOverflowed)
+                {
+                    binaryWriter.Position = startingPosition;
+                    recordSize = 0;
+                    binaryWriter.IsOverflowed = false;
+                    return false;
+                }
+
             }
             catch (Exception exception)
             {

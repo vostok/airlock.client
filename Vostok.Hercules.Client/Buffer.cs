@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Vostok.Hercules.Client.Binary;
@@ -91,83 +90,111 @@ namespace Vostok.Hercules.Client
             get => binaryWriter.Position;
             set => binaryWriter.Position = value;
         }
+        
+        public bool IsOverflowed { get; set; }
 
         public IBinaryWriter Write(int value)
         {
-            EnsureAvailableBytes(sizeof(int));
+            if (!TryEnsureAvailableBytes(sizeof(int)))
+                return this;
+            
             binaryWriter.Write(value);
             return this;
         }
 
         public IBinaryWriter Write(long value)
         {
-            EnsureAvailableBytes(sizeof(long));
+            if (!TryEnsureAvailableBytes(sizeof(long)))
+                return this;
+            
             binaryWriter.Write(value);
             return this;
         }
 
         public IBinaryWriter Write(short value)
         {
-            EnsureAvailableBytes(sizeof(short));
+            if (!TryEnsureAvailableBytes(sizeof(short)))
+                return this;
+            
             binaryWriter.Write(value);
             return this;
         }
 
         public IBinaryWriter Write(double value)
         {
-            EnsureAvailableBytes(sizeof(double));
+            if (!TryEnsureAvailableBytes(sizeof(double)))
+                return this;
+            
             binaryWriter.Write(value);
             return this;
         }
 
         public IBinaryWriter Write(float value)
         {
-            EnsureAvailableBytes(sizeof(float));
+            if (!TryEnsureAvailableBytes(sizeof(float)))
+                return this;
+            
             binaryWriter.Write(value);
             return this;
         }
 
         public IBinaryWriter Write(byte value)
         {
-            EnsureAvailableBytes(sizeof(byte));
+            if (!TryEnsureAvailableBytes(sizeof(byte)))
+                return this;
+            
             binaryWriter.Write(value);
             return this;
         }
 
         public IBinaryWriter Write(bool value)
         {
-            EnsureAvailableBytes(sizeof(bool));
+            if (!TryEnsureAvailableBytes(sizeof(bool)))
+                return this;
+            
             binaryWriter.Write(value);
             return this;
         }
 
         public IBinaryWriter Write(string value, Encoding encoding)
         {
-            EnsureAvailableBytes(encoding.GetByteCount(value));
+            if (!TryEnsureAvailableBytes(encoding.GetByteCount(value)))
+                return this;
+            
             binaryWriter.Write(value, encoding);
             return this;
         }
 
         public IBinaryWriter Write(byte[] value, int offset, int length)
         {
-            EnsureAvailableBytes(length);
+            if (!TryEnsureAvailableBytes(length))
+                return this;
+
             binaryWriter.Write(value, offset, length);
             return this;
         }
 
-        private void EnsureAvailableBytes(int amount)
+        private bool TryEnsureAvailableBytes(int amount)
         {
+            if (IsOverflowed)
+                return false;
+            
             var currentLength = binaryWriter.Buffer.Length;
             var expectedLength = binaryWriter.Position + amount;
 
             if (currentLength >= expectedLength)
-                return;
+                return true;
 
             var remainingBytes = currentLength - binaryWriter.Position;
             var reserveAmount = Math.Max(currentLength, amount - remainingBytes);
 
             if (!memoryManager.TryReserveBytes(reserveAmount))
-                throw new InternalBufferOverflowException();
+            {
+                IsOverflowed = true;
+                return false;
+            }
+
+            return true;
         }
     }
 }
