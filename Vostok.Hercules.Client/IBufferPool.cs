@@ -7,5 +7,6 @@ namespace Vostok.Hercules.Client
         bool TryAcquire(out IBuffer buffer);
         void Release(IBuffer buffer);
         IReadOnlyCollection<IBuffer> MakeSnapshot();
+        long GetStoredRecordsCount();
     }
 }

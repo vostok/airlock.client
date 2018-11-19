@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Vostok.Hercules.Client
 {
@@ -40,6 +41,8 @@ namespace Vostok.Hercules.Client
 
         public void Release(IBuffer buffer) => buffers.Enqueue(buffer);
 
+        public long GetStoredRecordsCount() => buffers.Sum(x => x.EstimateRecordsCountForMonitoring());
+        
         public IReadOnlyCollection<IBuffer> MakeSnapshot()
         {
             sieve.Clear();

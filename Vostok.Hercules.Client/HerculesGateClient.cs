@@ -51,9 +51,7 @@ namespace Vostok.Hercules.Client
             => bufferPools
                 .Where(x => x.Value.IsValueCreated)
                 .Select(x => x.Value.Value)
-                .Select(x => x.MakeSnapshot())
-                .SelectMany(x => x)
-                .Sum(x => x.EstimateRecordsCountForMonitoring());
+                .Sum(x => x.GetStoredRecordsCount());
 
         public void Put(string stream, Action<IHerculesRecordBuilder> build)
         {
