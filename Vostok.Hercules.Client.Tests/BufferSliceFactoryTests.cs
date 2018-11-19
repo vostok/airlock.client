@@ -25,10 +25,13 @@ namespace Vostok.Hercules.Client.Tests
         }
 
         [Test]
+        //TODO: what is this test do?
         public void Cut_MaxSliceSizeNotExceeded_ByAllRecords_ReturnsOne()
         {
             var parent = CreateBuffer();
             var buffer = CreateUnderlyingBuffer();
+
+            parent.GetRecordSize(0).ReturnsForAnyArgs(1);
 
             var snapshot = new BufferSnapshot(parent, buffer, 2, 2);
 
