@@ -41,8 +41,7 @@ namespace Vostok.Hercules.Client
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);
         }
 
-        public int LostRecordsCount =>
-            Interlocked.Add(ref lostRecordsCounter, recordsSendingDaemon.LostRecordsCount);
+        public int LostRecordsCount => lostRecordsCounter + recordsSendingDaemon.LostRecordsCount;
 
         public int SentRecordsCount =>
             recordsSendingDaemon.SentRecordsCount;

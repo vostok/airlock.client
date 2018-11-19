@@ -22,6 +22,7 @@ notests *default:
 full-build > notests: 
   deps:
     - vostok.logging.console
+    - vostok.commons.testing/src
   build:
     target: Vostok.Hercules.Client.sln
     configuration: Release
