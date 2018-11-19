@@ -37,7 +37,6 @@ namespace Vostok.Hercules.Client
                 {
                     binaryWriter.Position = startingPosition;
                     recordSize = 0;
-                    binaryWriter.IsOverflowed = false;
                     return false;
                 }
 
