@@ -15,6 +15,8 @@ namespace Vostok.Hercules.Client
         }
 
         public ArraySegment<byte> Message => writer.FilledSegment;
+        
+        public bool IsFull => writer.Buffer.Length - writer.Position == 0;
 
         public bool TryAppend(BufferSlice slice)
         {
@@ -35,11 +37,12 @@ namespace Vostok.Hercules.Client
 
         private bool IsFit(BufferSlice slice)
         {
-            var remaining = writer.Buffer.Length - writer.Position - sizeof(int);
+            var remaining = writer.Buffer.Length - writer.Position;
 
             if (slice.Length <= remaining)
                 return true;
 
+            // TODO: why is it? this exception can crash entire sending daemon forever
             if (recordsCounter == 0)
                 throw new Exception($"Buffer slice of size {slice.Length} does not fit into maximum message size {writer.Buffer.Length}");
 

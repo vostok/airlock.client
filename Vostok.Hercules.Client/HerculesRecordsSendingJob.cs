@@ -77,7 +77,6 @@ namespace Vostok.Hercules.Client
                 return true;
 
             var snapshots = buffers.Select(x => x.MakeSnapshot());
-
             foreach (var context in BuildMessages(snapshots))
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -93,7 +92,8 @@ namespace Vostok.Hercules.Client
         {
             RequestMessageBuildingContext context = null;
 
-            var slices = snapshots.SelectMany(snapshot => bufferSlicer.Cut(snapshot))
+            var slices = snapshots
+                .SelectMany(snapshot => bufferSlicer.Cut(snapshot))
                 .OrderByDescending(x => x.Length);
 
             foreach (var slice in slices)
@@ -101,6 +101,9 @@ namespace Vostok.Hercules.Client
                 if (context == null)
                     context = new RequestMessageBuildingContext(messageBuffer);
 
+                if (context.Builder.IsFull)
+                    break;
+                
                 if (context.Builder.TryAppend(slice))
                     continue;
 
@@ -114,7 +117,7 @@ namespace Vostok.Hercules.Client
         }
 
         private async Task<bool> PushAsync(string stream, RequestMessageBuildingContext context, CancellationToken cancellationToken)
-        {
+        {   
             var sw = Stopwatch.StartNew();
 
             var sendingResult = await requestSender.SendAsync(stream, context.Message, cancellationToken).ConfigureAwait(false);

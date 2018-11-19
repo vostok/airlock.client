@@ -28,5 +28,7 @@ namespace Vostok.Hercules.Client
             slices.Add(slice);
             return true;
         }
+
+        public bool IsFull => builder.IsFull;
     }
 }
