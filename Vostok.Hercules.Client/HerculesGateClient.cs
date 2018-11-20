@@ -10,6 +10,8 @@ namespace Vostok.Hercules.Client
 {
     public class HerculesGateClient : IHerculesGateClient, IDisposable
     {
+        // replace with real log with special property for Hercules log
+        // HerculesLog should not send log with 'Hercules' property to Hercules to avoid self-repeating log sending.
         private readonly ILog log = new SilentLog();
 
         private readonly IHerculesRecordWriter recordWriter;
