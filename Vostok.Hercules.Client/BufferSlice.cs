@@ -2,16 +2,16 @@
 {
     internal class BufferSlice
     {
-        public BufferSlice(IBuffer parrent, byte[] buffer, int offset, int length, int recordsCount)
+        public BufferSlice(IBuffer parent, byte[] buffer, int offset, int length, int recordsCount)
         {
-            Parrent = parrent;
+            Parent = parent;
             Buffer = buffer;
             Offset = offset;
             Length = length;
             RecordsCount = recordsCount;
         }
 
-        public IBuffer Parrent { get; }
+        public IBuffer Parent { get; }
         public byte[] Buffer { get; }
         public int Offset { get; }
         public int Length { get; }

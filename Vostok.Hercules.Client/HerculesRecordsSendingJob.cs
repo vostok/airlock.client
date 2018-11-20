@@ -150,7 +150,7 @@ namespace Vostok.Hercules.Client
             }
 
             foreach (var slice in context.Slices)
-                slice.Parrent.RequestGarbageCollection(slice.Offset, slice.Length, slice.RecordsCount);
+                slice.Parent.RequestGarbageCollection(slice.Offset, slice.Length, slice.RecordsCount);
 
             return true;
         }

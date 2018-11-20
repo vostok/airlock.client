@@ -12,6 +12,9 @@ namespace Vostok.Hercules.Client
             this.maxSliceSize = maxSliceSize;
         }
 
+        // slices should contain only complete records
+        // good: [record][record][record]
+        // bad:  [record][record][half-of-rec...
         public IEnumerable<BufferSlice> Cut(BufferSnapshot snapshot)
         {
             if (snapshot.RecordsCount == 0)

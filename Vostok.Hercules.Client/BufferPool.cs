@@ -33,7 +33,7 @@ namespace Vostok.Hercules.Client
         {
             var result = buffers.TryDequeue(out buffer) || TryCreateBuffer(out buffer);
 
-            if (result)
+            if (result) // we can collect garbage not on every iteration
                 buffer.CollectGarbage();
 
             return result;
@@ -43,6 +43,9 @@ namespace Vostok.Hercules.Client
 
         public long GetStoredRecordsCount() => buffers.Sum(x => x.EstimateRecordsCountForMonitoring());
         
+        /// <summary>
+        /// <threadsafety>This method is NOT threadsafe and should be called only from <see cref="HerculesRecordsSendingJob"/>.</threadsafety>
+        /// </summary>
         public IReadOnlyCollection<IBuffer> MakeSnapshot()
         {
             sieve.Clear();

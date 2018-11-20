@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,6 +38,9 @@ namespace Vostok.Hercules.Client
         public void RequestGarbageCollection(int offset, int length, int recordsCount) =>
             garbage.Add(new BufferGarbageSegment {Offset = offset, Length = length, RecordsCount = recordsCount});
 
+        /// <summary>
+        /// <threadsafety>This method is NOT threadsafe and should be called only from <see cref="BufferPool.TryAcquire"/> and <see cref="BufferPool.MakeSnapshot"/>.</threadsafety>
+        /// </summary>
         public void CollectGarbage()
         {
             if (garbage.Count == 0)
