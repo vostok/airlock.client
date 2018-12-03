@@ -3,7 +3,7 @@ using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client
 {
-    public class HerculesConfig
+    public class HerculesSinkConfig
     {        
         public byte RecordVersion => 1;
         public long MaximumRecordSizeBytes { get; set; } = 1 * DataSizeConstants.Megabyte;

@@ -12,7 +12,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test]
         public void LostRecordsCount_should_not_grows_infinitely_when_gate_is_offline()
         {
-            var config = new HerculesConfig
+            var config = new HerculesSinkConfig
             {
                 GateUri = new Uri("http://example.com/dev/null"),
                 GateApiKey = ""
@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test, Explicit]
         public void Test()
         {
-            var config = new HerculesConfig
+            var config = new HerculesSinkConfig
             {
                 GateUri = new Uri(""),
                 GateApiKey = ""

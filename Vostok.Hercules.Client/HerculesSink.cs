@@ -27,7 +27,7 @@ namespace Vostok.Hercules.Client
         private int isDisposed;
         private long lostRecordsCounter;
 
-        public HerculesSink(HerculesConfig config)
+        public HerculesSink(HerculesSinkConfig config)
         {
             recordWriter = new HerculesRecordWriter(log, new TimeGuidGenerator(), config.RecordVersion, (int) config.MaximumRecordSizeBytes);
 
