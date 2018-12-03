@@ -10,7 +10,7 @@ notests *default:
     - module vostok.hercules.client.abstractions
 
   deps:
-    - vostok.hercules.client.abstractions
+    - vostok.hercules.client.abstractions@redesign
     - vostok.clusterclient.core
     - vostok.clusterclient.transport
     - vostok.commons.helpers/src
