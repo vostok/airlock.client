@@ -90,68 +90,68 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArrayOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> value)
+        public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> value)
         {
-            builder.AddArrayOfContainers(key, value);
+            builder.AddVectorOfContainers(key, value);
             counter++;
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<byte> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<byte> value)
         {
-            builder.AddArray(key, value);
+            builder.AddVector(key, value);
             counter++;
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<short> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<short> value)
         {
-            builder.AddArray(key, value);
+            builder.AddVector(key, value);
             counter++;
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<int> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<int> value)
         {
-            builder.AddArray(key, value);
+            builder.AddVector(key, value);
             counter++;
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<long> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<long> value)
         {
-            builder.AddArray(key, value);
+            builder.AddVector(key, value);
             counter++;
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<bool> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<bool> value)
         {
-            builder.AddArray(key, value);
+            builder.AddVector(key, value);
             counter++;
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<float> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<float> value)
         {
-            builder.AddArray(key, value);
+            builder.AddVector(key, value);
             counter++;
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<double> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<double> value)
         {
-            builder.AddArray(key, value);
+            builder.AddVector(key, value);
             counter++;
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<Guid> values) =>
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values) =>
             throw new NotImplementedException();
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<string> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<string> value)
         {
-            builder.AddArray(key, value);
+            builder.AddVector(key, value);
             counter++;
             return this;
         }

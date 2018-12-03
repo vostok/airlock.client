@@ -111,7 +111,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArrayOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> values)
+        public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> values)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -142,7 +142,7 @@ namespace Vostok.Hercules.Client
         }
 
         //TODO: add overload for byte array to interface?
-        public IHerculesTagsBuilder AddArray(string key, byte[] values)
+        public IHerculesTagsBuilder AddVector(string key, byte[] values)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -160,7 +160,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<byte> values)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<byte> values)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -178,7 +178,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<short> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<short> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -196,7 +196,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<int> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<int> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -214,7 +214,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<long> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<long> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -232,7 +232,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<bool> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<bool> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -250,7 +250,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<float> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<float> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -268,7 +268,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<double> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<double> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -286,10 +286,10 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<Guid> values) =>
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values) =>
             throw new NotImplementedException();
 
-        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<string> value)
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<string> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 

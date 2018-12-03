@@ -34,15 +34,15 @@ namespace Vostok.Hercules.Client.Tests
             yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddValue("key", 0F))).SetName("Float");
             yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddValue("key", 0D))).SetName("Double");
             yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddValue("key", "value"))).SetName("String");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArrayOfContainers("key", new Action<IHerculesTagsBuilder>[] {x => x.AddValue("nested", 0)}))).SetName("FuncArray");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArray("key", new[] {(byte) 0}))).SetName("ByteArray");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArray("key", new[] {(short) 0}))).SetName("Int16Array");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArray("key", new[] {0}))).SetName("Int32Array");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArray("key", new[] {0L}))).SetName("Int64Array");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArray("key", new[] {true}))).SetName("BoolArray");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArray("key", new[] {0F}))).SetName("FloatArray");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArray("key", new[] {0D}))).SetName("DoubleArray");
-            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddArray("key", new[] {"value"}))).SetName("StringArray");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVectorOfContainers("key", new Action<IHerculesTagsBuilder>[] {x => x.AddValue("nested", 0)}))).SetName("FuncArray");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {(byte) 0}))).SetName("ByteArray");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {(short) 0}))).SetName("Int16Array");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {0}))).SetName("Int32Array");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {0L}))).SetName("Int64Array");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {true}))).SetName("BoolArray");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {0F}))).SetName("FloatArray");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {0D}))).SetName("DoubleArray");
+            yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {"value"}))).SetName("StringArray");
         }
 
         private static BinaryBufferWriter CreateWriter() => new BinaryBufferWriter(0);

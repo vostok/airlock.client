@@ -278,7 +278,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArrayOfContainers("key", value);
+            builder.AddVectorOfContainers("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.ContainerVector));
         }
@@ -291,7 +291,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArrayOfContainers("key", value);
+            builder.AddVectorOfContainers("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 2 + 1 + 6 + 1 + 4));
         }
@@ -304,7 +304,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArrayOfContainers("key", value);
+            builder.AddVectorOfContainers("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.ContainerArray));
         }
@@ -317,7 +317,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArrayOfContainers("key", value);
+            builder.AddVectorOfContainers("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + (2 + 1 + 6 + 1 + 4) * 256));
         }
@@ -330,7 +330,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.ByteVector));
         }
@@ -343,7 +343,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 1));
         }
@@ -356,7 +356,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.ByteArray));
         }
@@ -369,7 +369,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + 256));
         }
@@ -382,7 +382,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.ShortVector));
         }
@@ -395,7 +395,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 2));
         }
@@ -408,7 +408,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.ShortArray));
         }
@@ -421,7 +421,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + 2 * 256));
         }
@@ -434,7 +434,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.IntegerVector));
         }
@@ -447,7 +447,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 4));
         }
@@ -460,7 +460,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.IntegerArray));
         }
@@ -473,7 +473,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + 4 * 256));
         }
@@ -486,7 +486,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.LongVector));
         }
@@ -499,7 +499,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 8));
         }
@@ -512,7 +512,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.LongArray));
         }
@@ -525,7 +525,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + 8 * 256));
         }
@@ -538,7 +538,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.FlagVector));
         }
@@ -551,7 +551,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 1));
         }
@@ -564,7 +564,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.FlagArray));
         }
@@ -577,7 +577,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + 256));
         }
@@ -590,7 +590,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.FloatVector));
         }
@@ -603,7 +603,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 4));
         }
@@ -616,7 +616,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.FloatArray));
         }
@@ -629,7 +629,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + 4 * 256));
         }
@@ -642,7 +642,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.DoubleVector));
         }
@@ -655,7 +655,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 8));
         }
@@ -668,7 +668,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.DoubleArray));
         }
@@ -681,7 +681,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + 8 * 256));
         }
@@ -694,7 +694,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.StringVector));
         }
@@ -707,7 +707,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 1 + 1));
         }
@@ -720,7 +720,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.TextVector));
         }
@@ -733,7 +733,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 1 + 4 + 256));
         }
@@ -746,7 +746,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.StringArray));
         }
@@ -759,7 +759,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + (1 + 1) * 256));
         }
@@ -772,7 +772,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That((TagValueTypeDefinition)writer.Buffer[1 + 3], Is.EqualTo(TagValueTypeDefinition.TextArray));
         }
@@ -785,7 +785,7 @@ namespace Vostok.Hercules.Client.Tests
             var writer = CreateWriter();
             var builder = CreateBuilder(writer);
 
-            builder.AddArray("key", value);
+            builder.AddVector("key", value);
 
             Assert.That(writer.Position, Is.EqualTo(1 + 3 + 1 + 4 + (4 + 256) * 256));
         }
