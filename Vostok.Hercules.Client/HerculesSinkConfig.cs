@@ -16,6 +16,6 @@ namespace Vostok.Hercules.Client
         public TimeSpan RequestTimeout { get; set; } = 30.Seconds();
         public string GateName { get; set; } = "HerculesGateway";
         public Uri GateUri { get; set; }
-        public string GateApiKey { get; set; }
+        public Func<string> GateApiKey { get; set; }
     }
 }

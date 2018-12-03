@@ -15,7 +15,7 @@ namespace Vostok.Hercules.Client.Tests
             var config = new HerculesSinkConfig
             {
                 GateUri = new Uri("http://example.com/dev/null"),
-                GateApiKey = ""
+                GateApiKey = () => ""
             };
 
             var client = new HerculesSink(config);
@@ -33,7 +33,7 @@ namespace Vostok.Hercules.Client.Tests
             var config = new HerculesSinkConfig
             {
                 GateUri = new Uri(""),
-                GateApiKey = ""
+                GateApiKey = () => ""
             };
 
             var client = new HerculesSink(config);

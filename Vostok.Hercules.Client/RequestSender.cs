@@ -14,12 +14,12 @@ namespace Vostok.Hercules.Client
 {
     internal class RequestSender : IRequestSender
     {
-        private readonly string gateApiKey;
+        private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 
-        public RequestSender(ILog log, string gateName, Uri gateUri, string gateApiKey, TimeSpan requestTimeout)
+        public RequestSender(ILog log, string gateName, Uri gateUri, Func<string> getGateApiKey, TimeSpan requestTimeout)
         {
-            this.gateApiKey = gateApiKey;
+            this.getGateApiKey = getGateApiKey;
 
             client = new ClusterClient(
                 log,
@@ -42,7 +42,7 @@ namespace Vostok.Hercules.Client
             var request = Request.Post("stream/sendAsync")
                 .WithAdditionalQueryParameter("stream", stream)
                 .WithContentTypeHeader("application/octet-stream")
-                .WithHeader("apiKey", gateApiKey)
+                .WithHeader("apiKey", getGateApiKey())
                 .WithContent(message);
 
             var clusterResult = await client.SendAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
