@@ -1,11 +1,12 @@
 ﻿using System;
-using Vostok.Hercules.Client.Abstractions;
+using System.Collections.Generic;
+using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
 using Vostok.Hercules.Client.TimeBasedUuid;
 
 namespace Vostok.Hercules.Client
 {
-    internal class HerculesRecordBuilder : IHerculesRecordBuilder, IDisposable
+    internal class HerculesEventBuilder : IHerculesEventBuilder, IDisposable
     {
         private readonly IBinaryWriter binaryWriter;
         private readonly ITimeGuidGenerator timeGuidGenerator;
@@ -14,7 +15,7 @@ namespace Vostok.Hercules.Client
 
         private DateTimeOffset timestampInternal;
 
-        public HerculesRecordBuilder(IBinaryWriter binaryWriter, ITimeGuidGenerator timeGuidGenerator)
+        public HerculesEventBuilder(IBinaryWriter binaryWriter, ITimeGuidGenerator timeGuidGenerator)
         {
             this.binaryWriter = binaryWriter;
             this.timeGuidGenerator = timeGuidGenerator;
@@ -25,100 +26,104 @@ namespace Vostok.Hercules.Client
             builder = new HerculesRecordPayloadBuilderWithCounter(binaryWriter);
         }
 
-        public IHerculesRecordBuilder SetTimestamp(DateTimeOffset timestamp)
+        public IHerculesEventBuilder SetTimestamp(DateTimeOffset timestamp)
         {
             timestampInternal = timestamp;
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, Func<IHerculesRecordPayloadBuilder, IHerculesRecordPayloadBuilder> value)
+        public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)
         {
-            return builder.Add(key, value);
+            return builder.AddContainer(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, byte value)
+        public IHerculesTagsBuilder AddArrayOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> valueBuilders) =>
+            throw new NotImplementedException();
+
+        public IHerculesTagsBuilder AddValue(string key, byte value)
         {
-            return builder.Add(key, value);
+            return builder.AddValue(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, short value)
+        public IHerculesTagsBuilder AddValue(string key, short value)
         {
-            return builder.Add(key, value);
+            return builder.AddValue(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, int value)
+        public IHerculesTagsBuilder AddValue(string key, int value)
         {
-            return builder.Add(key, value);
+            return builder.AddValue(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, long value)
+        public IHerculesTagsBuilder AddValue(string key, long value)
         {
-            return builder.Add(key, value);
+            return builder.AddValue(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, bool value)
+        public IHerculesTagsBuilder AddValue(string key, bool value)
         {
-            return builder.Add(key, value);
+            return builder.AddValue(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, float value)
+        public IHerculesTagsBuilder AddValue(string key, float value)
         {
-            return builder.Add(key, value);
+            return builder.AddValue(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, double value)
+        public IHerculesTagsBuilder AddValue(string key, double value)
         {
-            return builder.Add(key, value);
+            return builder.AddValue(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, string value)
+        public IHerculesTagsBuilder AddValue(string key, Guid value)
+            => throw new NotImplementedException();
+
+        public IHerculesTagsBuilder AddValue(string key, string value)
         {
-            return builder.Add(key, value);
+            return builder.AddValue(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, Func<IHerculesRecordPayloadBuilder, IHerculesRecordPayloadBuilder>[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<byte> value)
         {
-            return builder.Add(key, value);
+            return builder.AddArray(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, byte[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<short> value)
         {
-            return builder.Add(key, value);
+            return builder.AddArray(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, short[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<int> value)
         {
-            return builder.Add(key, value);
+            return builder.AddArray(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, int[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<long> value)
         {
-            return builder.Add(key, value);
+            return builder.AddArray(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, long[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<bool> value)
         {
-            return builder.Add(key, value);
+            return builder.AddArray(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, bool[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<float> value)
         {
-            return builder.Add(key, value);
+            return builder.AddArray(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, float[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<double> value)
         {
-            return builder.Add(key, value);
+            return builder.AddArray(key, value);
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, double[] value)
-        {
-            return builder.Add(key, value);
-        }
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<Guid> values) =>
+            throw new NotImplementedException();
 
-        public IHerculesRecordPayloadBuilder Add(string key, string[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<string> value)
         {
-            return builder.Add(key, value);
+            return builder.AddArray(key, value);
         }
 
         public void Dispose()

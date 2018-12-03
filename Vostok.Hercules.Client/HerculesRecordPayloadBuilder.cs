@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
 
 namespace Vostok.Hercules.Client
 {
-    internal class HerculesRecordPayloadBuilder : IHerculesRecordPayloadBuilder
+    internal class HerculesRecordPayloadBuilder : IHerculesTagsBuilder
     {
         private readonly IBinaryWriter binaryWriter;
 
@@ -14,7 +16,7 @@ namespace Vostok.Hercules.Client
             this.binaryWriter = binaryWriter;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, Func<IHerculesRecordPayloadBuilder, IHerculesRecordPayloadBuilder> value)
+        public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key)
                         .Write((byte)TagValueTypeDefinition.Container);
@@ -25,7 +27,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, byte value)
+        public IHerculesTagsBuilder AddValue(string key, byte value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key)
                         .Write((byte)TagValueTypeDefinition.Byte)
@@ -34,7 +36,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, short value)
+        public IHerculesTagsBuilder AddValue(string key, short value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key)
                         .Write((byte)TagValueTypeDefinition.Short)
@@ -43,7 +45,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, int value)
+        public IHerculesTagsBuilder AddValue(string key, int value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key)
                         .Write((byte)TagValueTypeDefinition.Integer)
@@ -52,7 +54,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, long value)
+        public IHerculesTagsBuilder AddValue(string key, long value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key)
                         .Write((byte)TagValueTypeDefinition.Long)
@@ -61,7 +63,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, bool value)
+        public IHerculesTagsBuilder AddValue(string key, bool value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key)
                         .Write((byte)TagValueTypeDefinition.Flag)
@@ -70,7 +72,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, float value)
+        public IHerculesTagsBuilder AddValue(string key, float value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key)
                         .Write((byte)TagValueTypeDefinition.Float)
@@ -79,7 +81,7 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, double value)
+        public IHerculesTagsBuilder AddValue(string key, double value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key)
                         .Write((byte)TagValueTypeDefinition.Double)
@@ -88,7 +90,10 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, string value)
+        public IHerculesTagsBuilder AddValue(string key, Guid value)
+            => throw new NotImplementedException();
+
+        public IHerculesTagsBuilder AddValue(string key, string value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
@@ -106,15 +111,15 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, Func<IHerculesRecordPayloadBuilder, IHerculesRecordPayloadBuilder>[] value)
+        public IHerculesTagsBuilder AddArrayOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> values)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (values.Count > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ContainerArray)
                             .WriteCollection(
-                                value,
+                                values,
                                 (writer, item) =>
                                 {
                                     using (var builder = new HerculesRecordPayloadBuilderWithCounter(binaryWriter))
@@ -125,7 +130,7 @@ namespace Vostok.Hercules.Client
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ContainerVector)
                             .WriteVector(
-                                value,
+                                values,
                                 (writer, item) =>
                                 {
                                     using (var builder = new HerculesRecordPayloadBuilderWithCounter(binaryWriter))
@@ -136,29 +141,48 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, byte[] value)
+        //TODO: add overload for byte array to interface?
+        public IHerculesTagsBuilder AddArray(string key, byte[] values)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (values.Length > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ByteArray)
-                            .WriteWithInt32LengthPrefix(value);
+                            .WriteWithInt32LengthPrefix(values);
             }
             else
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ByteVector)
-                            .WriteWithByteLengthPrefix(value);
+                            .WriteWithByteLengthPrefix(values);
             }
 
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, short[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<byte> values)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (values.Count > 255)
+            {
+                binaryWriter.Write((byte)TagValueTypeDefinition.ByteArray)
+                            .WriteCollection(values, (writer, item) => writer.Write(item));
+            }
+            else
+            {
+                binaryWriter.Write((byte)TagValueTypeDefinition.ByteVector)
+                            .WriteVector(values, (writer, item) => writer.Write(item));
+            }
+
+            return this;
+        }
+
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<short> value)
+        {
+            binaryWriter.WriteWithByteLengthPrefix(key);
+
+            if (value.Count > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.ShortArray)
                             .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
@@ -172,11 +196,11 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, int[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<int> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (value.Count > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.IntegerArray)
                             .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
@@ -190,11 +214,11 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, long[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<long> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (value.Count > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.LongArray)
                             .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
@@ -208,11 +232,11 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, bool[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<bool> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (value.Count > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.FlagArray)
                             .WriteCollection(value, (writer, item) => writer.Write(item));
@@ -226,11 +250,11 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, float[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<float> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (value.Count > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.FloatArray)
                             .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
@@ -244,11 +268,11 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, double[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<double> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (value.Count > 255)
             {
                 binaryWriter.Write((byte)TagValueTypeDefinition.DoubleArray)
                             .WriteCollection(value, (writer, item) => writer.WriteInNetworkByteOrder(item));
@@ -262,11 +286,14 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesRecordPayloadBuilder Add(string key, string[] value)
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<Guid> values) =>
+            throw new NotImplementedException();
+
+        public IHerculesTagsBuilder AddArray(string key, IReadOnlyList<string> value)
         {
             binaryWriter.WriteWithByteLengthPrefix(key);
 
-            if (value.Length > 255)
+            if (value.Count > 255)
             {
                 if (value.Any(x => x.Length > 255))
                 {

@@ -3,12 +3,13 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.TimeBasedUuid;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
 {
-    public class HerculesGateClient : IHerculesGateClient, IDisposable
+    public class HerculesSink : IHerculesSink, IDisposable
     {
         // replace with real log with special property for Hercules log
         // HerculesLog should not send log with 'Hercules' property to Hercules to avoid self-repeating log sending.
@@ -26,7 +27,7 @@ namespace Vostok.Hercules.Client
         private int isDisposed;
         private long lostRecordsCounter;
 
-        public HerculesGateClient(HerculesConfig config)
+        public HerculesSink(HerculesConfig config)
         {
             recordWriter = new HerculesRecordWriter(log, new TimeGuidGenerator(), config.RecordVersion, (int) config.MaximumRecordSizeBytes);
 
@@ -55,7 +56,7 @@ namespace Vostok.Hercules.Client
                 .Select(x => x.Value.Value)
                 .Sum(x => x.GetStoredRecordsCount());
 
-        public void Put(string stream, Action<IHerculesRecordBuilder> build)
+        public void Put(string stream, Action<IHerculesEventBuilder> build)
         {
             var bufferPool = GetOrCreate(stream);
 

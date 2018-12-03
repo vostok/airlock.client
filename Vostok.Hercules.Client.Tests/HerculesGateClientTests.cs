@@ -18,9 +18,9 @@ namespace Vostok.Hercules.Client.Tests
                 GateApiKey = ""
             };
 
-            var client = new HerculesGateClient(config);
+            var client = new HerculesSink(config);
 
-            client.Put("", x => x.Add("key", true));
+            client.Put("", x => x.AddValue("key", true));
 
             var action = new Action(() => client.LostRecordsCount.Should().Be(1));
             action.ShouldPassIn(5.Seconds());
@@ -36,9 +36,9 @@ namespace Vostok.Hercules.Client.Tests
                 GateApiKey = ""
             };
 
-            var client = new HerculesGateClient(config);
+            var client = new HerculesSink(config);
 
-            client.Put("", x => { x.Add("key", true); });
+            client.Put("", x => { x.AddValue("key", true); });
 
             Thread.Sleep(1000000);
         }
