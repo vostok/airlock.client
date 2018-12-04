@@ -17,16 +17,16 @@ namespace Vostok.Hercules.Client
         private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 
-        public RequestSender(ILog log, string gateName, Uri gateUri, Func<string> getGateApiKey, TimeSpan requestTimeout)
+        public RequestSender(ILog log, HerculesGate gate, TimeSpan requestTimeout)
         {
-            this.getGateApiKey = getGateApiKey;
+            getGateApiKey = gate.ApiKey;
 
             client = new ClusterClient(
                 log,
                 configuration =>
                 {
-                    configuration.ServiceName = gateName;
-                    configuration.ClusterProvider = new FixedClusterProvider(gateUri);
+                    configuration.ServiceName = gate.Name;
+                    configuration.ClusterProvider = gate.Cluster;
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = requestTimeout;
                     configuration.DefaultRequestStrategy = Strategy.Forking2;

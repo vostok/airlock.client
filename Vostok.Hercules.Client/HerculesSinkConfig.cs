@@ -1,4 +1,5 @@
 ﻿using System;
+using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client
@@ -14,8 +15,16 @@ namespace Vostok.Hercules.Client
         public TimeSpan RequestSendPeriod { get; set; } = 2.Seconds();
         public TimeSpan RequestSendPeriodCap { get; set; } = 1.Minutes();
         public TimeSpan RequestTimeout { get; set; } = 30.Seconds();
-        public string GateName { get; set; } = "HerculesGateway";
-        public Uri GateUri { get; set; }
-        public Func<string> GateApiKey { get; set; }
+        
+        public HerculesGate Gate { get; set; } = new HerculesGate();
+    }
+
+    public class HerculesGate
+    {
+        public string Name { get; set; } = "HerculesGateway";
+        
+        public IClusterProvider Cluster { get; set; }
+        
+        public Func<string> ApiKey { get; set; }
     }
 }
