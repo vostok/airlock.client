@@ -5,6 +5,7 @@ using NUnit.Framework;
 using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Testing;
 using Vostok.Commons.Time;
+using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests
 {
@@ -22,7 +23,7 @@ namespace Vostok.Hercules.Client.Tests
                 }
             };
 
-            var client = new HerculesSink(config);
+            var client = new HerculesSink(config, new ConsoleLog());
 
             client.Put("", x => x.AddValue("key", true));
 
@@ -43,7 +44,7 @@ namespace Vostok.Hercules.Client.Tests
                 }
             };
 
-            var client = new HerculesSink(config);
+            var client = new HerculesSink(config, new ConsoleLog());
 
             client.Put("", x => { x.AddValue("key", true); });
 
