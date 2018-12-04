@@ -11,9 +11,7 @@ namespace Vostok.Hercules.Client
 {
     public class HerculesSink : IHerculesSink, IDisposable
     {
-        // replace with real log with special property for Hercules log
-        // HerculesLog should not send log with 'Hercules' property to Hercules to avoid self-repeating log sending.
-        private readonly ILog log = new SilentLog();
+        private readonly ILog log;
 
         private readonly IHerculesRecordWriter recordWriter;
         private readonly IMemoryManager memoryManager;
@@ -27,8 +25,10 @@ namespace Vostok.Hercules.Client
         private int isDisposed;
         private long lostRecordsCounter;
 
-        public HerculesSink(HerculesSinkConfig config)
+        public HerculesSink(HerculesSinkConfig config, ILog log)
         {
+            log = log ?? new SilentLog();
+            
             recordWriter = new HerculesRecordWriter(log, new TimeGuidGenerator(), config.RecordVersion, (int) config.MaximumRecordSizeBytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumptionBytes);
