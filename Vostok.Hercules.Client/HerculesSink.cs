@@ -40,8 +40,8 @@ namespace Vostok.Hercules.Client
             var jobScheduler = new HerculesRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
             var bufferSlicer = new BufferSliceFactory((int) config.MaximumRequestContentSizeBytes - sizeof(int));
             var messageBuffer = new byte[config.MaximumRequestContentSizeBytes];
-            var requestSender = new RequestSender(log, config.Gate, config.RequestTimeout);
-            var job = new HerculesRecordsSendingJob(log, jobScheduler, bufferPools, bufferSlicer, messageBuffer, requestSender);
+            var requestSender = new RequestSender(log, config.Gate);
+            var job = new HerculesRecordsSendingJob(log, jobScheduler, bufferPools, bufferSlicer, messageBuffer, requestSender, config.RequestTimeout);
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);
         }
 

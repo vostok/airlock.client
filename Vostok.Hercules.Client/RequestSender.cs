@@ -5,7 +5,6 @@ using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Ordering.Weighed;
 using Vostok.Clusterclient.Core.Strategies;
-using Vostok.Clusterclient.Core.Topology;
 using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Time;
 using Vostok.Logging.Abstractions;
@@ -17,7 +16,7 @@ namespace Vostok.Hercules.Client
         private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 
-        public RequestSender(ILog log, HerculesGate gate, TimeSpan requestTimeout)
+        public RequestSender(ILog log, HerculesGate gate)
         {
             getGateApiKey = gate.ApiKey;
 
@@ -28,7 +27,7 @@ namespace Vostok.Hercules.Client
                     configuration.ServiceName = gate.Name;
                     configuration.ClusterProvider = gate.Cluster;
                     configuration.Transport = new UniversalTransport(log);
-                    configuration.DefaultTimeout = requestTimeout;
+                    configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
                     
                     configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
@@ -37,7 +36,7 @@ namespace Vostok.Hercules.Client
                 });
         }
 
-        public async Task<RequestSendingResult> SendAsync(string stream, ArraySegment<byte> message, CancellationToken cancellationToken = default)
+        public async Task<RequestSendingResult> SendAsync(string stream, ArraySegment<byte> message, TimeSpan timeout, CancellationToken cancellationToken = default)
         {
             var request = Request.Post("stream/sendAsync")
                 .WithAdditionalQueryParameter("stream", stream)
@@ -45,11 +44,13 @@ namespace Vostok.Hercules.Client
                 .WithHeader("apiKey", getGateApiKey())
                 .WithContent(message);
 
-            var clusterResult = await client.SendAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var clusterResult = await client
+                .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
+                .ConfigureAwait(false);
 
             return GetSendingResult(clusterResult);
         }
-
+        
         private static RequestSendingResult GetSendingResult(ClusterResult clusterResult)
         {
             switch (clusterResult.Status)

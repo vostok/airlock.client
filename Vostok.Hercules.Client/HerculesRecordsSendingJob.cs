@@ -16,6 +16,7 @@ namespace Vostok.Hercules.Client
         private readonly IBufferSliceFactory bufferSlicer;
         private readonly byte[] messageBuffer;
         private readonly IRequestSender requestSender;
+        private readonly TimeSpan timeout;
 
         private readonly Dictionary<string, Task> delays;
 
@@ -28,7 +29,8 @@ namespace Vostok.Hercules.Client
             IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools,
             IBufferSliceFactory bufferSlicer,
             byte[] messageBuffer,
-            IRequestSender requestSender)
+            IRequestSender requestSender,
+            TimeSpan timeout)
         {
             this.log = log;
             this.scheduler = scheduler;
@@ -36,6 +38,7 @@ namespace Vostok.Hercules.Client
             this.bufferSlicer = bufferSlicer;
             this.messageBuffer = messageBuffer;
             this.requestSender = requestSender;
+            this.timeout = timeout;
 
             delays = new Dictionary<string, Task>();
         }
@@ -129,7 +132,7 @@ namespace Vostok.Hercules.Client
         {   
             var sw = Stopwatch.StartNew();
 
-            var sendingResult = await requestSender.SendAsync(stream, context.Message, cancellationToken).ConfigureAwait(false);
+            var sendingResult = await requestSender.SendAsync(stream, context.Message, timeout, cancellationToken).ConfigureAwait(false);
 
             var recordsCount = context.Slices.Sum(x => x.RecordsCount);
 
