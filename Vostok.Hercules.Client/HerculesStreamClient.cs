@@ -17,7 +17,7 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
 {
-    internal class HerculesStreamClient : IHerculesStreamClient
+    public class HerculesStreamClient : IHerculesStreamClient
     {
         private readonly ILog log;
         private readonly IClusterClient client;
