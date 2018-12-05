@@ -5,7 +5,6 @@ namespace Vostok.Hercules.Client
 {
     internal class HerculesStreamClientConfig
     {
-        public IClusterProvider Cluster;
-        public Func<string> ApiKey;
+        public HerculesService StreamApi;
     }
 }
