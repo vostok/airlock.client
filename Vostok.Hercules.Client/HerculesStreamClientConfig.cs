@@ -2,6 +2,6 @@
 {
     public class HerculesStreamClientConfig
     {
-        public HerculesService StreamApi;
+        public HerculesService Gate;
     }
 }
