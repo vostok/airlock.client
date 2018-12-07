@@ -8,14 +8,16 @@ notests *default:
   install:
     - Vostok.Hercules.Client/bin/Release/netstandard2.0/Vostok.Hercules.Client.dll
     - module vostok.hercules.client.abstractions
+    - module vostok.clusterclient.core
 
   deps:
-    - vostok.hercules.client.abstractions
+    - vostok.hercules.client.abstractions@redesign
     - vostok.clusterclient.core
     - vostok.clusterclient.transport
     - vostok.commons.helpers/src
     - vostok.commons.time/src
     - vostok.commons.threading/src
+    - vostok.commons.binary/src
     - vostok.devtools
     - vostok.logging.abstractions
 

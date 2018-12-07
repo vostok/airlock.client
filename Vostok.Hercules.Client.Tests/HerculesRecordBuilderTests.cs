@@ -49,6 +49,6 @@ namespace Vostok.Hercules.Client.Tests
 
         private static BinaryBufferWriter CreateWriter() => new BinaryBufferWriter(0);
 
-        private static HerculesRecordBuilder CreateBuilder(IBinaryWriter writer, ITimeGuidGenerator timeGuidGenerator) => new HerculesRecordBuilder(writer, timeGuidGenerator);
+        private static HerculesEventBuilder CreateBuilder(IBinaryWriter writer, ITimeGuidGenerator timeGuidGenerator) => new HerculesEventBuilder(writer, timeGuidGenerator);
     }
 }

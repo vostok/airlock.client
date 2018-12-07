@@ -46,7 +46,7 @@ namespace Vostok.Hercules.Client.Binary
 
         public static IBinaryWriter WriteWithInt32LengthPrefix(this IBinaryWriter writer, byte[] value) =>
             writer.WriteInNetworkByteOrder(value.Length)
-                .Write(value, 0, value.Length);
+                .Write(value,0, value.Length);
 
         public static IBinaryWriter WriteWithByteLengthPrefix(this IBinaryWriter writer, byte[] value) =>
             writer.Write((byte) value.Length)

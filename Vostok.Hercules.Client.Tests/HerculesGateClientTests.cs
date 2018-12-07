@@ -2,8 +2,10 @@
 using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
+using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Testing;
 using Vostok.Commons.Time;
+using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests
 {
@@ -12,15 +14,18 @@ namespace Vostok.Hercules.Client.Tests
         [Test]
         public void LostRecordsCount_should_not_grows_infinitely_when_gate_is_offline()
         {
-            var config = new HerculesConfig
+            var config = new HerculesSinkConfig
             {
-                GateUri = new Uri("http://example.com/dev/null"),
-                GateApiKey = ""
+                Gate =
+                {
+                    Cluster = new FixedClusterProvider(new Uri("http://example.com/dev/null")),
+                    ApiKey = () => ""
+                }
             };
 
-            var client = new HerculesGateClient(config);
+            var client = new HerculesSink(config, new ConsoleLog());
 
-            client.Put("", x => x.Add("key", true));
+            client.Put("", x => x.AddValue("key", true));
 
             var action = new Action(() => client.LostRecordsCount.Should().Be(1));
             action.ShouldPassIn(5.Seconds());
@@ -30,15 +35,18 @@ namespace Vostok.Hercules.Client.Tests
         [Test, Explicit]
         public void Test()
         {
-            var config = new HerculesConfig
+            var config = new HerculesSinkConfig
             {
-                GateUri = new Uri(""),
-                GateApiKey = ""
+                Gate =
+                {
+                    Cluster = new FixedClusterProvider(new Uri("")),
+                    ApiKey = () => ""
+                }
             };
 
-            var client = new HerculesGateClient(config);
+            var client = new HerculesSink(config, new ConsoleLog());
 
-            client.Put("", x => { x.Add("key", true); });
+            client.Put("", x => { x.AddValue("key", true); });
 
             Thread.Sleep(1000000);
         }

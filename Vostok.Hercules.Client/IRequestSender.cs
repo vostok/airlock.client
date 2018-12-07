@@ -6,6 +6,6 @@ namespace Vostok.Hercules.Client
 {
     internal interface IRequestSender
     {
-        Task<RequestSendingResult> SendAsync(string stream, ArraySegment<byte> message, CancellationToken cancellationToken = default);
+        Task<RequestSendingResult> SendAsync(string stream, ArraySegment<byte> message, TimeSpan timeout, CancellationToken cancellationToken = default);
     }
 }
