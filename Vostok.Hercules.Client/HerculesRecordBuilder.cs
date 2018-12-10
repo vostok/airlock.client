@@ -40,6 +40,9 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> valueBuilders) =>
             throw new NotImplementedException();
 
+        public IHerculesTagsBuilder AddNull(string key)
+            => throw new NotImplementedException();
+
         public IHerculesTagsBuilder AddValue(string key, byte value)
         {
             return builder.AddValue(key, value);

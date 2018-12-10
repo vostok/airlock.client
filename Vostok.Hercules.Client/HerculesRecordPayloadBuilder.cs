@@ -141,6 +141,9 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
+        public IHerculesTagsBuilder AddNull(string key) =>
+            throw new NotImplementedException();
+
         //TODO: add overload for byte array to interface?
         public IHerculesTagsBuilder AddVector(string key, byte[] values)
         {

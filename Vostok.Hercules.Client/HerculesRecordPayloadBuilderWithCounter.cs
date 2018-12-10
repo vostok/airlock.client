@@ -97,6 +97,9 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
+        public IHerculesTagsBuilder AddNull(string key) =>
+            throw new NotImplementedException();
+
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<byte> value)
         {
             builder.AddVector(key, value);

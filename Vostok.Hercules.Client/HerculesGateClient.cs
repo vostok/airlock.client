@@ -98,31 +98,31 @@ namespace Vostok.Hercules.Client
                                 switch (vector.ElementType)
                                 {
                                     case HerculesValueType.Byte:
-                                        eventBuilder.AddVector(tag.Key, vector.AsByteArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsByteList);
                                         break;
                                     case HerculesValueType.Short:
-                                        eventBuilder.AddVector(tag.Key, vector.AsShortArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsShortList);
                                         break;
                                     case HerculesValueType.Int:
-                                        eventBuilder.AddVector(tag.Key, vector.AsIntArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsIntList);
                                         break;
                                     case HerculesValueType.Long:
-                                        eventBuilder.AddVector(tag.Key, vector.AsLongArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsLongList);
                                         break;
                                     case HerculesValueType.Bool:
-                                        eventBuilder.AddVector(tag.Key, vector.AsBoolArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsBoolList);
                                         break;
                                     case HerculesValueType.Float:
-                                        eventBuilder.AddVector(tag.Key, vector.AsFloatArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsFloatList);
                                         break;
                                     case HerculesValueType.Double:
-                                        eventBuilder.AddVector(tag.Key, vector.AsDoubleArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsDoubleList);
                                         break;
                                     case HerculesValueType.Guid:
-                                        eventBuilder.AddVector(tag.Key, vector.AsGuidArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsGuidList);
                                         break;
                                     case HerculesValueType.String:
-                                        eventBuilder.AddVector(tag.Key, vector.AsStringArray);
+                                        eventBuilder.AddVector(tag.Key, vector.AsStringList);
                                         break;
                                     case HerculesValueType.Vector:
                                         break;
