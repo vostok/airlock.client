@@ -11,7 +11,7 @@ notests *default:
     - module vostok.clusterclient.core
 
   deps:
-    - vostok.hercules.client.abstractions@redesign
+    - vostok.hercules.client.abstractions
     - vostok.clusterclient.core
     - vostok.clusterclient.transport
     - vostok.commons.helpers/src
