@@ -8,18 +8,18 @@ namespace Vostok.Hercules.Client
 {
     internal class HerculesRecordPayloadBuilderWithCounter : IHerculesTagsBuilder, IDisposable
     {
-        private readonly IBinaryWriter binaryWriter;
+        private readonly IHerculesBinaryWriter binaryWriter;
         private readonly int countPosition;
         private readonly HerculesRecordPayloadBuilder builder;
 
-        private short counter;
+        private ushort counter;
 
-        public HerculesRecordPayloadBuilderWithCounter(IBinaryWriter binaryWriter)
+        public HerculesRecordPayloadBuilderWithCounter(IHerculesBinaryWriter binaryWriter)
         {
             this.binaryWriter = binaryWriter;
 
             countPosition = binaryWriter.Position;
-            binaryWriter.WriteInNetworkByteOrder((short) 0);
+            binaryWriter.Write((ushort) 0);
 
             builder = new HerculesRecordPayloadBuilder(binaryWriter);
         }
@@ -27,78 +27,86 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)
         {
             builder.AddContainer(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, byte value)
         {
             builder.AddValue(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, short value)
         {
             builder.AddValue(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, int value)
         {
             builder.AddValue(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, long value)
         {
             builder.AddValue(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, bool value)
         {
             builder.AddValue(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, float value)
         {
             builder.AddValue(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, double value)
         {
             builder.AddValue(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
-        public IHerculesTagsBuilder AddValue(string key, Guid value) =>
-            throw new NotImplementedException();
+        public IHerculesTagsBuilder AddValue(string key, Guid value)
+        {
+            builder.AddValue(key, value);
+            checked {counter++;}
+            return this;
+        }
 
         public IHerculesTagsBuilder AddValue(string key, string value)
         {
             builder.AddValue(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
         public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> value)
         {
             builder.AddVectorOfContainers(key, value);
-            counter++;
+            checked {counter++;}
             return this;
         }
 
-        public IHerculesTagsBuilder AddNull(string key) =>
-            throw new NotImplementedException();
+        public IHerculesTagsBuilder AddNull(string key)
+        {
+            builder.AddNull(key);
+            checked {counter++;}
+            return this;
+        }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<byte> value)
         {
@@ -163,7 +171,7 @@ namespace Vostok.Hercules.Client
         {
             var currentPosition = binaryWriter.Position;
             binaryWriter.Position = countPosition;
-            binaryWriter.WriteInNetworkByteOrder(counter);
+            binaryWriter.Write(counter);
             binaryWriter.Position = currentPosition;
         }
     }

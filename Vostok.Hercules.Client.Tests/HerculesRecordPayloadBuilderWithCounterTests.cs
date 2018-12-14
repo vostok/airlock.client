@@ -20,7 +20,7 @@ namespace Vostok.Hercules.Client.Tests
             add.Invoke(builder);
 
             builder.Dispose();
-            Assert.That(BitConverter.ToInt16(writer.Buffer, 0), Is.EqualTo(IPAddress.HostToNetworkOrder((short) 1)));
+            Assert.That(BitConverter.ToInt16(writer.Array, 0), Is.EqualTo(IPAddress.HostToNetworkOrder((short) 1)));
         }
 
         private static IEnumerable TestCases()
@@ -45,8 +45,8 @@ namespace Vostok.Hercules.Client.Tests
             yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {"value"}))).SetName("StringArray");
         }
 
-        private static BinaryBufferWriter CreateWriter() => new BinaryBufferWriter(0);
+        private static HerculesBinaryWriter CreateWriter() => new HerculesBinaryWriter(0);
 
-        private static HerculesRecordPayloadBuilderWithCounter CreateBuilder(IBinaryWriter writer) => new HerculesRecordPayloadBuilderWithCounter(writer);
+        private static HerculesRecordPayloadBuilderWithCounter CreateBuilder(IHerculesBinaryWriter writer) => new HerculesRecordPayloadBuilderWithCounter(writer);
     }
 }

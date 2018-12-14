@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Text;
 using Vostok.Commons.Binary;
+using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.TimeBasedUuid;
 
 namespace Vostok.Hercules.Client
 {
@@ -15,8 +15,8 @@ namespace Vostok.Hercules.Client
             var version = reader.ReadByte();
             if (version != 1)
                 throw new NotSupportedException();
-            var timeGuid = new TimeGuid(reader.ReadByteArray(16));
-            builder.SetTimestamp( /* TODO: parse timestamp from timeguid or drop timeguid */ default);
+            var timestamp = EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64());
+            builder.SetTimestamp(timestamp);
             reader.ReadContainer(builder);
             return builder.BuildEvent();
         }
@@ -63,70 +63,13 @@ namespace Vostok.Hercules.Client
                     case TagValueTypeDefinition.String:
                         builder.AddValue(key, reader.ReadShortString());
                         break;
-                    case TagValueTypeDefinition.Text:
-                        builder.AddValue(key, reader.ReadString());
+                    case TagValueTypeDefinition.UUID:
+                        builder.AddValue(key, reader.ReadGuid());
                         break;
-                    case TagValueTypeDefinition.ContainerArray:
-                        length = reader.ReadInt32();
-                        builder.AddVectorOfContainers(key, Enumerable.Repeat(readContainer, length).ToArray());
+                    case TagValueTypeDefinition.Null:
                         break;
-                    case TagValueTypeDefinition.ByteArray:
-                        builder.AddVector(key, reader.ReadByteArray());
-                        break;
-                    case TagValueTypeDefinition.ShortArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadInt16()));
-                        break;
-                    case TagValueTypeDefinition.IntegerArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadInt32()));
-                        break;
-                    case TagValueTypeDefinition.LongArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadInt64()));
-                        break;
-                    case TagValueTypeDefinition.FlagArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadBool()));
-                        break;
-                    case TagValueTypeDefinition.FloatArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadFloat()));
-                        break;
-                    case TagValueTypeDefinition.DoubleArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadDouble()));
-                        break;
-                    case TagValueTypeDefinition.StringArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadShortString()));
-                        break;
-                    case TagValueTypeDefinition.TextArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadString()));
-                        break;
-                    case TagValueTypeDefinition.ContainerVector:
-                        length = reader.ReadByte();
-                        builder.AddVectorOfContainers(key, Enumerable.Repeat(readContainer, length).ToArray());
-                        break;
-                    case TagValueTypeDefinition.ByteVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadByte()));
-                        break;
-                    case TagValueTypeDefinition.ShortVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadInt16()));
-                        break;
-                    case TagValueTypeDefinition.IntegerVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadInt32()));
-                        break;
-                    case TagValueTypeDefinition.LongVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadInt64()));
-                        break;
-                    case TagValueTypeDefinition.FlagVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadBool()));
-                        break;
-                    case TagValueTypeDefinition.FloatVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadFloat()));
-                        break;
-                    case TagValueTypeDefinition.DoubleVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadDouble()));
-                        break;
-                    case TagValueTypeDefinition.StringVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadShortString()));
-                        break;
-                    case TagValueTypeDefinition.TextVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadByte()));
+                    case TagValueTypeDefinition.Vector:
+                        //TODO
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

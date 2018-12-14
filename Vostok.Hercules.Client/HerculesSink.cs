@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.TimeBasedUuid;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -29,7 +29,7 @@ namespace Vostok.Hercules.Client
         {
             log = log ?? new SilentLog();
             
-            recordWriter = new HerculesRecordWriter(log, new TimeGuidGenerator(), config.RecordVersion, (int) config.MaximumRecordSizeBytes);
+            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, config.RecordVersion, (int) config.MaximumRecordSizeBytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumptionBytes);
 
@@ -50,8 +50,8 @@ namespace Vostok.Hercules.Client
         public long SentRecordsCount =>
             recordsSendingDaemon.SentRecordsCount;
 
-        public long StoredRecordsCount
-            => bufferPools
+        public long StoredRecordsCount =>
+            bufferPools
                 .Where(x => x.Value.IsValueCreated)
                 .Select(x => x.Value.Value)
                 .Sum(x => x.GetStoredRecordsCount());

@@ -1,8 +1,6 @@
 ﻿using System;
-using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
-using Vostok.Hercules.Client.TimeBasedUuid;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -10,19 +8,19 @@ namespace Vostok.Hercules.Client
     internal class HerculesRecordWriter : IHerculesRecordWriter
     {
         private readonly ILog log;
-        private readonly ITimeGuidGenerator timeGuidGenerator;
+        private readonly Func<DateTimeOffset> timeProvider;
         private readonly byte recordVersion;
         private readonly int maxRecordSize;
 
-        public HerculesRecordWriter(ILog log, ITimeGuidGenerator timeGuidGenerator, byte recordVersion, int maxRecordSize)
+        public HerculesRecordWriter(ILog log, Func<DateTimeOffset> timeProvider, byte recordVersion, int maxRecordSize)
         {
             this.log = log;
-            this.timeGuidGenerator = timeGuidGenerator;
+            this.timeProvider = timeProvider;
             this.recordVersion = recordVersion;
             this.maxRecordSize = maxRecordSize;
         }
 
-        public bool TryWrite(IBinaryWriter binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize)
+        public bool TryWrite(IHerculesBinaryWriter binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize)
         {
             var startingPosition = binaryWriter.Position;
 
@@ -31,7 +29,7 @@ namespace Vostok.Hercules.Client
                 binaryWriter.IsOverflowed = false;
                 binaryWriter.Write(recordVersion);
 
-                using (var builder = new HerculesEventBuilder(binaryWriter, timeGuidGenerator))
+                using (var builder = new HerculesEventBuilder(binaryWriter, timeProvider))
                     build.Invoke(builder);
 
                 if (binaryWriter.IsOverflowed)
