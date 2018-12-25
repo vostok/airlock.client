@@ -21,6 +21,7 @@ namespace Vostok.Hercules.Client
 
             timeGuidPosition = binaryWriter.Position;
             binaryWriter.Write(0L);
+            binaryWriter.Write(Guid.NewGuid());
 
             builder = new HerculesRecordPayloadBuilderWithCounter(binaryWriter);
         }

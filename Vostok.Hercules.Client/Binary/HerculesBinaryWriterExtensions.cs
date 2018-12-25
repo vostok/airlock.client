@@ -27,7 +27,7 @@ namespace Vostok.Hercules.Client.Binary
         public static void WriteWithByteLength(this IHerculesBinaryWriter writer, string value)
         {
             var lengthPosition = writer.Position;
-            writer.Write(0b0);
+            writer.Write((byte) 0);
             var startPosition = writer.Position;
             writer.WriteWithoutLength(value);
             var positionAfter = writer.Position;

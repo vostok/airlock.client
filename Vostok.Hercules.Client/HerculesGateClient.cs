@@ -57,7 +57,7 @@ namespace Vostok.Hercules.Client
 
                 var body = new HerculesBinaryWriter(16 * 1024);
 
-                body.Write(IPAddress.HostToNetworkOrder(query.Events.Count));
+                body.Write(query.Events.Count);
                 foreach (var @event in query.Events)
                 {
                     var eventBuilder = new HerculesEventBuilder(body, () => PreciseDateTime.UtcNow);

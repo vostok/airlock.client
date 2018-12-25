@@ -17,6 +17,7 @@ namespace Vostok.Hercules.Client
                 throw new NotSupportedException();
             var timestamp = EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64());
             builder.SetTimestamp(timestamp);
+            reader.ReadGuid();
             reader.ReadContainer(builder);
             return builder.BuildEvent();
         }
@@ -29,8 +30,6 @@ namespace Vostok.Hercules.Client
             {
                 var key = ReadShortString(reader);
                 var valueType = (TagValueTypeDefinition) reader.ReadByte();
-
-                int length;
 
                 Action<IHerculesTagsBuilder> readContainer = tagsBuilder => reader.ReadContainer(tagsBuilder);
                 
