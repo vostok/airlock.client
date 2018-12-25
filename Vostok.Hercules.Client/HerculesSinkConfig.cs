@@ -1,10 +1,20 @@
 ﻿using System;
+using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client
 {
     public class HerculesSinkConfig
-    {        
+    {
+        public HerculesSinkConfig(IClusterProvider cluster, Func<string> apiKeyProvider)
+        {
+            Cluster = cluster;
+            ApiKeyProvider = apiKeyProvider;
+        }
+
+        public string ServiceName { get; set; } = "HerculesGateway";
+        public IClusterProvider Cluster { get; set; }
+        public Func<string> ApiKeyProvider { get; set; }
         public byte RecordVersion => 1;
         public long MaximumRecordSizeBytes { get; set; } = 1 * DataSizeConstants.Megabyte;
         public long MaximumMemoryConsumptionBytes { get; set; } = 128 * DataSizeConstants.Megabyte;
@@ -14,7 +24,5 @@ namespace Vostok.Hercules.Client
         public TimeSpan RequestSendPeriod { get; set; } = 2.Seconds();
         public TimeSpan RequestSendPeriodCap { get; set; } = 1.Minutes();
         public TimeSpan RequestTimeout { get; set; } = 30.Seconds();
-        
-        public HerculesService Gate { get; set; } = new HerculesService();
     }
 }

@@ -26,14 +26,14 @@ namespace Vostok.Hercules.Client
         public HerculesStreamClient(HerculesStreamClientConfig config, ILog log)
         {
             this.log = log;
-            getGateApiKey = config.Gate.ApiKey;
+            getGateApiKey = config.ApiKeyProvider;
 
             client = new ClusterClient(
                 log,
                 configuration =>
                 {
-                    configuration.ServiceName = config.Gate.Name ?? "HerculesStreamApi";
-                    configuration.ClusterProvider = config.Gate.Cluster;
+                    configuration.ServiceName = config.ServiceName ?? "HerculesStreamApi";
+                    configuration.ClusterProvider = config.Cluster;
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;

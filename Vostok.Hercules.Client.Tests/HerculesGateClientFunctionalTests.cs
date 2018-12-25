@@ -33,15 +33,7 @@ namespace Vostok.Hercules.Client.Tests
         {
             stream = $"dotnet_test_{Guid.NewGuid().ToString().Substring(0, 8)}";
 
-            var sinkConfig = new HerculesSinkConfig
-            {
-                Gate =
-                {
-                    Cluster = new FixedClusterProvider(new Uri(gateUrl)),
-                    ApiKey = () => apiKey,
-                    Name = "HerculesSink"
-                }
-            };
+            var sinkConfig = new HerculesSinkConfig(new FixedClusterProvider(new Uri(gateUrl)), () => apiKey);
 
             managementClient = new HerculesManagementClient(
                 new HerculesManagementClientConfig
@@ -54,7 +46,9 @@ namespace Vostok.Hercules.Client.Tests
 
             sink = new HerculesSink(sinkConfig, log);
 
-            streamClientConfig = new HerculesStreamClientConfig {Gate = new HerculesService {Cluster = new FixedClusterProvider(new Uri(streamApiUrl)), ApiKey = () => apiKey, Name = "HerculesStreamApi"}};
+            streamClientConfig = new HerculesStreamClientConfig(
+                new FixedClusterProvider(new Uri(streamApiUrl)),
+                () => apiKey);
 
             streamClient = new HerculesStreamClient(streamClientConfig, log);
 

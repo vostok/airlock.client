@@ -26,17 +26,17 @@ namespace Vostok.Hercules.Client
         private readonly IClusterClient client;
         private readonly Func<string> getGateApiKey;
 
-        public HerculesGateClient(HerculesStreamClientConfig config, ILog log)
+        public HerculesGateClient(HerculesGateClientConfig config, ILog log)
         {
             this.log = log;
-            getGateApiKey = config.Gate.ApiKey;
+            getGateApiKey = config.ApiKeyProvider;
 
             client = new ClusterClient(
                 log,
                 configuration =>
                 {
-                    configuration.ServiceName = config.Gate.Name ?? "HerculesGateway";
-                    configuration.ClusterProvider = config.Gate.Cluster;
+                    configuration.ServiceName = config.ServiceName ?? "HerculesGateway";
+                    configuration.ClusterProvider = config.Cluster;
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
@@ -127,6 +127,7 @@ namespace Vostok.Hercules.Client
                                     case HerculesValueType.Vector:
                                         break;
                                     case HerculesValueType.Container:
+                                        //TODO
                                         break;
                                     default:
                                         throw new ArgumentOutOfRangeException();
