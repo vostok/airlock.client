@@ -15,7 +15,7 @@ using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Abstractions.Values;
-using Vostok.Hercules.Client.TimeBasedUuid;
+using Vostok.Hercules.Client.Binary;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -55,12 +55,12 @@ namespace Vostok.Hercules.Client
                     .AppendToQuery("stream", query.Stream)
                     .Build();
 
-                var body = new Vostok.Hercules.Client.Binary.BinaryBufferWriter(16 * 1024);
+                var body = new HerculesBinaryWriter(16 * 1024);
 
-                body.Write(IPAddress.HostToNetworkOrder(query.Events.Count));
+                body.Write(query.Events.Count);
                 foreach (var @event in query.Events)
                 {
-                    var eventBuilder = new HerculesEventBuilder(body, new TimeGuidGenerator());
+                    var eventBuilder = new HerculesEventBuilder(body, () => PreciseDateTime.UtcNow);
                     eventBuilder.SetTimestamp(@event.Timestamp);
                     foreach (var tag in @event.Tags)
                     {   

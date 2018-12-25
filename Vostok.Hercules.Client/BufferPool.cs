@@ -83,7 +83,7 @@ namespace Vostok.Hercules.Client
                 return false;
             }
 
-            buffer = new Buffer(new byte[initialBufferSize], memoryManager);
+            buffer = new Buffer(initialBufferSize, memoryManager);
             return true;
         }
     }

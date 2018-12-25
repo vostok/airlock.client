@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
-using Vostok.Hercules.Client.TimeBasedUuid;
 
 namespace Vostok.Hercules.Client
 {
     internal class HerculesEventBuilder : IHerculesEventBuilder, IDisposable
     {
-        private readonly IBinaryWriter binaryWriter;
-        private readonly ITimeGuidGenerator timeGuidGenerator;
+        private readonly IHerculesBinaryWriter binaryWriter;
+        private readonly Func<DateTimeOffset> timeProvider;
         private readonly int timeGuidPosition;
         private readonly HerculesRecordPayloadBuilderWithCounter builder;
 
         private DateTimeOffset timestampInternal;
-
-        public HerculesEventBuilder(IBinaryWriter binaryWriter, ITimeGuidGenerator timeGuidGenerator)
+        public HerculesEventBuilder(IHerculesBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
         {
             this.binaryWriter = binaryWriter;
-            this.timeGuidGenerator = timeGuidGenerator;
+            this.timeProvider = timeProvider;
 
             timeGuidPosition = binaryWriter.Position;
-            binaryWriter.Write(TimeGuid.Empty);
+            binaryWriter.Write(0L);
+            binaryWriter.Write(Guid.NewGuid());
 
             builder = new HerculesRecordPayloadBuilderWithCounter(binaryWriter);
         }
@@ -33,101 +33,67 @@ namespace Vostok.Hercules.Client
         }
 
         public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)
-        {
-            return builder.AddContainer(key, value);
-        }
+            => builder.AddContainer(key, value);
 
-        public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> valueBuilders) =>
-            throw new NotImplementedException();
+        public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> valueBuilders)
+            => builder.AddVectorOfContainers(key, valueBuilders);
 
         public IHerculesTagsBuilder AddNull(string key)
-            => throw new NotImplementedException();
+            => builder.AddNull(key);
 
         public IHerculesTagsBuilder AddValue(string key, byte value)
-        {
-            return builder.AddValue(key, value);
-        }
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, short value)
-        {
-            return builder.AddValue(key, value);
-        }
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, int value)
-        {
-            return builder.AddValue(key, value);
-        }
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, long value)
-        {
-            return builder.AddValue(key, value);
-        }
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, bool value)
-        {
-            return builder.AddValue(key, value);
-        }
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, float value)
-        {
-            return builder.AddValue(key, value);
-        }
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, double value)
-        {
-            return builder.AddValue(key, value);
-        }
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, Guid value)
-            => throw new NotImplementedException();
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, string value)
-        {
-            return builder.AddValue(key, value);
-        }
+            => builder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<byte> value)
-        {
-            return builder.AddVector(key, value);
-        }
+            => builder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<short> value)
-        {
-            return builder.AddVector(key, value);
-        }
+            => builder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<int> value)
-        {
-            return builder.AddVector(key, value);
-        }
+            => builder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<long> value)
-        {
-            return builder.AddVector(key, value);
-        }
+            => builder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<bool> value)
-        {
-            return builder.AddVector(key, value);
-        }
+            => builder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<float> value)
-        {
-            return builder.AddVector(key, value);
-        }
+            => builder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<double> value)
-        {
-            return builder.AddVector(key, value);
-        }
+            => builder.AddVector(key, value);
 
-        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values) =>
-            throw new NotImplementedException();
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values)
+            => builder.AddVector(key, values);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<string> value)
-        {
-            return builder.AddVector(key, value);
-        }
+            => builder.AddVector(key, value);
 
         public void Dispose()
         {
@@ -137,10 +103,11 @@ namespace Vostok.Hercules.Client
 
             binaryWriter.Position = timeGuidPosition;
 
-            var timeGuid = timestampInternal != default
-                ? timeGuidGenerator.NewGuid(timestampInternal.ToUniversalTime().ToUnixTimeNanoseconds())
-                : timeGuidGenerator.NewGuid();
-            binaryWriter.Write(timeGuid);
+            var timestamp = timestampInternal != default
+                ? timestampInternal
+                : timeProvider();
+            
+            binaryWriter.Write(EpochHelper.ToUnixTimeUtcTicks(timestamp.DateTime));
 
             binaryWriter.Position = currentPosition;
         }

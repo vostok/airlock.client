@@ -4,7 +4,7 @@ namespace Vostok.Hercules.Client
 {
     internal interface IBuffer
     {
-        IBinaryWriter BeginRecord();
+        IHerculesBinaryWriter BeginRecord();
         void Commit(int recordSize);
         int GetRecordSize(int offset);
         int EstimateRecordsCountForMonitoring();

@@ -7,6 +7,6 @@ namespace Vostok.Hercules.Client
 {
     internal interface IHerculesRecordWriter
     {
-        bool TryWrite(IBinaryWriter binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize);
+        bool TryWrite(IHerculesBinaryWriter binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize);
     }
 }

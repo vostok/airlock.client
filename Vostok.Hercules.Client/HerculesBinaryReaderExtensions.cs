@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Text;
 using Vostok.Commons.Binary;
+using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.TimeBasedUuid;
 
 namespace Vostok.Hercules.Client
 {
@@ -15,8 +15,9 @@ namespace Vostok.Hercules.Client
             var version = reader.ReadByte();
             if (version != 1)
                 throw new NotSupportedException();
-            var timeGuid = new TimeGuid(reader.ReadByteArray(16));
-            builder.SetTimestamp( /* TODO: parse timestamp from timeguid or drop timeguid */ default);
+            var timestamp = EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64());
+            builder.SetTimestamp(timestamp);
+            reader.ReadGuid();
             reader.ReadContainer(builder);
             return builder.BuildEvent();
         }
@@ -29,8 +30,6 @@ namespace Vostok.Hercules.Client
             {
                 var key = ReadShortString(reader);
                 var valueType = (TagValueTypeDefinition) reader.ReadByte();
-
-                int length;
 
                 Action<IHerculesTagsBuilder> readContainer = tagsBuilder => reader.ReadContainer(tagsBuilder);
                 
@@ -63,90 +62,70 @@ namespace Vostok.Hercules.Client
                     case TagValueTypeDefinition.String:
                         builder.AddValue(key, reader.ReadShortString());
                         break;
-                    case TagValueTypeDefinition.Text:
-                        builder.AddValue(key, reader.ReadString());
+                    case TagValueTypeDefinition.UUID:
+                        builder.AddValue(key, reader.ReadGuid());
                         break;
-                    case TagValueTypeDefinition.ContainerArray:
-                        length = reader.ReadInt32();
-                        builder.AddVectorOfContainers(key, Enumerable.Repeat(readContainer, length).ToArray());
+                    case TagValueTypeDefinition.Null:
+                        builder.AddNull(key);
                         break;
-                    case TagValueTypeDefinition.ByteArray:
-                        builder.AddVector(key, reader.ReadByteArray());
-                        break;
-                    case TagValueTypeDefinition.ShortArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadInt16()));
-                        break;
-                    case TagValueTypeDefinition.IntegerArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadInt32()));
-                        break;
-                    case TagValueTypeDefinition.LongArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadInt64()));
-                        break;
-                    case TagValueTypeDefinition.FlagArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadBool()));
-                        break;
-                    case TagValueTypeDefinition.FloatArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadFloat()));
-                        break;
-                    case TagValueTypeDefinition.DoubleArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadDouble()));
-                        break;
-                    case TagValueTypeDefinition.StringArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadShortString()));
-                        break;
-                    case TagValueTypeDefinition.TextArray:
-                        builder.AddVector(key, reader.ReadArray(r => r.ReadString()));
-                        break;
-                    case TagValueTypeDefinition.ContainerVector:
-                        length = reader.ReadByte();
-                        builder.AddVectorOfContainers(key, Enumerable.Repeat(readContainer, length).ToArray());
-                        break;
-                    case TagValueTypeDefinition.ByteVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadByte()));
-                        break;
-                    case TagValueTypeDefinition.ShortVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadInt16()));
-                        break;
-                    case TagValueTypeDefinition.IntegerVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadInt32()));
-                        break;
-                    case TagValueTypeDefinition.LongVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadInt64()));
-                        break;
-                    case TagValueTypeDefinition.FlagVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadBool()));
-                        break;
-                    case TagValueTypeDefinition.FloatVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadFloat()));
-                        break;
-                    case TagValueTypeDefinition.DoubleVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadDouble()));
-                        break;
-                    case TagValueTypeDefinition.StringVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadShortString()));
-                        break;
-                    case TagValueTypeDefinition.TextVector:
-                        builder.AddVector(key, reader.ReadVector( r => r.ReadByte()));
+                    case TagValueTypeDefinition.Vector:
+                        ReadVector(reader, builder, key);
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(
+                            nameof(valueType), valueType, "Value type is not defined");
                 }
+            }
+        }
+
+        private static void ReadVector(IBinaryReader reader, IHerculesTagsBuilder builder, string key)
+        {
+            var elementType = (TagValueTypeDefinition) reader.ReadByte();
+            switch (elementType)
+            {
+                case TagValueTypeDefinition.Container:
+                    break;
+                case TagValueTypeDefinition.Byte:
+                    var length = reader.ReadInt32();
+                    builder.AddVector(key, reader.ReadByteArray(length));
+                    break;
+                case TagValueTypeDefinition.Short:
+                    builder.AddVector(key, reader.ReadArray(r => r.ReadInt16()));
+                    break;
+                case TagValueTypeDefinition.Integer:
+                    builder.AddVector(key, reader.ReadArray(r => r.ReadInt32()));
+                    break;
+                case TagValueTypeDefinition.Long:
+                    builder.AddVector(key, reader.ReadArray(r => r.ReadInt64()));
+                    break;
+                case TagValueTypeDefinition.Flag:
+                    builder.AddVector(key, reader.ReadArray(r => r.ReadBool()));
+                    break;
+                case TagValueTypeDefinition.Float:
+                    builder.AddVector(key, reader.ReadArray(r => r.ReadFloat()));
+                    break;
+                case TagValueTypeDefinition.Double:
+                    builder.AddVector(key, reader.ReadArray(r => r.ReadDouble()));
+                    break;
+                case TagValueTypeDefinition.String:
+                    builder.AddVector(key, reader.ReadArray(r => r.ReadString()));
+                    break;
+                case TagValueTypeDefinition.UUID:
+                    builder.AddVector(key, reader.ReadArray(r => r.ReadGuid()));
+                    break;
+                case TagValueTypeDefinition.Null:
+                case TagValueTypeDefinition.Vector:
+                    throw new NotSupportedException();
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(elementType), elementType, "Element value type is not defined.");
             }
         }
 
         private static string ReadShortString(this IBinaryReader reader)
         {
             var length = reader.ReadByte();
-            //TODO: avoid array allocation
             return Encoding.UTF8.GetString(reader.ReadByteArray(length));
-        }
-
-        private static T[] ReadVector<T>(this IBinaryReader reader, Func<IBinaryReader, T> readSingleValue)
-        {
-            var arr = new T[reader.ReadByte()];
-            for (var i = 0; i < arr.Length; i++)
-                arr[i] = readSingleValue(reader);
-            return arr;
         }
     }
 }

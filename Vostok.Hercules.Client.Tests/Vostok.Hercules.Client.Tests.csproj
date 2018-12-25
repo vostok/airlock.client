@@ -1,33 +1,33 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\vostok.devtools\library-common-props\Test-Project.props" />
   <Import Project="..\..\vostok.devtools\git-commit-to-assembly-title\Vostok.Tools.GitCommit2AssemblyTitle.props" />
-
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net471</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFrameworks>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.4.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="NSubstitute" Version="3.1.0" />
     <PackageReference Include="NUnit" Version="3.10.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Vostok.Hercules.Client\Vostok.Hercules.Client.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\..\vostok.commons.testing\Vostok.Commons.Testing\AssertionAssertions.cs" Link="Commons\AssertionAssertions.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Vostok.Hercules.Client.Abstractions">
       <HintPath>..\..\vostok.hercules.client.abstractions\Vostok.Hercules.Client.Abstractions\bin\Release\netstandard2.0\Vostok.Hercules.Client.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.Hercules.Client.Management">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.hercules.client.management\Vostok.Hercules.Client.Management\bin\Release\netstandard2.0\Vostok.Hercules.Client.Management.dll</HintPath>
     </Reference>
     <Reference Include="Vostok.Logging.Abstractions">
       <HintPath>..\..\vostok.logging.abstractions\Vostok.Logging.Abstractions\bin\Release\netstandard2.0\Vostok.Logging.Abstractions.dll</HintPath>
@@ -39,5 +39,4 @@
       <HintPath>..\..\vostok.clusterclient.core\Vostok.ClusterClient.Core\bin\Release\netstandard2.0\Vostok.ClusterClient.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
-
 </Project>
