@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Testing;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
@@ -116,7 +118,6 @@ namespace Vostok.Hercules.Client.Tests
         [Test, Explicit]
         public void Should_read_and_write_hercules_events()
         {
-            var intValue = 100500;
             var count = 100_000;
 
             var seen = new bool[count];
@@ -157,6 +158,45 @@ namespace Vostok.Hercules.Client.Tests
             
             seen.Should().AllBeEquivalentTo(true);
         }
-        
+
+        [Test, Explicit]
+        public void Should_read_and_write_hercules_event_with_vector_of_containers()
+        {
+            sink.Put(
+                stream,
+                x => x
+                    .AddVectorOfContainers(
+                        "tag",
+                        new List<Action<IHerculesTagsBuilder>>
+                        {
+                            b => b.AddValue("a", 0),
+                            b => b.AddValue("a", 1),
+                            b => b.AddValue("a", 2),
+                        }));
+
+            var readQuery = new ReadStreamQuery(stream)
+            {
+                Limit = 100,
+                Coordinates = new StreamCoordinates(new StreamPosition[0]),
+                ClientShard = 0,
+                ClientShardCount = 1
+            };
+
+            new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Should().NotBeEmpty())
+                .ShouldPassIn(timeout);
+
+            sink.SentRecordsCount.Should().Be(1);
+
+            var readStreamResult = streamClient.Read(readQuery, timeout);
+
+            readStreamResult.Status.Should().Be(HerculesStatus.Success);
+            readStreamResult.Payload.Events.Should().HaveCount(1);
+
+            var @event = readStreamResult.Payload.Events[0];
+
+            @event.Tags["tag"].AsVector.AsContainerList[0]["a"].AsInt.Should().Be(0);
+            @event.Tags["tag"].AsVector.AsContainerList[1]["a"].AsInt.Should().Be(1);
+            @event.Tags["tag"].AsVector.AsContainerList[2]["a"].AsInt.Should().Be(2);
+        }
     }
 }

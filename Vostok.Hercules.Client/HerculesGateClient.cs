@@ -134,6 +134,7 @@ namespace Vostok.Hercules.Client
                                 }
                                 break;
                             case HerculesValueType.Container:
+                                //TODO
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();

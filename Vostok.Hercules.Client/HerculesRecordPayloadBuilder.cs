@@ -111,13 +111,13 @@ namespace Vostok.Hercules.Client
 
         public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> values)
         {
-            
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.Container);
+            writer.Write(values.Count);
 
-            using (var builder = new HerculesRecordPayloadBuilderWithCounter(writer))
-                foreach (var action in values)
+            foreach (var action in values)
+                using (var builder = new HerculesRecordPayloadBuilderWithCounter(writer))
                     action(builder);
 
             return this;

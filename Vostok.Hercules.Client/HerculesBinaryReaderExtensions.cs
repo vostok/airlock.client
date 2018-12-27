@@ -81,9 +81,15 @@ namespace Vostok.Hercules.Client
         private static void ReadVector(IBinaryReader reader, IHerculesTagsBuilder builder, string key)
         {
             var elementType = (TagValueTypeDefinition) reader.ReadByte();
+
             switch (elementType)
             {
                 case TagValueTypeDefinition.Container:
+                    builder.AddVectorOfContainers(
+                        key,
+                        Enumerable
+                            .Range(0, reader.ReadInt32())
+                            .Select(x => new Action<IHerculesTagsBuilder>(b => ReadContainer(reader, b))).ToList());
                     break;
                 case TagValueTypeDefinition.Byte:
                     var length = reader.ReadInt32();
