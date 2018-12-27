@@ -13,7 +13,7 @@ using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests
 {
-    public class HerculesGateClientFunctionalTests
+    public class HerculesSinkFunctionalTests
     {
         private readonly TimeSpan timeout = 20.Seconds();
         private readonly ConsoleLog log = new ConsoleLog();
