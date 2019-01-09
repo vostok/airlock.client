@@ -198,5 +198,38 @@ namespace Vostok.Hercules.Client.Tests
             @event.Tags["tag"].AsVector.AsContainerList[1]["a"].AsInt.Should().Be(1);
             @event.Tags["tag"].AsVector.AsContainerList[2]["a"].AsInt.Should().Be(2);
         }
+
+        [Test, Explicit]
+        public void Should_read_and_write_hercules_event_with_string_values()
+        {
+            sink.Put(
+                stream,
+                x => x
+                    .AddValue("k1", "v1")
+                    .AddValue("k2", "v2"));
+
+            var readQuery = new ReadStreamQuery(stream)
+            {
+                Limit = 100,
+                Coordinates = new StreamCoordinates(new StreamPosition[0]),
+                ClientShard = 0,
+                ClientShardCount = 1
+            };
+
+            new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Should().NotBeEmpty())
+                .ShouldPassIn(timeout);
+
+            sink.SentRecordsCount.Should().Be(1);
+
+            var readStreamResult = streamClient.Read(readQuery, timeout);
+
+            readStreamResult.Status.Should().Be(HerculesStatus.Success);
+            readStreamResult.Payload.Events.Should().HaveCount(1);
+
+            var @event = readStreamResult.Payload.Events[0];
+
+            @event.Tags["k1"].AsString.Should().Be("v1");
+            @event.Tags["k2"].AsString.Should().Be("v2");
+        }
     }
 }

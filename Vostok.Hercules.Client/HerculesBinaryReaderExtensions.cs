@@ -60,7 +60,7 @@ namespace Vostok.Hercules.Client
                         builder.AddValue(key, reader.ReadDouble());
                         break;
                     case TagValueTypeDefinition.String:
-                        builder.AddValue(key, reader.ReadShortString());
+                        builder.AddValue(key, reader.ReadString());
                         break;
                     case TagValueTypeDefinition.UUID:
                         builder.AddValue(key, reader.ReadGuid());
