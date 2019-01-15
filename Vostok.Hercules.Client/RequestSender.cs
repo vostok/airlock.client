@@ -24,15 +24,15 @@ namespace Vostok.Hercules.Client
                 log,
                 configuration =>
                 {
-                    configuration.ServiceName = gate.ServiceName ?? "HerculesGateway";
+                    configuration.TargetServiceName = gate.ServiceName ?? "HerculesGateway";
                     configuration.ClusterProvider = gate.Cluster;
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
                     
                     configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
-                    configuration.SetupReplicaBudgeting(configuration.ServiceName);
-                    configuration.SetupAdaptiveThrottling(configuration.ServiceName);
+                    configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
+                    configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
                 });
         }
 

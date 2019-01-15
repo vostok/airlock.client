@@ -32,15 +32,15 @@ namespace Vostok.Hercules.Client
                 log,
                 configuration =>
                 {
-                    configuration.ServiceName = config.ServiceName ?? "HerculesStreamApi";
+                    configuration.TargetServiceName = config.ServiceName ?? "HerculesStreamApi";
                     configuration.ClusterProvider = config.Cluster;
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
                     
                     configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
-                    configuration.SetupReplicaBudgeting(configuration.ServiceName);
-                    configuration.SetupAdaptiveThrottling(configuration.ServiceName);
+                    configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
+                    configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
                 });
         }
 
