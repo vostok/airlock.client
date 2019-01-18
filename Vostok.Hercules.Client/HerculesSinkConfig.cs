@@ -1,6 +1,6 @@
 ﻿using System;
+using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
-using Vostok.Clusterclient.Core.Transport;
 using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client
@@ -15,7 +15,7 @@ namespace Vostok.Hercules.Client
 
         public string ServiceName { get; set; } = "HerculesGateway";
         public IClusterProvider Cluster { get; set; }
-        public ITransport Transport { get; set; }
+        public ClusterClientSetup ClusterClientSetup { get; set; }
         public Func<string> ApiKeyProvider { get; set; }
         public byte RecordVersion => 1;
         public long MaximumRecordSizeBytes { get; set; } = 1 * DataSizeConstants.Megabyte;
