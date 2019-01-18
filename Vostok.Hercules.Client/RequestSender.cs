@@ -26,7 +26,7 @@ namespace Vostok.Hercules.Client
                 {
                     configuration.TargetServiceName = gate.ServiceName ?? "HerculesGateway";
                     configuration.ClusterProvider = gate.Cluster;
-                    configuration.Transport = new UniversalTransport(log);
+                    configuration.Transport = gate.Transport ?? new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
                     
