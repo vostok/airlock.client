@@ -12,6 +12,7 @@ namespace Vostok.Hercules.Client
         private readonly IHerculesBinaryWriter writer;
         private readonly IMemoryManager memoryManager;
         private readonly List<BufferGarbageSegment> garbage;
+        private readonly object sync = new object();
 
         private volatile Dictionary<int, int> records;
 
@@ -25,16 +26,27 @@ namespace Vostok.Hercules.Client
 
         public IHerculesBinaryWriter BeginRecord() => this;
 
-        public void Commit(int recordSize) => records.Add(writer.Position - recordSize, recordSize);
+        public void Commit(int recordSize)
+        {
+            lock (sync)
+                records.Add(writer.Position - recordSize, recordSize);
+        }
 
-        public int GetRecordSize(int offset) => records[offset];
+        public int GetRecordSize(int offset)
+        {
+            lock (sync)
+                return records[offset];
+        }
 
         public int EstimateRecordsCountForMonitoring() => records.Count;
 
         public bool IsEmpty() => writer.Position == 0;
 
-        public BufferSnapshot MakeSnapshot() =>
-            new BufferSnapshot(this, writer.Array, writer.Position, records.Count);
+        public BufferSnapshot MakeSnapshot()
+        {
+            lock (sync)
+                return new BufferSnapshot(this, writer.Array, writer.Position, records.Count);
+        }
 
         public void RequestGarbageCollection(int offset, int length, int recordsCount) =>
             garbage.Add(new BufferGarbageSegment {Offset = offset, Length = length, RecordsCount = recordsCount});
@@ -86,9 +98,10 @@ namespace Vostok.Hercules.Client
                 return oldOffset - garbage.Where(x => x.Offset < oldOffset).Sum(x => x.Length);
             }
             
-            return records
-                .Where(x => !garbageRecords.ContainsKey(x.Key))
-                .ToDictionary(x => GetNewOffsetForRecord(x.Key), x => x.Value);
+            lock (sync)
+                return records
+                    .Where(x => !garbageRecords.ContainsKey(x.Key))
+                    .ToDictionary(x => GetNewOffsetForRecord(x.Key), x => x.Value);
         }
 
         public int Position
