@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
 
@@ -157,8 +156,12 @@ namespace Vostok.Hercules.Client
             return this;
         }
 
-        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values) =>
-            throw new NotImplementedException();
+        public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values)
+        {
+            builder.AddVector(key, values);
+            counter++;
+            return this;
+        }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<string> value)
         {
