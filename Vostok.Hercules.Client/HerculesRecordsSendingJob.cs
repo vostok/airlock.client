@@ -128,6 +128,9 @@ namespace Vostok.Hercules.Client
 
         private static unsafe void SetRecordsCount(byte[] buffer, int recordsCount)
         {
+            if (buffer.Length < sizeof(int))
+                throw new ArgumentException($"Buffer length {buffer.Length} is less than {sizeof(int)}.");
+            
             fixed (byte* b = buffer)
                 *(int*) b = EndiannessConverter.Convert(recordsCount, Endianness.Big);
         }
