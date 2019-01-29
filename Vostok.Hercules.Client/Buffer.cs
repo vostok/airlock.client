@@ -10,6 +10,8 @@ namespace Vostok.Hercules.Client
         
         private readonly IHerculesBinaryWriter writer;
         private readonly IMemoryManager memoryManager;
+        private readonly AtomicBoolean isLocked = new AtomicBoolean(false);
+
         private BufferStateHolder committed;
         private BufferStateHolder garbage;
 
@@ -44,6 +46,15 @@ namespace Vostok.Hercules.Client
         {
             garbage.Value = state;
         }
+
+        public bool TryLock() =>
+            isLocked.TrySetTrue();
+
+        public void Unlock() =>
+            isLocked.Value = false;
+
+        public bool HasGarbage() =>
+            garbage.Value.RecordsCount != 0;
 
         /// <summary>
         /// <threadsafety>This method is NOT threadsafe and should be called only from <see cref="BufferPool.TryAcquire"/> and <see cref="BufferPool.MakeSnapshot"/>.</threadsafety>

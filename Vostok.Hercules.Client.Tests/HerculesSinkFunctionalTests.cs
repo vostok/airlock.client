@@ -97,10 +97,6 @@ namespace Vostok.Hercules.Client.Tests
                 ClientShardCount = 1
             };
 
-            // Thread.Sleep(15000);
-            //
-            // var read = streamClient.Read(readQuery, timeout);
-            
             new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Should().NotBeEmpty())
                 .ShouldPassIn(timeout);
 
