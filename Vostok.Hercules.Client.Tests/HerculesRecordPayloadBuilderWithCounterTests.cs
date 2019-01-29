@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Net;
 using NUnit.Framework;
-using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
 

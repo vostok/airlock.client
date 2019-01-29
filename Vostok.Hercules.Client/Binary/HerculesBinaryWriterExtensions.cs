@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using JetBrains.Annotations;
-using Vostok.Commons.Binary;
 
 namespace Vostok.Hercules.Client.Binary
 {

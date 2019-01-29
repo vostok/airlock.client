@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Threading;
-using Vostok.Hercules.Client.Abstractions.Values;
 
 namespace Vostok.Hercules.Client.Binary
 {
