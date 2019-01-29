@@ -1,18 +1,19 @@
-﻿namespace Vostok.Hercules.Client
+﻿using System;
+
+namespace Vostok.Hercules.Client
 {
     internal class BufferSnapshot
     {
-        public BufferSnapshot(IBuffer parent, byte[] buffer, int position, int recordsCount)
+        public BufferSnapshot(IBuffer parent, byte[] buffer, BufferState state)
         {
             Parent = parent;
             Buffer = buffer;
-            Position = position;
-            RecordsCount = recordsCount;
+            State = state;
         }
 
         public IBuffer Parent { get; }
         public byte[] Buffer { get; }
-        public int Position { get; }
-        public int RecordsCount { get; }
+        public BufferState State { get; }
+        public ArraySegment<byte> Data => new ArraySegment<byte>(Buffer, 0, State.Length);
     }
 }

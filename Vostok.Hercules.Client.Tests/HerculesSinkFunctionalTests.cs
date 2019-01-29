@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Topology;
@@ -33,7 +34,10 @@ namespace Vostok.Hercules.Client.Tests
         [SetUp]
         public void Setup()
         {
-            stream = $"dotnet_test_{Guid.NewGuid().ToString().Substring(0, 8)}";
+            // stream = $"dotnet_test_{Guid.NewGuid().ToString().Substring(0, 8)}";
+            var dt = DateTime.UtcNow;
+            var key = dt.Hour * 3600 + dt.Minute * 60 + dt.Second;
+            stream = $"dotnet_test_{key}";
 
             var sinkConfig = new HerculesSinkConfig(new FixedClusterProvider(new Uri(gateUrl)), () => apiKey);
 
@@ -59,7 +63,7 @@ namespace Vostok.Hercules.Client.Tests
                         new StreamDescription(stream)
                         {
                             TTL = 1.Minutes(),
-                            Partitions = 1
+                            Partitions = 3
                         }),
                     timeout)
                 .EnsureSuccess();
@@ -68,7 +72,7 @@ namespace Vostok.Hercules.Client.Tests
         [TearDown]
         public void TearDown()
         {
-            managementClient.DeleteStream(stream, timeout).EnsureSuccess();
+            // managementClient.DeleteStream(stream, timeout).EnsureSuccess();
         }
 
         [Test, Explicit]
@@ -93,6 +97,10 @@ namespace Vostok.Hercules.Client.Tests
                 ClientShardCount = 1
             };
 
+            // Thread.Sleep(15000);
+            //
+            // var read = streamClient.Read(readQuery, timeout);
+            
             new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Should().NotBeEmpty())
                 .ShouldPassIn(timeout);
 

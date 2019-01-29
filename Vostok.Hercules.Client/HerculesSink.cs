@@ -38,10 +38,9 @@ namespace Vostok.Hercules.Client
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
             var jobScheduler = new HerculesRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
-            var bufferSlicer = new BufferSliceFactory((int) config.MaximumRequestContentSizeBytes - sizeof(int));
-            var messageBuffer = new byte[config.MaximumRequestContentSizeBytes];
+            // config.MaximumRequestContentSizeBytes
             var requestSender = new RequestSender(log, config);
-            var job = new HerculesRecordsSendingJob(log, jobScheduler, bufferPools, bufferSlicer, messageBuffer, requestSender, config.RequestTimeout);
+            var job = new HerculesRecordsSendingJob(log, jobScheduler, bufferPools, requestSender, config.RequestTimeout);
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);
         }
 

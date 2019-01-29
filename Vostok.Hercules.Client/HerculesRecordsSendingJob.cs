@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Commons.Binary;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -13,8 +14,6 @@ namespace Vostok.Hercules.Client
         private readonly ILog log;
         private readonly IHerculesRecordsSendingJobScheduler scheduler;
         private readonly IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools;
-        private readonly IBufferSliceFactory bufferSlicer;
-        private readonly byte[] messageBuffer;
         private readonly IRequestSender requestSender;
         private readonly TimeSpan timeout;
 
@@ -27,16 +26,12 @@ namespace Vostok.Hercules.Client
             ILog log,
             IHerculesRecordsSendingJobScheduler scheduler,
             IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools,
-            IBufferSliceFactory bufferSlicer,
-            byte[] messageBuffer,
             IRequestSender requestSender,
             TimeSpan timeout)
         {
             this.log = log;
             this.scheduler = scheduler;
             this.bufferPools = bufferPools;
-            this.bufferSlicer = bufferSlicer;
-            this.messageBuffer = messageBuffer;
             this.requestSender = requestSender;
             this.timeout = timeout;
 
@@ -83,14 +78,14 @@ namespace Vostok.Hercules.Client
 
             var sendAny = false;
             
-            foreach (var context in BuildMessages(snapshots))
+            foreach (var snapshot in snapshots)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (context.Slices.Count == 0)
+                if (snapshot.State.RecordsCount == 0)
                     continue;
 
-                if (!await PushAsync(stream, context, cancellationToken).ConfigureAwait(false))
+                if (!await PushAsync(stream, snapshot, cancellationToken).ConfigureAwait(false))
                     return false;
                 
                 sendAny = true;
@@ -100,43 +95,17 @@ namespace Vostok.Hercules.Client
 
         }
 
-        private IEnumerable<RequestMessageBuildingContext> BuildMessages(IEnumerable<BufferSnapshot> snapshots)
-        {
-            RequestMessageBuildingContext context = null;
-
-            var slices = snapshots
-                .SelectMany(snapshot => bufferSlicer.Cut(snapshot))
-                .OrderByDescending(x => x.Length);
-
-            foreach (var slice in slices)
-            {
-                if (context == null)
-                    context = new RequestMessageBuildingContext(messageBuffer);
-
-                if (context.Builder.IsFull)
-                    break;
-                
-                if (context.Builder.TryAppend(slice))
-                    continue;
-
-                yield return context;
-
-                context = null;
-            }
-
-            if (context != null)
-                yield return context;
-        }
-
-        private async Task<bool> PushAsync(string stream, RequestMessageBuildingContext context, CancellationToken cancellationToken)
+        private async Task<bool> PushAsync(string stream, BufferSnapshot snapshot, CancellationToken cancellationToken)
         {   
             var sw = Stopwatch.StartNew();
 
-            var sendingResult = await requestSender.SendAsync(stream, context.Message, timeout, cancellationToken).ConfigureAwait(false);
+            var recordsCount = snapshot.State.RecordsCount;
+            
+            SetRecordsCount(snapshot.Buffer, recordsCount);
+            
+            var sendingResult = await requestSender.SendAsync(stream, snapshot.Data, timeout, cancellationToken).ConfigureAwait(false);
 
-            var recordsCount = context.Slices.Sum(x => x.RecordsCount);
-
-            LogSendingResult(sendingResult, recordsCount, context.Message.Count, stream, sw.Elapsed);
+            LogSendingResult(sendingResult, recordsCount, snapshot.State.Length, stream, sw.Elapsed);
 
             switch (sendingResult)
             {
@@ -152,10 +121,15 @@ namespace Vostok.Hercules.Client
                     throw new ArgumentOutOfRangeException(nameof(sendingResult));
             }
 
-            foreach (var slice in context.Slices)
-                slice.Parent.RequestGarbageCollection(slice.Offset, slice.Length, slice.RecordsCount);
+            snapshot.Parent.RequestGarbageCollection(snapshot.State);
 
             return true;
+        }
+
+        private static unsafe void SetRecordsCount(byte[] buffer, int recordsCount)
+        {
+            fixed (byte* b = buffer)
+                *(int*) b = EndiannessConverter.Convert(recordsCount, Endianness.Big);
         }
 
         private void LogSendingResult(RequestSendingResult result, int recordsCount, int bytesCount, string stream, TimeSpan elapsed)

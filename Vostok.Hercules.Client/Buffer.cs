@@ -1,107 +1,66 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Binary;
 
 namespace Vostok.Hercules.Client
 {
     internal class Buffer : IBuffer, IHerculesBinaryWriter
     {
+        private const int InitialPosition = 4;
+        
         private readonly IHerculesBinaryWriter writer;
         private readonly IMemoryManager memoryManager;
-        private readonly List<BufferGarbageSegment> garbage;
-        private readonly object sync = new object();
-
-        private volatile Dictionary<int, int> records;
+        private BufferStateHolder committed;
+        private BufferStateHolder garbage;
 
         public Buffer(int bufferSize, IMemoryManager memoryManager)
         {
             writer = new HerculesBinaryWriter(bufferSize);
+
             this.memoryManager = memoryManager;
-            garbage = new List<BufferGarbageSegment>();
-            records = new Dictionary<int, int>();
+            
+            writer.Write(0);
+            committed.Value = new BufferState(InitialPosition, 0);
         }
 
         public IHerculesBinaryWriter BeginRecord() => this;
 
         public void Commit(int recordSize)
         {
-            lock (sync)
-                records.Add(writer.Position - recordSize, recordSize);
+            var oldValue = committed.Value;
+            committed.Value = new BufferState(oldValue.Length + recordSize, oldValue.RecordsCount + 1);
         }
 
-        public int GetRecordSize(int offset)
-        {
-            lock (sync)
-                return records[offset];
-        }
-
-        public int EstimateRecordsCountForMonitoring() => records.Count;
+        public int EstimateRecordsCountForMonitoring() => committed.Value.RecordsCount;
 
         public bool IsEmpty() => writer.Position == 0;
 
         public BufferSnapshot MakeSnapshot()
         {
-            lock (sync)
-                return new BufferSnapshot(this, writer.Array, writer.Position, records.Count);
+            return new BufferSnapshot(this, writer.Array, committed.Value);
         }
 
-        public void RequestGarbageCollection(int offset, int length, int recordsCount) =>
-            garbage.Add(new BufferGarbageSegment {Offset = offset, Length = length, RecordsCount = recordsCount});
+        public void RequestGarbageCollection(BufferState state)
+        {
+            garbage.Value = state;
+        }
 
         /// <summary>
         /// <threadsafety>This method is NOT threadsafe and should be called only from <see cref="BufferPool.TryAcquire"/> and <see cref="BufferPool.MakeSnapshot"/>.</threadsafety>
         /// </summary>
         public void CollectGarbage()
         {
-            if (garbage.Count == 0)
+            var garbageState = garbage.Value;
+            if (garbageState.Length == 0)
                 return;
+         
+            System.Buffer.BlockCopy(
+                writer.Array, garbageState.Length,
+                writer.Array, InitialPosition, writer.Position - garbageState.Length);
 
-            if (writer.Position > 0)
-            {
-                garbage.Sort((x, y) => x.Offset.CompareTo(y.Offset));
-
-                var usefulBytesEndingPosition = DefragmentationManager.Run(writer.FilledSegment, garbage);
-
-                writer.Position = usefulBytesEndingPosition;
-
-                if (records.Count > 0)
-                {
-                    var garbageRecordsCount = garbage.Sum(x => x.RecordsCount);
-
-                    records = RemoveGarbageRecords(garbageRecordsCount);
-                }
-            }
-
-            garbage.Clear();
-        }
-
-        private Dictionary<int, int> RemoveGarbageRecords(int garbageRecordsCount)
-        {
-            var garbageRecords = new Dictionary<int, byte>(garbageRecordsCount);
-
-            foreach (var garbageSegment in garbage)
-            {
-                var currentOffset = garbageSegment.Offset;
-                for (var i = 0; i < garbageSegment.RecordsCount; i++)
-                {
-                    garbageRecords.Add(currentOffset, 0);
-                    currentOffset += GetRecordSize(currentOffset);
-                }
-            }
-            
-            int GetNewOffsetForRecord(int oldOffset)
-            {
-                //TODO: use binary search
-                return oldOffset - garbage.Where(x => x.Offset < oldOffset).Sum(x => x.Length);
-            }
-            
-            lock (sync)
-                return records
-                    .Where(x => !garbageRecords.ContainsKey(x.Key))
-                    .ToDictionary(x => GetNewOffsetForRecord(x.Key), x => x.Value);
+            writer.Position -= garbageState.Length - InitialPosition;
+            committed.Value -= garbageState - new BufferState(InitialPosition, 0);
+            garbage.Value = new BufferState();
         }
 
         public int Position
