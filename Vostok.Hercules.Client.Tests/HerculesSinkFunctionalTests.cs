@@ -22,7 +22,7 @@ namespace Vostok.Hercules.Client.Tests
 
         private string stream;
         private string gateUrl = "http://vm-hercules04:6306";
-        private string apiKey = "";
+        private string apiKey = "dotnet_api_key";
         private string managementApiUrl = "http://vm-hercules05:6507";
         private string streamApiUrl = "http://vm-hercules05:6407";
         private HerculesStreamClient streamClient;

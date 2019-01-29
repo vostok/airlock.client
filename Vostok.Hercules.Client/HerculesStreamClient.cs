@@ -51,8 +51,8 @@ namespace Vostok.Hercules.Client
                 var url = new RequestUrlBuilder("stream/read")
                     .AppendToQuery("stream", query.Name)
                     .AppendToQuery("take", query.Limit)
-                    .AppendToQuery("k", query.ClientShard)
-                    .AppendToQuery("n", query.ClientShardCount)
+                    .AppendToQuery("shardIndex", query.ClientShard)
+                    .AppendToQuery("shardCount", query.ClientShardCount)
                     .Build();
 
                 var body = new BinaryBufferWriter(
