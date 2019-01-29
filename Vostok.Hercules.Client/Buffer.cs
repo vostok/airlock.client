@@ -1,5 +1,7 @@
 using System;
 using System.Text;
+using Vostok.Clusterclient.Core.Modules;
+using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Binary;
 
 namespace Vostok.Hercules.Client
