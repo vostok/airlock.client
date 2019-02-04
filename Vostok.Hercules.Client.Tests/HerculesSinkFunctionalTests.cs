@@ -25,6 +25,7 @@ namespace Vostok.Hercules.Client.Tests
         private string apiKey = "dotnet_api_key";
         private string managementApiUrl = "http://vm-hercules05:6507";
         private string streamApiUrl = "http://vm-hercules05:6407";
+        private TimeSpan ttl = 20.Seconds();
         private HerculesStreamClient streamClient;
         private HerculesSink sink;
         private HerculesManagementClient managementClient;
@@ -33,10 +34,10 @@ namespace Vostok.Hercules.Client.Tests
         [SetUp]
         public void Setup()
         {
-            // stream = $"dotnet_test_{Guid.NewGuid().ToString().Substring(0, 8)}";
-            var dt = DateTime.UtcNow;
-            var key = dt.Hour * 3600 + dt.Minute * 60 + dt.Second;
-            stream = $"dotnet_test_{key}";
+            stream = $"dotnet_test_{Guid.NewGuid().ToString().Substring(0, 8)}";
+            // var dt = DateTime.UtcNow;
+            // var key = dt.Hour * 3600 + dt.Minute * 60 + dt.Second;
+            // stream = $"dotnet_test_{key}";
 
             var sinkConfig = new HerculesSinkConfig(new FixedClusterProvider(new Uri(gateUrl)), () => apiKey);
 
@@ -61,7 +62,7 @@ namespace Vostok.Hercules.Client.Tests
                     new CreateStreamQuery(
                         new StreamDescription(stream)
                         {
-                            TTL = 1.Minutes(),
+                            TTL = ttl,
                             Partitions = 3
                         }),
                     timeout)
@@ -71,7 +72,7 @@ namespace Vostok.Hercules.Client.Tests
         [TearDown]
         public void TearDown()
         {
-            // managementClient.DeleteStream(stream, timeout).EnsureSuccess();
+            managementClient.DeleteStream(stream, timeout).EnsureSuccess();
         }
 
         [Test, Explicit]
@@ -233,6 +234,37 @@ namespace Vostok.Hercules.Client.Tests
 
             @event.Tags["k1"].AsString.Should().Be("v1");
             @event.Tags["k2"].AsString.Should().Be("v2");
+        }
+
+        [Test, Explicit]
+        public void Should_delete_stream()
+        {
+            sink.Put(stream, x => x.AddValue("key", 1));
+
+            var state = new StreamCoordinates(new StreamPosition[0]);
+            
+            var readQuery = new ReadStreamQuery(stream)
+            {
+                Limit = 10000,
+                Coordinates = state,
+                ClientShard = 0,
+                ClientShardCount = 1
+            };
+            
+            new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Count.Should().BePositive())
+                .ShouldPassIn(timeout);
+
+            managementClient.DeleteStream(stream, timeout);
+
+            streamClient.Read(readQuery, timeout).IsSuccessful.Should().BeFalse();
+
+            managementClient.CreateStream(new CreateStreamQuery(new StreamDescription(stream)
+            {
+                Partitions = 3,
+                TTL = 1.Minutes()
+            }), timeout);
+
+            streamClient.Read(readQuery, timeout).Payload.Events.Count.Should().Be(0);
         }
     }
 }
