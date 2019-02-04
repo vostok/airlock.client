@@ -24,6 +24,8 @@ namespace Vostok.Hercules.Client
 
         private int isDisposed;
         private long lostRecordsCounter;
+        private int maxRecordSize;
+        private int maxRequestBodySize;
 
         public HerculesSink(HerculesSinkConfig config, ILog log)
         {
@@ -35,10 +37,12 @@ namespace Vostok.Hercules.Client
 
             initialPooledBuffersCount = config.InitialPooledBuffersCount;
             initialPooledBufferSize = (int) config.InitialPooledBufferSizeBytes;
+            maxRecordSize = (int) config.MaximumRecordSizeBytes;
+            maxRequestBodySize = (int) config.MaximumRequestContentSizeBytes;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
             var jobScheduler = new HerculesRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
-            // config.MaximumRequestContentSizeBytes
+
             var requestSender = new RequestSender(log, config);
             var job = new HerculesRecordsSendingJob(log, jobScheduler, bufferPools, requestSender, config.RequestTimeout);
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);
@@ -90,6 +94,6 @@ namespace Vostok.Hercules.Client
             bufferPools.GetOrAdd(stream, _ => new Lazy<IBufferPool>(CreateBufferPool, LazyThreadSafetyMode.ExecutionAndPublication)).Value;
 
         private IBufferPool CreateBufferPool() =>
-            new BufferPool(memoryManager, initialPooledBuffersCount, initialPooledBufferSize);
+            new BufferPool(memoryManager, initialPooledBuffersCount, initialPooledBufferSize, maxRecordSize, maxRequestBodySize);
     }
 }

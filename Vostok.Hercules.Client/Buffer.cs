@@ -34,7 +34,7 @@ namespace Vostok.Hercules.Client
             committed.Value = new BufferState(oldValue.Length + recordSize, oldValue.RecordsCount + 1);
         }
 
-        public int EstimateRecordsCountForMonitoring() => committed.Value.RecordsCount;
+        public BufferState GetState() => committed.Value;
 
         public bool IsEmpty() => writer.Position == 0;
 

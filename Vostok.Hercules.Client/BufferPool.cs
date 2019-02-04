@@ -8,14 +8,23 @@ namespace Vostok.Hercules.Client
     {
         private readonly IMemoryManager memoryManager;
         private readonly int initialBufferSize;
+        private readonly int maxRecordSize;
+        private readonly int maxBufferSize;
 
         private readonly ConcurrentQueue<IBuffer> buffers;
         private readonly ConcurrentQueue<IBuffer> allBuffers;
 
-        public BufferPool(IMemoryManager memoryManager, int initialCount, int initialBufferSize)
+        public BufferPool(
+            IMemoryManager memoryManager,
+            int initialCount,
+            int initialBufferSize,
+            int maxRecordSize,
+            int maxBufferSize)
         {
             this.memoryManager = memoryManager;
             this.initialBufferSize = initialBufferSize;
+            this.maxRecordSize = maxRecordSize;
+            this.maxBufferSize = maxBufferSize;
 
             allBuffers = new ConcurrentQueue<IBuffer>();
             buffers = new ConcurrentQueue<IBuffer>();
@@ -45,7 +54,7 @@ namespace Vostok.Hercules.Client
             buffers.Enqueue(buffer);
         }
 
-        public long GetStoredRecordsCount() => buffers.Sum(x => x.EstimateRecordsCountForMonitoring());
+        public long GetStoredRecordsCount() => buffers.Sum(x => x.GetState().RecordsCount);
 
         public IReadOnlyCollection<IBuffer> MakeSnapshot()
         {
@@ -78,7 +87,10 @@ namespace Vostok.Hercules.Client
                 if (!buffers.TryDequeue(out buffer))
                     return false;
 
-                if (buffer.TryLock())
+                //TODO: use other way to decide that buffer is large enough for record, don't waste space
+                var state = buffer.GetState();
+                
+                if (state.Length <= maxBufferSize - maxRecordSize && buffer.TryLock())
                     return true;
                 
                 buffers.Enqueue(buffer);

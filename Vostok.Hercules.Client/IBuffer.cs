@@ -6,7 +6,7 @@ namespace Vostok.Hercules.Client
     {
         IHerculesBinaryWriter BeginRecord();
         void Commit(int recordSize);
-        int EstimateRecordsCountForMonitoring();
+        BufferState GetState();
         bool IsEmpty();
         BufferSnapshot MakeSnapshot();
         void CollectGarbage();
