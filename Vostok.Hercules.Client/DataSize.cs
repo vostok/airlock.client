@@ -6,7 +6,6 @@ namespace Vostok.Hercules.Client
     /// <summary>
     /// Represents an amount of data.
     /// </summary>
-    [PublicAPI]
     [Serializable]
     internal struct DataSize : IEquatable<DataSize>, IComparable<DataSize>
     {
