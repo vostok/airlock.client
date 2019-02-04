@@ -16,7 +16,7 @@ namespace Vostok.Hercules.Client
         {
             while (true)
             {
-                var tCurrentSize = currentSize;
+                var tCurrentSize = Interlocked.Read(ref currentSize);
                 var newSize = tCurrentSize + amount;
                 if (newSize <= maxSize)
                 {
