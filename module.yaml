@@ -18,6 +18,7 @@ notests *default:
     - vostok.commons.time/src
     - vostok.commons.threading/src
     - vostok.commons.binary/src
+    - vostok.commons.primitives/src
     - vostok.devtools
     - vostok.logging.abstractions
 

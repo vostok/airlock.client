@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
 
@@ -7,9 +8,9 @@ namespace Vostok.Hercules.Client
 {
     internal class HerculesRecordPayloadBuilder : IHerculesTagsBuilder
     {
-        private readonly IHerculesBinaryWriter writer;
+        private readonly IBinaryWriter writer;
 
-        public HerculesRecordPayloadBuilder(IHerculesBinaryWriter writer)
+        public HerculesRecordPayloadBuilder(IBinaryWriter writer)
         {
             this.writer = writer;
         }
@@ -146,7 +147,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.Byte);
-            writer.WriteCollection(values, (w, x) => w.Write(x));
+            writer.WriteReadOnlyCollection(values, (w, x) => w.Write(x));
 
             return this;
         }
@@ -156,7 +157,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.Short);
-            writer.WriteCollection(value, (w, x) => w.Write(x));
+            writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
         }
@@ -166,7 +167,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.Integer);
-            writer.WriteCollection(value, (w, x) => w.Write(x));
+            writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
         }
@@ -176,7 +177,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.Long);
-            writer.WriteCollection(value, (w, x) => w.Write(x));
+            writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
         }
@@ -186,7 +187,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.Byte);
-            writer.WriteCollection(value, (w, x) => w.Write(x));
+            writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
         }
@@ -196,7 +197,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.Float);
-            writer.WriteCollection(value, (w, x) => w.Write(x));
+            writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
         }
@@ -206,7 +207,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.Double);
-            writer.WriteCollection(value, (w, x) => w.Write(x));
+            writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
         }
@@ -216,7 +217,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.UUID);
-            writer.WriteCollection(values, (w, x) => w.Write(x));
+            writer.WriteReadOnlyCollection(values, (w, x) => w.Write(x));
 
             return this;
         }
@@ -226,7 +227,7 @@ namespace Vostok.Hercules.Client
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.String);
-            writer.WriteCollection(value, (w, x) => w.WriteWithLength(x));
+            writer.WriteReadOnlyCollection(value, (w, x) => w.WriteWithLength(x));
             
             return this;
         }

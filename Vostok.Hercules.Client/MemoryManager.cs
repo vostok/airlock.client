@@ -12,7 +12,7 @@ namespace Vostok.Hercules.Client
             this.maxSize = maxSize;
         }
 
-        public bool TryReserveBytes(int amount)
+        public bool TryReserveBytes(long amount)
         {
             while (true)
             {

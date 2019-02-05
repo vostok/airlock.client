@@ -1,29 +1,34 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 using JetBrains.Annotations;
+using Vostok.Commons.Binary;
 
 namespace Vostok.Hercules.Client.Binary
 {
-    internal static class HerculesBinaryWriterExtensions
+    internal static class BinaryWriterExtensions
     {
-        public static void Write(this IHerculesBinaryWriter writer, TagValueTypeDefinition valueType) =>
+        public static void Write(this IBinaryWriter writer, TagValueTypeDefinition valueType) =>
             writer.Write((byte) valueType);
         
-        public static void WriteCollection<T>(
-            [NotNull] this IHerculesBinaryWriter writer, 
+        public static void WriteReadOnlyCollection<T>(
+            [NotNull] this IBinaryWriter writer, 
             [NotNull] IReadOnlyCollection<T> items,
-            [NotNull] Action<IHerculesBinaryWriter, T> writeSingleValue)
+            [NotNull] Action<IBinaryWriter, T> writeSingleValue)
         {
             writer.Write(items.Count);
-
+        
             foreach (var item in items)
             {
                 writeSingleValue(writer, item);
             }
         }
         
-        public static void WriteWithByteLength(this IHerculesBinaryWriter writer, string value)
+        public static void WriteWithByteLength(this IBinaryWriter writer, string value)
         {
+            const int maxLength = byte.MaxValue;
+            
             var lengthPosition = writer.Position;
             writer.Write((byte) 0);
             var startPosition = writer.Position;
@@ -32,8 +37,8 @@ namespace Vostok.Hercules.Client.Binary
 
             var length = positionAfter - startPosition;
 
-            if (length > 255)
-                writer.IsOverflowed = true;
+            if (length > maxLength)
+                throw new ArgumentOutOfRangeException(nameof(value), $"String value '{value}' doesn't fit in {maxLength} bytes in UTF-8 encoding.");
             
             writer.Position = lengthPosition;
             writer.Write((byte) length);

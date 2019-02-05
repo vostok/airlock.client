@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
@@ -8,18 +9,18 @@ namespace Vostok.Hercules.Client
 {
     internal class HerculesEventBuilder : IHerculesEventBuilder, IDisposable
     {
-        private readonly IHerculesBinaryWriter binaryWriter;
+        private readonly IBinaryWriter binaryWriter;
         private readonly Func<DateTimeOffset> timeProvider;
-        private readonly int timeGuidPosition;
+        private readonly long timestampPosition;
         private readonly HerculesRecordPayloadBuilderWithCounter builder;
 
         private DateTimeOffset timestampInternal;
-        public HerculesEventBuilder(IHerculesBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
+        public HerculesEventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
         {
             this.binaryWriter = binaryWriter;
             this.timeProvider = timeProvider;
 
-            timeGuidPosition = binaryWriter.Position;
+            timestampPosition = binaryWriter.Position;
             binaryWriter.Write(0L);
             binaryWriter.Write(Guid.NewGuid());
 
@@ -99,17 +100,12 @@ namespace Vostok.Hercules.Client
         {
             builder.Dispose();
 
-            var currentPosition = binaryWriter.Position;
-
-            binaryWriter.Position = timeGuidPosition;
-
             var timestamp = timestampInternal != default
                 ? timestampInternal
                 : timeProvider();
             
-            binaryWriter.Write(EpochHelper.ToUnixTimeUtcTicks(timestamp.DateTime));
-
-            binaryWriter.Position = currentPosition;
+            using (binaryWriter.JumpTo(timestampPosition))
+                binaryWriter.Write(EpochHelper.ToUnixTimeUtcTicks(timestamp.DateTime));
         }
     }
 }
