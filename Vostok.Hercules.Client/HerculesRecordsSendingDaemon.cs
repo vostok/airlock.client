@@ -8,11 +8,13 @@ namespace Vostok.Hercules.Client
 {
     internal class HerculesRecordsSendingDaemon : IDisposable
     {
+        private readonly object startLock = new object();
+        
         private readonly ILog log;
         private readonly IHerculesRecordsSendingJob job;
 
-        private readonly Task daemonTask;
         private readonly CancellationTokenSource daemonCancellation;
+        private Task daemonTask;
 
         public HerculesRecordsSendingDaemon(ILog log, IHerculesRecordsSendingJob job)
         {
@@ -20,17 +22,30 @@ namespace Vostok.Hercules.Client
             this.job = job;
 
             daemonCancellation = new CancellationTokenSource();
-            daemonTask = Task.Run(StartAsync, daemonCancellation.Token);
         }
 
         public long SentRecordsCount => job.SentRecordsCount;
         
         public long LostRecordsCount => job.LostRecordsCount;
 
+        public void Initialize()
+        {
+            if (daemonTask == null)
+            {
+                lock (startLock)
+                {
+                    if (daemonTask != null)
+                        return;
+                    
+                    daemonTask = Task.Run(StartAsync, daemonCancellation.Token);
+                }
+            }
+        }
+        
         public void Dispose()
         {
             daemonCancellation.Cancel();
-            daemonTask.SilentlyContinue().GetAwaiter().GetResult();
+            daemonTask?.SilentlyContinue()?.GetAwaiter().GetResult();
             daemonCancellation.Dispose();
 
             job.RunAsync().SilentlyContinue().GetAwaiter().GetResult();

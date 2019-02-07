@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Topology;
@@ -11,6 +12,7 @@ using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Management;
+using Vostok.Logging.Abstractions;
 using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests
@@ -230,6 +232,15 @@ namespace Vostok.Hercules.Client.Tests
 
             @event.Tags["k1"].AsString.Should().Be("v1");
             @event.Tags["k2"].AsString.Should().Be("v2");
+        }
+
+        [Test, Explicit]
+        public void Should_not_fall_into_infinite_loop_after_creation()
+        {
+            new HerculesSink(new HerculesSinkConfig(new FixedClusterProvider(new Uri("http://localhost/")), () => ""), new SilentLog())
+                .GetHashCode();
+            Thread.Sleep(20.Seconds());
+            // see for cpu usage
         }
     }
 }

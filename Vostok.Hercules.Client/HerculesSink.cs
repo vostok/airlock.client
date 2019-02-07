@@ -79,6 +79,8 @@ namespace Vostok.Hercules.Client
             {
                 bufferPool.Release(buffer);
             }
+            
+            recordsSendingDaemon.Initialize();
         }
 
         public void Dispose()
