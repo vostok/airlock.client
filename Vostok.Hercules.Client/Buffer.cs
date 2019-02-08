@@ -41,7 +41,6 @@ namespace Vostok.Hercules.Client
         public bool IsOverflowed { get; set; }
         public byte[] Array => writer.Buffer;
         public ArraySegment<byte> FilledSegment => writer.FilledSegment;
-        public Encoding Encoding { get; } = Encoding.UTF8;
 
         public IHerculesBinaryWriter BeginRecord() => this;
 
@@ -172,7 +171,7 @@ namespace Vostok.Hercules.Client
 
         public void WriteWithoutLength(string value)
         {
-            if (!TryEnsureAvailableBytes(Encoding.GetMaxByteCount(value.Length)))
+            if (!TryEnsureAvailableBytes(Encoding.UTF8.GetMaxByteCount(value.Length)))
                 return;
 
             writer.WriteWithoutLength(value);
@@ -180,7 +179,7 @@ namespace Vostok.Hercules.Client
 
         public void WriteWithLength(string value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(int) + Encoding.GetMaxByteCount(value.Length)))
+            if (!TryEnsureAvailableBytes(sizeof(int) + Encoding.UTF8.GetMaxByteCount(value.Length)))
                 return;
 
             writer.WriteWithLength(value);
