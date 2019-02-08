@@ -71,6 +71,7 @@ namespace Vostok.Hercules.Client
                 var request = Request
                     .Post(url)
                     .WithHeader(HeaderNames.ContentType, "application/octet-stream")
+                    .WithHeader("api-key", getGateApiKey())
                     .WithContent(body.FilledSegment);
 
                 var result = await client

@@ -12,11 +12,11 @@ namespace Vostok.Hercules.Client
             this.maxSize = maxSize;
         }
 
-        public bool TryReserveBytes(int amount)
+        public bool TryReserveBytes(long amount)
         {
             while (true)
             {
-                var tCurrentSize = currentSize;
+                var tCurrentSize = Interlocked.Read(ref currentSize);
                 var newSize = tCurrentSize + amount;
                 if (newSize <= maxSize)
                 {

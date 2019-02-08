@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Net;
 using NUnit.Framework;
-using Vostok.Hercules.Client.Abstractions;
+using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
 
@@ -20,7 +20,7 @@ namespace Vostok.Hercules.Client.Tests
             add.Invoke(builder);
 
             builder.Dispose();
-            Assert.That(BitConverter.ToInt16(writer.Array, 0), Is.EqualTo(IPAddress.HostToNetworkOrder((short) 1)));
+            Assert.That(BitConverter.ToInt16(writer.Buffer, 0), Is.EqualTo(IPAddress.HostToNetworkOrder((short) 1)));
         }
 
         private static IEnumerable TestCases()
@@ -45,8 +45,10 @@ namespace Vostok.Hercules.Client.Tests
             yield return new TestCaseData((Action<IHerculesTagsBuilder>) (builder => builder.AddVector("key", new[] {"value"}))).SetName("StringArray");
         }
 
-        private static HerculesBinaryWriter CreateWriter() => new HerculesBinaryWriter(0);
+        private static BinaryBufferWriter CreateWriter()
+            => new BinaryBufferWriter(0) {Endianness = Endianness.Big};
 
-        private static HerculesRecordPayloadBuilderWithCounter CreateBuilder(IHerculesBinaryWriter writer) => new HerculesRecordPayloadBuilderWithCounter(writer);
+        private static HerculesRecordPayloadBuilderWithCounter CreateBuilder(IBinaryWriter writer)
+            => new HerculesRecordPayloadBuilderWithCounter(writer);
     }
 }

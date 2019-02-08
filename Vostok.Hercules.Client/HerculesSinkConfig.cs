@@ -1,6 +1,7 @@
 ﻿using System;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
+using Vostok.Commons.Primitives;
 using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client

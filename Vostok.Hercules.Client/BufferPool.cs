@@ -8,21 +8,30 @@ namespace Vostok.Hercules.Client
     {
         private readonly IMemoryManager memoryManager;
         private readonly int initialBufferSize;
+        private readonly int maxRecordSize;
+        private readonly int maxBufferSize;
 
         private readonly ConcurrentQueue<IBuffer> buffers;
-        private readonly HashSet<IBuffer> sieve;
+        private readonly ConcurrentQueue<IBuffer> allBuffers;
 
-        public BufferPool(IMemoryManager memoryManager, int initialCount, int initialBufferSize)
+        public BufferPool(
+            IMemoryManager memoryManager,
+            int initialCount,
+            int initialBufferSize,
+            int maxRecordSize,
+            int maxBufferSize)
         {
             this.memoryManager = memoryManager;
             this.initialBufferSize = initialBufferSize;
+            this.maxRecordSize = maxRecordSize;
+            this.maxBufferSize = maxBufferSize;
 
+            allBuffers = new ConcurrentQueue<IBuffer>();
             buffers = new ConcurrentQueue<IBuffer>();
-            sieve = new HashSet<IBuffer>();
 
             for (var i = 0; i < initialCount; i++)
             {
-                if (TryCreateBuffer(out var buffer))
+                if (TryCreateBuffer(out var buffer, false))
                     buffers.Enqueue(buffer);
                 else
                     break;
@@ -31,7 +40,7 @@ namespace Vostok.Hercules.Client
 
         public bool TryAcquire(out IBuffer buffer)
         {
-            var result = buffers.TryDequeue(out buffer) || TryCreateBuffer(out buffer);
+            var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer, true);
 
             if (result) // we can collect garbage not on every iteration
                 buffer.CollectGarbage();
@@ -39,43 +48,59 @@ namespace Vostok.Hercules.Client
             return result;
         }
 
-        public void Release(IBuffer buffer) => buffers.Enqueue(buffer);
+        public void Release(IBuffer buffer)
+        {
+            buffer.Unlock();
+            buffers.Enqueue(buffer);
+        }
 
-        public long GetStoredRecordsCount() => buffers.Sum(x => x.EstimateRecordsCountForMonitoring());
-        
-        /// <summary>
-        /// <threadsafety>This method is NOT threadsafe and should be called only from <see cref="HerculesRecordsSendingJob"/>.</threadsafety>
-        /// </summary>
+        public long GetStoredRecordsCount() => buffers.Sum(x => x.GetState().RecordsCount);
+
         public IReadOnlyCollection<IBuffer> MakeSnapshot()
         {
-            sieve.Clear();
-
-            var initialCount = buffers.Count;
             var snapshot = null as List<IBuffer>;
 
-            for (var i = 0; i < initialCount * 2; i++)
+            foreach (var buffer in allBuffers)
             {
-                if (!buffers.TryDequeue(out var buffer))
-                    break;
-
-                if (!sieve.Add(buffer))
+                if (buffer.HasGarbage())
                 {
-                    buffers.Enqueue(buffer);
-                    continue;
+                    if (!buffer.TryLock())
+                        continue;
+                    
+                    buffer.CollectGarbage();
+                    buffer.Unlock();
                 }
-
-                buffer.CollectGarbage();
-
+                
                 if (!buffer.IsEmpty())
                     (snapshot ?? (snapshot = new List<IBuffer>())).Add(buffer);
-
-                buffers.Enqueue(buffer);
             }
 
             return snapshot;
         }
 
-        private bool TryCreateBuffer(out IBuffer buffer)
+        private bool TryDequeueBuffer(out IBuffer buffer)
+        {
+            var count = buffers.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                if (!buffers.TryDequeue(out buffer))
+                    return false;
+
+                //TODO: use other way to decide that buffer is large enough for record, don't waste space
+                var state = buffer.GetState();
+                
+                if (state.Length <= maxBufferSize - maxRecordSize && buffer.TryLock())
+                    return true;
+                
+                buffers.Enqueue(buffer);
+            }
+
+            buffer = null;
+            return false;
+        }
+
+        private bool TryCreateBuffer(out IBuffer buffer, bool lockCreatedBuffer)
         {
             if (!memoryManager.TryReserveBytes(initialBufferSize))
             {
@@ -84,6 +109,12 @@ namespace Vostok.Hercules.Client
             }
 
             buffer = new Buffer(initialBufferSize, memoryManager);
+
+            allBuffers.Enqueue(buffer);
+            
+            if (lockCreatedBuffer)
+                buffer.TryLock();
+
             return true;
         }
     }

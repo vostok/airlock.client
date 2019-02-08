@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Binary;
 
@@ -7,13 +8,13 @@ namespace Vostok.Hercules.Client
 {
     internal class HerculesRecordPayloadBuilderWithCounter : IHerculesTagsBuilder, IDisposable
     {
-        private readonly IHerculesBinaryWriter binaryWriter;
-        private readonly int countPosition;
+        private readonly IBinaryWriter binaryWriter;
+        private readonly long countPosition;
         private readonly HerculesRecordPayloadBuilder builder;
 
         private ushort counter;
 
-        public HerculesRecordPayloadBuilderWithCounter(IHerculesBinaryWriter binaryWriter)
+        public HerculesRecordPayloadBuilderWithCounter(IBinaryWriter binaryWriter)
         {
             this.binaryWriter = binaryWriter;
 
@@ -172,10 +173,8 @@ namespace Vostok.Hercules.Client
 
         public void Dispose()
         {
-            var currentPosition = binaryWriter.Position;
-            binaryWriter.Position = countPosition;
-            binaryWriter.Write(counter);
-            binaryWriter.Position = currentPosition;
+            using (binaryWriter.JumpTo(countPosition))
+                binaryWriter.Write(counter);
         }
     }
 }

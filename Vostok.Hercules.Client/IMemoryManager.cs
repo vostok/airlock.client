@@ -2,7 +2,7 @@
 {
     internal interface IMemoryManager
     {
-        bool TryReserveBytes(int amount);
+        bool TryReserveBytes(long amount);
         bool IsConsumptionAchievedThreshold(int percent);
     }
 }

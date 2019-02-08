@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Clusterclient.Core;
@@ -55,7 +54,7 @@ namespace Vostok.Hercules.Client
                     .AppendToQuery("stream", query.Stream)
                     .Build();
 
-                var body = new HerculesBinaryWriter(16 * 1024);
+                var body = new BinaryBufferWriter(16 * 1024){Endianness = Endianness.Big};
 
                 body.Write(query.Events.Count);
                 foreach (var @event in query.Events)
