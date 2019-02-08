@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Topology;
@@ -11,6 +12,7 @@ using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Management;
+using Vostok.Logging.Abstractions;
 using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests
@@ -242,7 +244,7 @@ namespace Vostok.Hercules.Client.Tests
             sink.Put(stream, x => x.AddValue("key", 1));
 
             var state = new StreamCoordinates(new StreamPosition[0]);
-            
+
             var readQuery = new ReadStreamQuery(stream)
             {
                 Limit = 10000,
@@ -250,7 +252,7 @@ namespace Vostok.Hercules.Client.Tests
                 ClientShard = 0,
                 ClientShardCount = 1
             };
-            
+
             new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Count.Should().BePositive())
                 .ShouldPassIn(timeout);
 
@@ -258,13 +260,25 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.Read(readQuery, timeout).IsSuccessful.Should().BeFalse();
 
-            managementClient.CreateStream(new CreateStreamQuery(new StreamDescription(stream)
-            {
-                Partitions = 3,
-                TTL = 1.Minutes()
-            }), timeout);
+            managementClient.CreateStream(
+                new CreateStreamQuery(
+                    new StreamDescription(stream)
+                    {
+                        Partitions = 3,
+                        TTL = 1.Minutes()
+                    }),
+                timeout);
 
             streamClient.Read(readQuery, timeout).Payload.Events.Count.Should().Be(0);
+        }
+        
+        [Test, Explicit]
+        public void Should_not_fall_into_infinite_loop_after_creation()
+        {
+            new HerculesSink(new HerculesSinkConfig(new FixedClusterProvider(new Uri("http://localhost/")), () => ""), new SilentLog())
+                .GetHashCode();
+            Thread.Sleep(20.Seconds());
+            // see for cpu usage
         }
     }
 }
