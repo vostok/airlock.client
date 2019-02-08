@@ -12,9 +12,9 @@ namespace Vostok.Hercules.Client
 {
     internal class HerculesRecordsSendingJob : IHerculesRecordsSendingJob
     {
+        private readonly WeakReference<IReadOnlyDictionary<string, Lazy<IBufferPool>>> bufferPools;
         private readonly ILog log;
         private readonly IHerculesRecordsSendingJobScheduler scheduler;
-        private readonly IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools;
         private readonly IRequestSender requestSender;
         private readonly TimeSpan timeout;
 
@@ -24,15 +24,16 @@ namespace Vostok.Hercules.Client
         private long lostRecordsCounter;
 
         public HerculesRecordsSendingJob(
-            ILog log,
-            IHerculesRecordsSendingJobScheduler scheduler,
             IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools,
+            IHerculesRecordsSendingJobScheduler scheduler,
             IRequestSender requestSender,
+            ILog log,
             TimeSpan timeout)
         {
+            this.bufferPools = new WeakReference<IReadOnlyDictionary<string, Lazy<IBufferPool>>>(bufferPools);
+            
             this.log = log;
             this.scheduler = scheduler;
-            this.bufferPools = bufferPools;
             this.requestSender = requestSender;
             this.timeout = timeout;
 
@@ -45,7 +46,10 @@ namespace Vostok.Hercules.Client
 
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
-            foreach (var pair in bufferPools)
+            if (!bufferPools.TryGetTarget(out var pools))
+                throw new OperationCanceledException();
+            
+            foreach (var pair in pools)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
