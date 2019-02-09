@@ -32,14 +32,14 @@ namespace Vostok.Hercules.Client
         {
             log = log?.ForContext<HerculesSinkConfig>() ?? new SilentLog();
 
-            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, config.RecordVersion, (int)config.MaximumRecordSizeBytes);
+            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, config.RecordVersion, config.MaximumRecordSizeBytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumptionBytes);
 
             initialPooledBuffersCount = config.InitialPooledBuffersCount;
-            initialPooledBufferSize = (int)config.InitialPooledBufferSizeBytes;
-            maxRecordSize = (int)config.MaximumRecordSizeBytes;
-            maxRequestBodySize = (int)config.MaximumRequestContentSizeBytes;
+            initialPooledBufferSize = config.InitialPooledBufferSizeBytes;
+            maxRecordSize = config.MaximumRecordSizeBytes;
+            maxRequestBodySize = config.MaximumRequestContentSizeBytes;
             maximumPerStreamMemoryConsumptionBytes = config.MaximumPerStreamMemoryConsumptionBytes;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
