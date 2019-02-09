@@ -39,7 +39,7 @@ namespace Vostok.Hercules.Client
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
-                    
+
                     configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
                     configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
                     configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
@@ -54,7 +54,7 @@ namespace Vostok.Hercules.Client
                     .AppendToQuery("stream", query.Stream)
                     .Build();
 
-                var body = new BinaryBufferWriter(16 * 1024){Endianness = Endianness.Big};
+                var body = new BinaryBufferWriter(16 * 1024) {Endianness = Endianness.Big};
 
                 body.Write(query.Events.Count);
                 foreach (var @event in query.Events)
@@ -62,7 +62,7 @@ namespace Vostok.Hercules.Client
                     var eventBuilder = new HerculesEventBuilder(body, () => PreciseDateTime.UtcNow);
                     eventBuilder.SetTimestamp(@event.Timestamp);
                     foreach (var tag in @event.Tags)
-                    {   
+                    {
                         switch (tag.Value.Type)
                         {
                             case HerculesValueType.Byte:
@@ -131,6 +131,7 @@ namespace Vostok.Hercules.Client
                                     default:
                                         throw new ArgumentOutOfRangeException();
                                 }
+
                                 break;
                             case HerculesValueType.Container:
                                 //TODO

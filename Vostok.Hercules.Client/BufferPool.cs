@@ -66,11 +66,11 @@ namespace Vostok.Hercules.Client
                 {
                     if (!buffer.TryLock())
                         continue;
-                    
+
                     buffer.CollectGarbage();
                     buffer.Unlock();
                 }
-                
+
                 if (!buffer.IsEmpty())
                     (snapshot ?? (snapshot = new List<IBuffer>())).Add(buffer);
             }
@@ -89,10 +89,10 @@ namespace Vostok.Hercules.Client
 
                 //TODO: use other way to decide that buffer is large enough for record, don't waste space
                 var state = buffer.GetState();
-                
+
                 if (state.Length <= maxBufferSize - maxRecordSize && buffer.TryLock())
                     return true;
-                
+
                 buffers.Enqueue(buffer);
             }
 
@@ -111,7 +111,7 @@ namespace Vostok.Hercules.Client
             buffer = new Buffer(initialBufferSize, memoryManager);
 
             allBuffers.Enqueue(buffer);
-            
+
             if (lockCreatedBuffer)
                 buffer.TryLock();
 

@@ -11,7 +11,7 @@ namespace Vostok.Hercules.Client
     {
         public static HerculesEvent ReadEvent(this IBinaryReader reader)
         {
-            var builder = new Vostok.Hercules.Client.Abstractions.Events.HerculesEventBuilder();
+            var builder = new Abstractions.Events.HerculesEventBuilder();
             var version = reader.ReadByte();
             if (version != 1)
                 throw new NotSupportedException();
@@ -29,10 +29,10 @@ namespace Vostok.Hercules.Client
             for (var i = 0; i < count; i++)
             {
                 var key = ReadShortString(reader);
-                var valueType = (TagValueTypeDefinition) reader.ReadByte();
+                var valueType = (TagValueTypeDefinition)reader.ReadByte();
 
                 Action<IHerculesTagsBuilder> readContainer = tagsBuilder => reader.ReadContainer(tagsBuilder);
-                
+
                 switch (valueType)
                 {
                     case TagValueTypeDefinition.Container:
@@ -73,14 +73,16 @@ namespace Vostok.Hercules.Client
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(
-                            nameof(valueType), valueType, "Value type is not defined");
+                            nameof(valueType),
+                            valueType,
+                            "Value type is not defined");
                 }
             }
         }
 
         private static void ReadVector(IBinaryReader reader, IHerculesTagsBuilder builder, string key)
         {
-            var elementType = (TagValueTypeDefinition) reader.ReadByte();
+            var elementType = (TagValueTypeDefinition)reader.ReadByte();
 
             switch (elementType)
             {
@@ -89,7 +91,8 @@ namespace Vostok.Hercules.Client
                         key,
                         Enumerable
                             .Range(0, reader.ReadInt32())
-                            .Select(x => new Action<IHerculesTagsBuilder>(b => ReadContainer(reader, b))).ToList());
+                            .Select(x => new Action<IHerculesTagsBuilder>(b => ReadContainer(reader, b)))
+                            .ToList());
                     break;
                 case TagValueTypeDefinition.Byte:
                     var length = reader.ReadInt32();
@@ -124,7 +127,9 @@ namespace Vostok.Hercules.Client
                     throw new NotSupportedException();
                 default:
                     throw new ArgumentOutOfRangeException(
-                        nameof(elementType), elementType, "Element value type is not defined.");
+                        nameof(elementType),
+                        elementType,
+                        "Element value type is not defined.");
             }
         }
 

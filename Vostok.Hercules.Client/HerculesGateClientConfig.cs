@@ -12,9 +12,9 @@ namespace Vostok.Hercules.Client
         }
 
         public string ServiceName { get; set; } = "HerculesGateway";
-        
+
         public IClusterProvider Cluster { get; set; }
-        
+
         public Func<string> ApiKeyProvider { get; set; }
     }
 }

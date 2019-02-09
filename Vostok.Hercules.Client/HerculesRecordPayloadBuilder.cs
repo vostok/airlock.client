@@ -90,7 +90,7 @@ namespace Vostok.Hercules.Client
         }
 
         public IHerculesTagsBuilder AddValue(string key, Guid value)
-        { 
+        {
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.UUID);
             writer.Write(value);
@@ -125,16 +125,6 @@ namespace Vostok.Hercules.Client
         {
             writer.WriteWithByteLength(key);
             writer.Write(TagValueTypeDefinition.Null);
-
-            return this;
-        }
-
-        private IHerculesTagsBuilder AddVector(string key, byte[] values)
-        {
-            writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Byte);
-            writer.WriteWithLength(values, 0, values.Length);
 
             return this;
         }
@@ -228,7 +218,17 @@ namespace Vostok.Hercules.Client
             writer.Write(TagValueTypeDefinition.Vector);
             writer.Write(TagValueTypeDefinition.String);
             writer.WriteReadOnlyCollection(value, (w, x) => w.WriteWithLength(x));
-            
+
+            return this;
+        }
+
+        private IHerculesTagsBuilder AddVector(string key, byte[] values)
+        {
+            writer.WriteWithByteLength(key);
+            writer.Write(TagValueTypeDefinition.Vector);
+            writer.Write(TagValueTypeDefinition.Byte);
+            writer.WriteWithLength(values, 0, values.Length);
+
             return this;
         }
     }

@@ -29,11 +29,11 @@ namespace Vostok.Hercules.Client
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
-                    
+
                     configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
                     configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
                     configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
-                    
+
                     sinkConfig.ClusterClientSetup?.Invoke(configuration);
                 });
         }
@@ -52,7 +52,7 @@ namespace Vostok.Hercules.Client
 
             return GetSendingResult(clusterResult);
         }
-        
+
         private static RequestSendingResult GetSendingResult(ClusterResult clusterResult)
         {
             switch (clusterResult.Status)
@@ -72,7 +72,7 @@ namespace Vostok.Hercules.Client
                 case ClusterResultStatus.UnexpectedException:
                 case ClusterResultStatus.Canceled:
                     return RequestSendingResult.DefinitiveFailure;
-                    
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(clusterResult.Status));
             }

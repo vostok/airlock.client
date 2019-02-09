@@ -15,6 +15,7 @@ namespace Vostok.Hercules.Client
         private readonly HerculesRecordPayloadBuilderWithCounter builder;
 
         private DateTimeOffset timestampInternal;
+
         public HerculesEventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
         {
             this.binaryWriter = binaryWriter;
@@ -103,7 +104,7 @@ namespace Vostok.Hercules.Client
             var timestamp = timestampInternal != default
                 ? timestampInternal
                 : timeProvider();
-            
+
             using (binaryWriter.JumpTo(timestampPosition))
                 binaryWriter.Write(EpochHelper.ToUnixTimeUtcTicks(timestamp.DateTime));
         }

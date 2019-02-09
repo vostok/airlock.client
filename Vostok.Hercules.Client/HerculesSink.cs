@@ -30,15 +30,15 @@ namespace Vostok.Hercules.Client
         public HerculesSink(HerculesSinkConfig config, ILog log)
         {
             log = log?.ForContext<HerculesSinkConfig>() ?? new SilentLog();
-            
-            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, config.RecordVersion, (int) config.MaximumRecordSizeBytes);
+
+            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, config.RecordVersion, (int)config.MaximumRecordSizeBytes);
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumptionBytes);
 
             initialPooledBuffersCount = config.InitialPooledBuffersCount;
-            initialPooledBufferSize = (int) config.InitialPooledBufferSizeBytes;
-            maxRecordSize = (int) config.MaximumRecordSizeBytes;
-            maxRequestBodySize = (int) config.MaximumRequestContentSizeBytes;
+            initialPooledBufferSize = (int)config.InitialPooledBufferSizeBytes;
+            maxRecordSize = (int)config.MaximumRecordSizeBytes;
+            maxRequestBodySize = (int)config.MaximumRequestContentSizeBytes;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
             var jobScheduler = new HerculesRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
@@ -82,7 +82,7 @@ namespace Vostok.Hercules.Client
             {
                 bufferPool.Release(buffer);
             }
-            
+
             recordsSendingDaemon.Initialize();
         }
 

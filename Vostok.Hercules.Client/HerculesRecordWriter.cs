@@ -39,7 +39,6 @@ namespace Vostok.Hercules.Client
                     recordSize = 0;
                     return false;
                 }
-
             }
             catch (Exception exception)
             {
@@ -49,7 +48,7 @@ namespace Vostok.Hercules.Client
                 return false;
             }
 
-            recordSize = (int) (binaryWriter.Position - startingPosition);
+            recordSize = (int)(binaryWriter.Position - startingPosition);
 
             if (recordSize <= maxRecordSize)
                 return true;

@@ -37,7 +37,7 @@ namespace Vostok.Hercules.Client
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
-                    
+
                     configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
                     configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
                     configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);

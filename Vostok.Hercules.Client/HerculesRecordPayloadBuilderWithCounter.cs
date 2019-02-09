@@ -19,7 +19,7 @@ namespace Vostok.Hercules.Client
             this.binaryWriter = binaryWriter;
 
             countPosition = binaryWriter.Position;
-            binaryWriter.Write((ushort) 0);
+            binaryWriter.Write((ushort)0);
 
             builder = new HerculesRecordPayloadBuilder(binaryWriter);
         }
@@ -27,84 +27,132 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)
         {
             builder.AddContainer(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, byte value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, short value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, int value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, long value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, bool value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, float value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, double value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, Guid value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, string value)
         {
             builder.AddValue(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> value)
         {
             builder.AddVectorOfContainers(key, value);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 
         public IHerculesTagsBuilder AddNull(string key)
         {
             builder.AddNull(key);
-            checked {counter++;}
+            checked
+            {
+                counter++;
+            }
+
             return this;
         }
 

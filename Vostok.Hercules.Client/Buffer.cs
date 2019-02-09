@@ -88,7 +88,7 @@ namespace Vostok.Hercules.Client
                 garbageState.Length,
                 writer.Buffer,
                 InitialPosition,
-                (int) writer.Position - garbageState.Length);
+                (int)writer.Position - garbageState.Length);
 
             writer.Position -= garbageState.Length - InitialPosition;
             committed.Value -= garbageState - new BufferState(InitialPosition, 0);

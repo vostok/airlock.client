@@ -31,7 +31,7 @@ namespace Vostok.Hercules.Client
             TimeSpan timeout)
         {
             this.bufferPools = new WeakReference<IReadOnlyDictionary<string, Lazy<IBufferPool>>>(bufferPools);
-            
+
             this.log = log;
             this.scheduler = scheduler;
             this.requestSender = requestSender;
@@ -48,7 +48,7 @@ namespace Vostok.Hercules.Client
         {
             if (!bufferPools.TryGetTarget(out var pools))
                 throw new OperationCanceledException();
-            
+
             foreach (var pair in pools)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -72,6 +72,15 @@ namespace Vostok.Hercules.Client
         public Task WaitNextOccurrenceAsync() =>
             delays.Count != 0 ? Task.WhenAny(delays.Select(x => x.Value)) : Task.CompletedTask;
 
+        private static unsafe void SetRecordsCount(byte[] buffer, int recordsCount)
+        {
+            if (buffer.Length < sizeof(int))
+                throw new ArgumentException($"Buffer length {buffer.Length} is less than {sizeof(int)}.");
+
+            fixed (byte* b = buffer)
+                *(int*)b = EndiannessConverter.Convert(recordsCount, Endianness.Big);
+        }
+
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
         {
             var buffers = bufferPool.MakeSnapshot();
@@ -82,7 +91,7 @@ namespace Vostok.Hercules.Client
             var snapshots = buffers.Select(x => x.MakeSnapshot());
 
             var sendAny = false;
-            
+
             foreach (var snapshot in snapshots)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -92,22 +101,21 @@ namespace Vostok.Hercules.Client
 
                 if (!await PushAsync(stream, snapshot, cancellationToken).ConfigureAwait(false))
                     return false;
-                
+
                 sendAny = true;
             }
 
             return sendAny;
-
         }
 
         private async Task<bool> PushAsync(string stream, BufferSnapshot snapshot, CancellationToken cancellationToken)
-        {   
+        {
             var sw = Stopwatch.StartNew();
 
             var recordsCount = snapshot.State.RecordsCount;
-            
+
             SetRecordsCount(snapshot.Buffer, recordsCount);
-            
+
             var sendingResult = await requestSender.SendAsync(stream, snapshot.Data, timeout, cancellationToken).ConfigureAwait(false);
 
             LogSendingResult(sendingResult, recordsCount, snapshot.State.Length, stream, sw.Elapsed);
@@ -129,15 +137,6 @@ namespace Vostok.Hercules.Client
             snapshot.Parent.RequestGarbageCollection(snapshot.State);
 
             return true;
-        }
-
-        private static unsafe void SetRecordsCount(byte[] buffer, int recordsCount)
-        {
-            if (buffer.Length < sizeof(int))
-                throw new ArgumentException($"Buffer length {buffer.Length} is less than {sizeof(int)}.");
-            
-            fixed (byte* b = buffer)
-                *(int*) b = EndiannessConverter.Convert(recordsCount, Endianness.Big);
         }
 
         private void LogSendingResult(RequestSendingResult result, int recordsCount, int bytesCount, string stream, TimeSpan elapsed)
