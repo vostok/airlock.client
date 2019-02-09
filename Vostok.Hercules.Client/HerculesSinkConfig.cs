@@ -19,12 +19,12 @@ namespace Vostok.Hercules.Client
         public ClusterClientSetup ClusterClientSetup { get; set; }
         public Func<string> ApiKeyProvider { get; set; }
         public byte RecordVersion => 1;
-        public long MaximumRecordSizeBytes { get; set; } = 1 * DataSizeConstants.Megabyte;
         public long MaximumMemoryConsumptionBytes { get; set; } = 128 * DataSizeConstants.Megabyte;
         public long MaximumPerStreamMemoryConsumptionBytes { get; set; } = 128 * DataSizeConstants.Megabyte;
-        public long InitialPooledBufferSizeBytes { get; set; } = 16 * DataSizeConstants.Kilobyte;
+        public int MaximumRecordSizeBytes { get; set; } = 1 * (int) DataSizeConstants.Megabyte;
+        public int InitialPooledBufferSizeBytes { get; set; } = 16 * (int) DataSizeConstants.Kilobyte;
         public int InitialPooledBuffersCount { get; set; } = 32;
-        public long MaximumRequestContentSizeBytes { get; set; } = 4 * DataSizeConstants.Megabyte;
+        public int MaximumRequestContentSizeBytes { get; set; } = 4 * (int) DataSizeConstants.Megabyte;
         public TimeSpan RequestSendPeriod { get; set; } = 2.Seconds();
         public TimeSpan RequestSendPeriodCap { get; set; } = 1.Minutes();
         public TimeSpan RequestTimeout { get; set; } = 30.Seconds();
