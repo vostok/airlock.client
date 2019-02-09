@@ -1,6 +1,6 @@
 ﻿namespace Vostok.Hercules.Client
 {
-    internal enum TagValueTypeDefinition : byte
+    internal enum TagType : byte
     {
         Container = 0x01,
         Byte = 0x02,

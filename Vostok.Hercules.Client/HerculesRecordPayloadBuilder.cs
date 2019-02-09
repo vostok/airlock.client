@@ -18,7 +18,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Container);
+            writer.Write(TagType.Container);
 
             using (var builder = new HerculesRecordPayloadBuilderWithCounter(writer))
                 value.Invoke(builder);
@@ -29,7 +29,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, byte value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Byte);
+            writer.Write(TagType.Byte);
             writer.Write(value);
 
             return this;
@@ -38,7 +38,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, short value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Short);
+            writer.Write(TagType.Short);
             writer.Write(value);
 
             return this;
@@ -47,7 +47,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, int value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Integer);
+            writer.Write(TagType.Integer);
             writer.Write(value);
 
             return this;
@@ -56,7 +56,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, long value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Long);
+            writer.Write(TagType.Long);
             writer.Write(value);
 
             return this;
@@ -65,7 +65,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, bool value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Byte);
+            writer.Write(TagType.Byte);
             writer.Write(value);
 
             return this;
@@ -74,7 +74,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, float value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Float);
+            writer.Write(TagType.Float);
             writer.Write(value);
 
             return this;
@@ -83,7 +83,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, double value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Double);
+            writer.Write(TagType.Double);
             writer.Write(value);
 
             return this;
@@ -92,7 +92,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, Guid value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.UUID);
+            writer.Write(TagType.UUID);
             writer.Write(value);
 
             return this;
@@ -101,7 +101,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, string value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.String);
+            writer.Write(TagType.String);
             writer.WriteWithLength(value);
 
             return this;
@@ -110,8 +110,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> values)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Container);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Container);
             writer.Write(values.Count);
 
             foreach (var action in values)
@@ -124,7 +124,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddNull(string key)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Null);
+            writer.Write(TagType.Null);
 
             return this;
         }
@@ -135,8 +135,8 @@ namespace Vostok.Hercules.Client
                 return AddVector(key, array);
 
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Byte);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Byte);
             writer.WriteReadOnlyCollection(values, (w, x) => w.Write(x));
 
             return this;
@@ -145,8 +145,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<short> value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Short);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Short);
             writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
@@ -155,8 +155,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<int> value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Integer);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Integer);
             writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
@@ -165,8 +165,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<long> value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Long);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Long);
             writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
@@ -175,8 +175,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<bool> value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Byte);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Byte);
             writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
@@ -185,8 +185,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<float> value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Float);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Float);
             writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
@@ -195,8 +195,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<double> value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Double);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Double);
             writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
@@ -205,8 +205,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.UUID);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.UUID);
             writer.WriteReadOnlyCollection(values, (w, x) => w.Write(x));
 
             return this;
@@ -215,8 +215,8 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<string> value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.String);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.String);
             writer.WriteReadOnlyCollection(value, (w, x) => w.WriteWithLength(x));
 
             return this;
@@ -225,8 +225,8 @@ namespace Vostok.Hercules.Client
         private IHerculesTagsBuilder AddVector(string key, byte[] values)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagValueTypeDefinition.Vector);
-            writer.Write(TagValueTypeDefinition.Byte);
+            writer.Write(TagType.Vector);
+            writer.Write(TagType.Byte);
             writer.WriteWithLength(values, 0, values.Length);
 
             return this;

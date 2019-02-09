@@ -29,46 +29,46 @@ namespace Vostok.Hercules.Client
             for (var i = 0; i < count; i++)
             {
                 var key = ReadShortString(reader);
-                var valueType = (TagValueTypeDefinition)reader.ReadByte();
+                var valueType = (TagType)reader.ReadByte();
 
                 Action<IHerculesTagsBuilder> readContainer = tagsBuilder => reader.ReadContainer(tagsBuilder);
 
                 switch (valueType)
                 {
-                    case TagValueTypeDefinition.Container:
+                    case TagType.Container:
                         builder.AddContainer(key, readContainer);
                         break;
-                    case TagValueTypeDefinition.Byte:
+                    case TagType.Byte:
                         builder.AddValue(key, reader.ReadByte());
                         break;
-                    case TagValueTypeDefinition.Short:
+                    case TagType.Short:
                         builder.AddValue(key, reader.ReadInt16());
                         break;
-                    case TagValueTypeDefinition.Integer:
+                    case TagType.Integer:
                         builder.AddValue(key, reader.ReadInt32());
                         break;
-                    case TagValueTypeDefinition.Long:
+                    case TagType.Long:
                         builder.AddValue(key, reader.ReadInt64());
                         break;
-                    case TagValueTypeDefinition.Flag:
+                    case TagType.Flag:
                         builder.AddValue(key, reader.ReadBool());
                         break;
-                    case TagValueTypeDefinition.Float:
+                    case TagType.Float:
                         builder.AddValue(key, reader.ReadFloat());
                         break;
-                    case TagValueTypeDefinition.Double:
+                    case TagType.Double:
                         builder.AddValue(key, reader.ReadDouble());
                         break;
-                    case TagValueTypeDefinition.String:
+                    case TagType.String:
                         builder.AddValue(key, reader.ReadString());
                         break;
-                    case TagValueTypeDefinition.UUID:
+                    case TagType.UUID:
                         builder.AddValue(key, reader.ReadGuid());
                         break;
-                    case TagValueTypeDefinition.Null:
+                    case TagType.Null:
                         builder.AddNull(key);
                         break;
-                    case TagValueTypeDefinition.Vector:
+                    case TagType.Vector:
                         ReadVector(reader, builder, key);
                         break;
                     default:
@@ -82,11 +82,11 @@ namespace Vostok.Hercules.Client
 
         private static void ReadVector(IBinaryReader reader, IHerculesTagsBuilder builder, string key)
         {
-            var elementType = (TagValueTypeDefinition)reader.ReadByte();
+            var elementType = (TagType)reader.ReadByte();
 
             switch (elementType)
             {
-                case TagValueTypeDefinition.Container:
+                case TagType.Container:
                     builder.AddVectorOfContainers(
                         key,
                         Enumerable
@@ -94,36 +94,36 @@ namespace Vostok.Hercules.Client
                             .Select(x => new Action<IHerculesTagsBuilder>(b => ReadContainer(reader, b)))
                             .ToList());
                     break;
-                case TagValueTypeDefinition.Byte:
+                case TagType.Byte:
                     var length = reader.ReadInt32();
                     builder.AddVector(key, reader.ReadByteArray(length));
                     break;
-                case TagValueTypeDefinition.Short:
+                case TagType.Short:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadInt16()));
                     break;
-                case TagValueTypeDefinition.Integer:
+                case TagType.Integer:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadInt32()));
                     break;
-                case TagValueTypeDefinition.Long:
+                case TagType.Long:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadInt64()));
                     break;
-                case TagValueTypeDefinition.Flag:
+                case TagType.Flag:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadBool()));
                     break;
-                case TagValueTypeDefinition.Float:
+                case TagType.Float:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadFloat()));
                     break;
-                case TagValueTypeDefinition.Double:
+                case TagType.Double:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadDouble()));
                     break;
-                case TagValueTypeDefinition.String:
+                case TagType.String:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadString()));
                     break;
-                case TagValueTypeDefinition.UUID:
+                case TagType.UUID:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadGuid()));
                     break;
-                case TagValueTypeDefinition.Null:
-                case TagValueTypeDefinition.Vector:
+                case TagType.Null:
+                case TagType.Vector:
                     throw new NotSupportedException();
                 default:
                     throw new ArgumentOutOfRangeException(
