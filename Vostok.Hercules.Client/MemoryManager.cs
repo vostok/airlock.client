@@ -4,8 +4,6 @@ namespace Vostok.Hercules.Client
 {
     internal class MemoryManager : IMemoryManager
     {
-        private static readonly MemoryManager Infinite = new MemoryManager(long.MaxValue); 
-        
         private readonly long maxSize;
         private readonly IMemoryManager underlyingMemoryManager;
         private long currentSize;
@@ -13,7 +11,7 @@ namespace Vostok.Hercules.Client
         public MemoryManager(long maxSize, IMemoryManager underlyingMemoryManager=null)
         {
             this.maxSize = maxSize;
-            this.underlyingMemoryManager = underlyingMemoryManager ?? Infinite;
+            this.underlyingMemoryManager = underlyingMemoryManager;
         }
 
         public bool TryReserveBytes(long amount)
@@ -26,7 +24,7 @@ namespace Vostok.Hercules.Client
                 {
                     if (Interlocked.CompareExchange(ref currentSize, newSize, tCurrentSize) == tCurrentSize)
                     {
-                        if (underlyingMemoryManager.TryReserveBytes(amount))
+                        if (underlyingMemoryManager?.TryReserveBytes(amount) ?? true)
                             return true;
                         Interlocked.Add(ref currentSize, -amount);
                         return false;
