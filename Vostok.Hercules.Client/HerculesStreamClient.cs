@@ -25,7 +25,7 @@ namespace Vostok.Hercules.Client
 
         public HerculesStreamClient(HerculesStreamClientConfig config, ILog log)
         {
-            this.log = log;
+            this.log = log?.ForContext<HerculesStreamClient>() ?? new SilentLog();
             getGateApiKey = config.ApiKeyProvider;
 
             client = new ClusterClient(
