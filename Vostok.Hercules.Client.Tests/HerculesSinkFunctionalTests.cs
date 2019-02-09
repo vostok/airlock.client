@@ -280,16 +280,5 @@ namespace Vostok.Hercules.Client.Tests
             Thread.Sleep(20.Seconds());
             // see for cpu usage
         }
-        
-        [Test]
-        public void Should_not_fall_into_infinite_loop_after_creation2()
-        {
-            var herculesSink = new HerculesSink(new HerculesSinkConfig(new FixedClusterProvider(new Uri("http://localhost/")), () => ""), new SilentLog());
-            herculesSink.Put("stream", delegate { });
-            GC.Collect(2);
-            Thread.Sleep(20.Seconds());
-            // see for cpu usage
-        }
-        
     }
 }
