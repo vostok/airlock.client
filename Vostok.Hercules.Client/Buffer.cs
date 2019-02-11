@@ -9,7 +9,7 @@ namespace Vostok.Hercules.Client
 {
     internal class Buffer : IBuffer, IHerculesBinaryWriter
     {
-        private const int InitialPosition = 4;
+        public const int InitialPosition = sizeof(int);
 
         private readonly BinaryBufferWriter writer;
         private readonly IMemoryManager memoryManager;
