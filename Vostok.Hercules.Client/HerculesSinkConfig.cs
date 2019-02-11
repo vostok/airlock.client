@@ -6,27 +6,79 @@ using Vostok.Commons.Time;
 
 namespace Vostok.Hercules.Client
 {
+    /// <summary>
+    /// Represents a settings of <see cref="HerculesSink"/>.
+    /// </summary>
     public class HerculesSinkConfig
     {
+        /// <param name="cluster">>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules gateway service.</param>
+        /// <param name="apiKeyProvider">Delegate that returns Hercules gateway API key with write access.</param>
         public HerculesSinkConfig(IClusterProvider cluster, Func<string> apiKeyProvider)
         {
-            Cluster = cluster;
-            ApiKeyProvider = apiKeyProvider;
+            Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
+            ApiKeyProvider = apiKeyProvider ?? throw new ArgumentNullException(nameof(apiKeyProvider));
         }
 
-        public string ServiceName { get; set; } = "HerculesGateway";
-        public IClusterProvider Cluster { get; set; }
+        /// <summary>
+        /// <para>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules gateway service.</para>
+        /// </summary>
+        public IClusterProvider Cluster { get; }
+        
+        /// <summary>
+        /// <para>An optional delegate that can be used to tune underlying <see cref="IClusterClient"/> instance.</para>
+        /// </summary>
         public ClusterClientSetup ClusterClientSetup { get; set; }
+        
+        /// <summary>
+        /// <para>Delegate that returns Hercules gateway API key with write access.</para>
+        /// <para>API key can be overridden for each stream separately with //TODO method.</para>
+        /// </summary>
         public Func<string> ApiKeyProvider { get; set; }
-        public byte RecordVersion => 1;
-        public long MaximumMemoryConsumptionBytes { get; set; } = 128 * DataSizeConstants.Megabyte;
-        public long MaximumPerStreamMemoryConsumptionBytes { get; set; } = 128 * DataSizeConstants.Megabyte;
-        public int MaximumRecordSizeBytes { get; set; } = 1 * (int) DataSizeConstants.Megabyte;
-        public int InitialPooledBufferSizeBytes { get; set; } = 16 * (int) DataSizeConstants.Kilobyte;
-        public int InitialPooledBuffersCount { get; set; } = 32;
-        public int MaximumRequestContentSizeBytes { get; set; } = 4 * (int) DataSizeConstants.Megabyte;
+        
+        /// <summary>
+        /// <para>How much memory (in bytes) can take a buffers with records.</para>
+        /// </summary>
+        public long MaximumMemoryConsumption { get; set; } = 128 * DataSizeConstants.Megabyte;
+        
+        /// <summary>
+        /// <para>How much memory (in bytes) can take a buffers with records for same stream.</para>
+        /// </summary>
+        public long MaximumPerStreamMemoryConsumption { get; set; } = 128 * DataSizeConstants.Megabyte;
+        
+        /// <summary>
+        /// <para>Maximum size (in bytes) of single record.</para>
+        /// </summary>
+        public int MaximumRecordSize { get; set; } = 128 * (int) DataSizeConstants.Kilobyte;
+        
+        /// <summary>
+        /// <para>Initial size (in bytes) of buffer for records.</para>
+        /// </summary>
+        public int InitialPooledBufferSize { get; set; } = 16 * (int) DataSizeConstants.Kilobyte;
+        
+        /// <summary>
+        /// <para>How much buffers will be preallocated for single stream.</para>
+        /// </summary>
+        public int InitialPooledBuffersCount { get; set; } = 1;
+        
+        /// <summary>
+        /// <para>Maximum size (in bytes) of single buffer with records which will be stored in memory and transferred by network to Hercules gateway.</para>
+        /// </summary>
+        public int MaximumBatchSize { get; set; } = 4 * (int) DataSizeConstants.Megabyte;
+        
+        /// <summary>
+        /// <para>Default delay between attempts of sending records to Hercules gateway.</para>
+        /// TODO
+        /// </summary>
         public TimeSpan RequestSendPeriod { get; set; } = 2.Seconds();
-        public TimeSpan RequestSendPeriodCap { get; set; } = 1.Minutes();
+        
+        /// <summary>
+        /// <para>Maximum delay between attempts of sending records to Hercules gateway.</para>
+        /// </summary>
+        public TimeSpan RequestSendPeriodCap { get; set; } = 5.Minutes();
+        
+        /// <summary>
+        /// <para>Timeout of requests to Hercules gateway.</para>
+        /// </summary>
         public TimeSpan RequestTimeout { get; set; } = 30.Seconds();
     }
 }

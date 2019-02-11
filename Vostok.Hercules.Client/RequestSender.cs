@@ -13,6 +13,8 @@ namespace Vostok.Hercules.Client
 {
     internal class RequestSender : IRequestSender
     {
+        private const string ServiceName = "HerculesGateway";
+        
         private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 
@@ -24,7 +26,7 @@ namespace Vostok.Hercules.Client
                 log,
                 configuration =>
                 {
-                    configuration.TargetServiceName = sinkConfig.ServiceName ?? "HerculesGateway";
+                    configuration.TargetServiceName = ServiceName;
                     configuration.ClusterProvider = sinkConfig.Cluster;
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
