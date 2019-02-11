@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Vostok.Hercules.Client.Backoff;
 
 namespace Vostok.Hercules.Client
 {
@@ -27,7 +26,7 @@ namespace Vostok.Hercules.Client
                 return new Schedule(TimeSpan.Zero);
 
             attempts[stream] = CalculateAttempt(stream, lastSendingResult);
-            var sendPeriod = Delays.Exponential(requestSendPeriodCap, requestSendPeriod, attempts[stream]).WithEqualJitter().Value;
+            var sendPeriod = Delays.ExponentialWithJitter(requestSendPeriodCap, requestSendPeriod, attempts[stream]);
             var delayToNextOccurrence = lastSendingResult ? sendPeriod - lastSendingElapsed : sendPeriod;
 
             return new Schedule(delayToNextOccurrence);
