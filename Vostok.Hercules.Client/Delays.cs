@@ -9,8 +9,8 @@ namespace Vostok.Hercules.Client
         public static TimeSpan ExponentialWithJitter(TimeSpan sendPeriodCap, TimeSpan sendPeriod, int attempt)
         {
             var delayMs = Math.Min(sendPeriodCap.TotalMilliseconds, sendPeriod.TotalMilliseconds * Math.Pow(2, attempt));
-            var delay = TimeSpan.FromMilliseconds(delayMs);
-            var jitter = delay.Multiply(ThreadSafeRandom.NextDouble() - 0.5);
+            var delay = TimeSpan.FromMilliseconds(delayMs).Divide(2);
+            var jitter = delay.Multiply(ThreadSafeRandom.NextDouble());
             return delay + jitter;
         }
     }
