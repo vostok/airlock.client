@@ -63,9 +63,9 @@ namespace Vostok.Hercules.Client
 
                 var sendingResult = await PushAsync(stream, bufferPoolLazy.Value, cancellationToken).ConfigureAwait(false);
 
-                var schedule = scheduler.GetDelayToNextOccurrence(stream, sendingResult, sw.Elapsed);
+                var delayTime = scheduler.GetDelayToNextOccurrence(stream, sendingResult, sw.Elapsed);
 
-                delays[stream] = schedule.WaitNextOccurrenceAsync(cancellationToken);
+                delays[stream] = Task.Delay(delayTime, cancellationToken);
             }
         }
 

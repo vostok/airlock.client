@@ -20,16 +20,16 @@ namespace Vostok.Hercules.Client
             attempts = new Dictionary<string, int>();
         }
 
-        public ISchedule GetDelayToNextOccurrence(string stream, bool lastSendingResult, TimeSpan lastSendingElapsed)
+        public TimeSpan GetDelayToNextOccurrence(string stream, bool lastSendingResult, TimeSpan lastSendingElapsed)
         {
             if (lastSendingResult && memoryManager.IsConsumptionAchievedThreshold(50))
-                return new Schedule(TimeSpan.Zero);
+                return TimeSpan.Zero;
 
             attempts[stream] = CalculateAttempt(stream, lastSendingResult);
             var sendPeriod = Delays.ExponentialWithJitter(requestSendPeriodCap, requestSendPeriod, attempts[stream]);
             var delayToNextOccurrence = lastSendingResult ? sendPeriod - lastSendingElapsed : sendPeriod;
 
-            return new Schedule(delayToNextOccurrence);
+            return delayToNextOccurrence;
         }
 
         private int CalculateAttempt(string stream, bool lastSendingResult) =>
