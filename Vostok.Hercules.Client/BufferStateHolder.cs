@@ -13,7 +13,7 @@ namespace Vostok.Hercules.Client
                 var val = Interlocked.Read(ref state);
                 return *(BufferState*)&val;
             }
-            set { Interlocked.Exchange(ref state, *(long*)&value); }
+            set => Interlocked.Exchange(ref state, *(long*)&value);
         }
     }
 }
