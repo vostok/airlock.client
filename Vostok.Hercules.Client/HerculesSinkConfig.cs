@@ -51,16 +51,6 @@ namespace Vostok.Hercules.Client
         public int MaximumRecordSize { get; set; } = 128 * (int) DataSizeConstants.Kilobyte;
         
         /// <summary>
-        /// <para>Initial size (in bytes) of buffer for records.</para>
-        /// </summary>
-        public int InitialPooledBufferSize { get; set; } = 16 * (int) DataSizeConstants.Kilobyte;
-        
-        /// <summary>
-        /// <para>How much buffers will be preallocated for single stream.</para>
-        /// </summary>
-        public int InitialPooledBuffersCount { get; set; } = 1;
-        
-        /// <summary>
         /// <para>Maximum size (in bytes) of single buffer with records which will be stored in memory and transferred by network to Hercules gateway.</para>
         /// </summary>
         public int MaximumBatchSize { get; set; } = 4 * (int) DataSizeConstants.Megabyte;

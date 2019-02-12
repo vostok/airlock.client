@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using Vostok.Commons.Primitives;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
@@ -13,6 +14,8 @@ namespace Vostok.Hercules.Client
     public class HerculesSink : IHerculesSink, IDisposable
     {
         private const int RecordVersion = 1;
+        private const int InitialPooledBuffersCount = 1;
+        private const int InitialPooledBufferSize = 4 * (int) DataSizeConstants.Kilobyte;
         
         private readonly ILog log;
 
@@ -44,8 +47,8 @@ namespace Vostok.Hercules.Client
 
             memoryManager = new MemoryManager(config.MaximumMemoryConsumption);
 
-            initialPooledBuffersCount = config.InitialPooledBuffersCount;
-            initialPooledBufferSize = config.InitialPooledBufferSize;
+            initialPooledBuffersCount = InitialPooledBuffersCount;
+            initialPooledBufferSize = InitialPooledBufferSize;
             maxRecordSize = config.MaximumRecordSize;
             maxRequestBodySize = config.MaximumBatchSize;
             maximumPerStreamMemoryConsumptionBytes = config.MaximumPerStreamMemoryConsumption;

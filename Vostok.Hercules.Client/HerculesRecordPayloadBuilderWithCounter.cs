@@ -7,7 +7,7 @@ using Vostok.Hercules.Client.Binary;
 namespace Vostok.Hercules.Client
 {
     internal class HerculesRecordPayloadBuilderWithCounter : IHerculesTagsBuilder, IDisposable
-    {
+    {   
         private readonly IBinaryWriter binaryWriter;
         private readonly long countPosition;
         private readonly HerculesRecordPayloadBuilder builder;
