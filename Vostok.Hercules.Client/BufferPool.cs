@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -80,14 +81,13 @@ namespace Vostok.Hercules.Client
 
         private bool TryDequeueBuffer(out IBuffer buffer)
         {
-            var count = buffers.Count;
+            var dequeueAttempts = Math.Min(3, buffers.Count);
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < dequeueAttempts; i++)
             {
                 if (!buffers.TryDequeue(out buffer))
                     return false;
 
-                //TODO: use other way to decide that buffer is large enough for record, don't waste space
                 var state = buffer.GetState();
 
                 if (state.Length <= maxBufferSize - maxRecordSize && buffer.TryLock())
