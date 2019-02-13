@@ -29,7 +29,7 @@ namespace Vostok.Hercules.Client
 
         public HerculesSink(HerculesSinkConfig config, ILog log)
         {
-            log = log?.ForContext<HerculesSinkConfig>() ?? new SilentLog();
+            log = log?.ForContext<HerculesSink>() ?? new SilentLog();
 
             recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, config.RecordVersion, (int)config.MaximumRecordSizeBytes);
 
