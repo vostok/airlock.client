@@ -27,7 +27,7 @@ namespace Vostok.Hercules.Client.Tests
         private string apiKey = "dotnet_api_key";
         private string managementApiUrl = "http://vm-hercules05:6507";
         private string streamApiUrl = "http://vm-hercules05:6407";
-        private TimeSpan ttl = 20.Seconds();
+        private TimeSpan ttl = 2.Minutes();
         private HerculesStreamClient streamClient;
         private HerculesSink sink;
         private HerculesManagementClient managementClient;
@@ -69,6 +69,8 @@ namespace Vostok.Hercules.Client.Tests
                         }),
                     timeout)
                 .EnsureSuccess();
+
+            Thread.Sleep(1000);
         }
 
         [TearDown]
@@ -222,6 +224,9 @@ namespace Vostok.Hercules.Client.Tests
                 ClientShardCount = 1
             };
 
+            Console.WriteLine(stream);
+            Thread.Sleep(10000);
+
             new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Should().NotBeEmpty())
                 .ShouldPassIn(timeout);
 
@@ -280,16 +285,22 @@ namespace Vostok.Hercules.Client.Tests
             Thread.Sleep(20.Seconds());
             // see for cpu usage
         }
-        
-        [Test]
-        public void Should_not_fall_into_infinite_loop_after_creation2()
-        {
-            var herculesSink = new HerculesSink(new HerculesSinkConfig(new FixedClusterProvider(new Uri("http://localhost/")), () => ""), new SilentLog());
-            herculesSink.Put("stream", delegate { });
-            GC.Collect(2);
-            Thread.Sleep(20.Seconds());
-            // see for cpu usage
-        }
-        
     }
+
+    public class A
+    {
+        [Test]
+        public void X()
+        {
+            1.Should().Be(2);
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+            Console.WriteLine("!");
+        }
+    }
+    
+    
 }
