@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Vostok.Commons.Threading;
 
 namespace Vostok.Hercules.Client
 {
@@ -12,8 +13,8 @@ namespace Vostok.Hercules.Client
         private readonly int maxRecordSize;
         private readonly int maxBufferSize;
 
-        private readonly ConcurrentQueue<IBuffer> buffers;
-        private readonly ConcurrentQueue<IBuffer> allBuffers;
+        private readonly ConcurrentQueue<IBuffer> buffers = new ConcurrentQueue<IBuffer>();
+        private readonly ConcurrentQueue<IBuffer> allBuffers = new ConcurrentQueue<IBuffer>();
 
         public BufferPool(
             IMemoryManager memoryManager,
@@ -26,9 +27,6 @@ namespace Vostok.Hercules.Client
             this.initialBufferSize = initialBufferSize;
             this.maxRecordSize = maxRecordSize;
             this.maxBufferSize = maxBufferSize;
-
-            allBuffers = new ConcurrentQueue<IBuffer>();
-            buffers = new ConcurrentQueue<IBuffer>();
 
             for (var i = 0; i < initialCount; i++)
             {
@@ -51,12 +49,19 @@ namespace Vostok.Hercules.Client
 
         public void Release(IBuffer buffer)
         {
+            var needToFlush = buffer.GetState().Length > maxBufferSize / 4;
+            
             buffer.Unlock();
             buffers.Enqueue(buffer);
+            
+            if (needToFlush)
+                NeedToFlushEvent.Set();
         }
 
         public long GetStoredRecordsCount() => buffers.Sum(x => x.GetState().RecordsCount);
-
+        
+        public AsyncManualResetEvent NeedToFlushEvent { get; } = new AsyncManualResetEvent(false);
+        
         public IReadOnlyCollection<IBuffer> MakeSnapshot()
         {
             var snapshot = null as List<IBuffer>;

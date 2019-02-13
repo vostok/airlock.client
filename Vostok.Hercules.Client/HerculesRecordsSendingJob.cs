@@ -61,11 +61,15 @@ namespace Vostok.Hercules.Client
 
                 var sw = Stopwatch.StartNew();
 
-                var sendingResult = await PushAsync(stream, bufferPoolLazy.Value, cancellationToken).ConfigureAwait(false);
+                var bufferPool = bufferPoolLazy.Value;
+                
+                bufferPool.NeedToFlushEvent.Reset();
+
+                var sendingResult = await PushAsync(stream, bufferPool, cancellationToken).ConfigureAwait(false);
 
                 var delayTime = scheduler.GetDelayToNextOccurrence(stream, sendingResult, sw.Elapsed);
 
-                delays[stream] = Task.Delay(delayTime, cancellationToken);
+                delays[stream] = Task.WhenAny(bufferPool.NeedToFlushEvent, Task.Delay(delayTime, cancellationToken));
             }
         }
 
