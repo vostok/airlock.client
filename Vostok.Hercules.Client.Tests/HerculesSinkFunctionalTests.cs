@@ -286,21 +286,4 @@ namespace Vostok.Hercules.Client.Tests
             // see for cpu usage
         }
     }
-
-    public class A
-    {
-        [Test]
-        public void X()
-        {
-            1.Should().Be(2);
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            Console.WriteLine("!");
-        }
-    }
-    
-    
 }
