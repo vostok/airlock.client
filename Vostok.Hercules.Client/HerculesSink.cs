@@ -41,7 +41,7 @@ namespace Vostok.Hercules.Client
         /// <param name="log">A <see cref="ILog"/> instance.</param>
         public HerculesSink(HerculesSinkConfig config, ILog log)
         {
-            log = (log ?? LogProvider.Get()).ForContext<HerculesSinkConfig>();
+            log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
             recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, RecordVersion, config.MaximumRecordSize);
 
