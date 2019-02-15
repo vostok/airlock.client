@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Vostok.Commons.Threading;
+using Vostok.Hercules.Client.Abstractions;
 
 namespace Vostok.Hercules.Client
 {
@@ -36,6 +37,8 @@ namespace Vostok.Hercules.Client
                     break;
             }
         }
+
+        public StreamSettings Settings { get; set; } = new StreamSettings();
 
         public bool TryAcquire(out IBuffer buffer)
         {

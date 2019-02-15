@@ -103,7 +103,9 @@ namespace Vostok.Hercules.Client
                 if (snapshot.State.RecordsCount == 0)
                     continue;
 
-                if (!await PushAsync(stream, snapshot, cancellationToken).ConfigureAwait(false))
+                var apiKeyProvider = bufferPool.Settings.ApiKeyProvider;
+                
+                if (!await PushAsync(stream, snapshot, apiKeyProvider, cancellationToken).ConfigureAwait(false))
                     return false;
 
                 sendAny = true;
@@ -112,7 +114,11 @@ namespace Vostok.Hercules.Client
             return sendAny;
         }
 
-        private async Task<bool> PushAsync(string stream, BufferSnapshot snapshot, CancellationToken cancellationToken)
+        private async Task<bool> PushAsync(
+            string stream,
+            BufferSnapshot snapshot,
+            Func<string> apiKeyProvider,
+            CancellationToken cancellationToken)
         {
             var sw = Stopwatch.StartNew();
 
@@ -120,7 +126,8 @@ namespace Vostok.Hercules.Client
 
             SetRecordsCount(snapshot.Buffer, recordsCount);
 
-            var sendingResult = await requestSender.SendAsync(stream, snapshot.Data, timeout, cancellationToken).ConfigureAwait(false);
+            var sendingResult = await requestSender.SendAsync(stream, snapshot.Data, timeout, apiKeyProvider, cancellationToken)
+                .ConfigureAwait(false);
 
             LogSendingResult(sendingResult, recordsCount, snapshot.State.Length, stream, sw.Elapsed);
 

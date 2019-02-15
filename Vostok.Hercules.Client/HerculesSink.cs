@@ -120,6 +120,13 @@ namespace Vostok.Hercules.Client
         }
 
         /// <inheritdoc />
+        public void ConfigureStream(string stream, StreamSettings settings)
+        {
+            var bufferPool = GetOrCreate(stream);
+            bufferPool.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
             if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 1)

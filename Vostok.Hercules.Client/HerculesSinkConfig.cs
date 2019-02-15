@@ -3,6 +3,7 @@ using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Primitives;
 using Vostok.Commons.Time;
+using Vostok.Hercules.Client.Abstractions;
 
 namespace Vostok.Hercules.Client
 {
@@ -31,7 +32,7 @@ namespace Vostok.Hercules.Client
         
         /// <summary>
         /// <para>Delegate that returns Hercules gateway API key with write access.</para>
-        /// <para>API key can be overridden for each stream separately with //TODO method.</para>
+        /// <para>API key can be overridden for each stream separately with <see cref="IHerculesSink.ConfigureStream"/> method.</para>
         /// </summary>
         public Func<string> ApiKeyProvider { get; set; }
         
