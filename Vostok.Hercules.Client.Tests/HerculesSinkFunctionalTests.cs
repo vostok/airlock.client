@@ -69,6 +69,8 @@ namespace Vostok.Hercules.Client.Tests
                         }),
                     timeout)
                 .EnsureSuccess();
+            
+            new Action(() => managementClient.ListStreams(timeout).Payload.Should().Contain(stream)).ShouldPassIn(timeout);
         }
 
         [TearDown]
@@ -93,7 +95,7 @@ namespace Vostok.Hercules.Client.Tests
 
             var readQuery = new ReadStreamQuery(stream)
             {
-                Limit = 100,
+                Limit = 10000,
                 Coordinates = new StreamCoordinates(new StreamPosition[0]),
                 ClientShard = 0,
                 ClientShardCount = 1
