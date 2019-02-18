@@ -44,7 +44,7 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// <para>How much memory (in bytes) can take a buffers with records for same stream.</para>
         /// </summary>
-        public long MaximumPerStreamMemoryConsumption { get; set; } = 128 * DataSizeConstants.Megabyte;
+        public long MaximumPerStreamMemoryConsumption { get; set; } = 64 * DataSizeConstants.Megabyte;
         
         /// <summary>
         /// <para>Maximum size (in bytes) of single record.</para>
