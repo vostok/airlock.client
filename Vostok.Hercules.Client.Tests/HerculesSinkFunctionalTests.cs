@@ -36,7 +36,7 @@ namespace Vostok.Hercules.Client.Tests
         [SetUp]
         public void Setup()
         {
-            stream = $"dotnet_test_{Guid.NewGuid().ToString().Substring(0, 8)}";
+            stream = $"dotnet_test_csharpclient_{Guid.NewGuid().ToString().Substring(0, 8)}";
             // var dt = DateTime.UtcNow;
             // var key = dt.Hour * 3600 + dt.Minute * 60 + dt.Second;
             // stream = $"dotnet_test_{key}";
