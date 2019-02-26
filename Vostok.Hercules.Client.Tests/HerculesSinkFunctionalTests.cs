@@ -31,7 +31,7 @@ namespace Vostok.Hercules.Client.Tests
         private HerculesStreamClient streamClient;
         private HerculesSink sink;
         private HerculesManagementClient managementClient;
-        private HerculesStreamClientConfig streamClientConfig;
+        private HerculesStreamClientSettings streamClientSettings;
 
         [SetUp]
         public void Setup()
@@ -41,7 +41,7 @@ namespace Vostok.Hercules.Client.Tests
             // var key = dt.Hour * 3600 + dt.Minute * 60 + dt.Second;
             // stream = $"dotnet_test_{key}";
 
-            var sinkConfig = new HerculesSinkConfig(new FixedClusterProvider(new Uri(gateUrl)), () => apiKey);
+            var sinkConfig = new HerculesSinkSettings(new FixedClusterProvider(new Uri(gateUrl)), () => apiKey);
 
             managementClient = new HerculesManagementClient(
                 new HerculesManagementClientConfig
@@ -54,11 +54,11 @@ namespace Vostok.Hercules.Client.Tests
 
             sink = new HerculesSink(sinkConfig, log);
 
-            streamClientConfig = new HerculesStreamClientConfig(
+            streamClientSettings = new HerculesStreamClientSettings(
                 new FixedClusterProvider(new Uri(streamApiUrl)),
                 () => apiKey);
 
-            streamClient = new HerculesStreamClient(streamClientConfig, log);
+            streamClient = new HerculesStreamClient(streamClientSettings, log);
 
             managementClient.CreateStream(
                     new CreateStreamQuery(
@@ -277,7 +277,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test, Explicit]
         public void Should_not_fall_into_infinite_loop_after_creation()
         {
-            new HerculesSink(new HerculesSinkConfig(new FixedClusterProvider(new Uri("http://localhost/")), () => ""), new SilentLog())
+            new HerculesSink(new HerculesSinkSettings(new FixedClusterProvider(new Uri("http://localhost/")), () => ""), new SilentLog())
                 .GetHashCode();
             Thread.Sleep(20.Seconds());
             // see for cpu usage

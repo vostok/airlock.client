@@ -14,7 +14,6 @@ using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Abstractions.Values;
-using Vostok.Hercules.Client.Binary;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -25,21 +24,21 @@ namespace Vostok.Hercules.Client
         private readonly IClusterClient client;
         private readonly Func<string> getGateApiKey;
 
-        public HerculesGateClient(HerculesGateClientConfig config, ILog log)
+        public HerculesGateClient(HerculesGateClientSettings settings, ILog log)
         {
             this.log = log?.ForContext<HerculesGateClient>() ?? new SilentLog();
-            getGateApiKey = config.ApiKeyProvider;
+            getGateApiKey = settings.ApiKeyProvider;
 
             client = new ClusterClient(
                 log,
                 configuration =>
                 {
-                    configuration.TargetServiceName = config.ServiceName ?? "HerculesGateway";
-                    configuration.ClusterProvider = config.Cluster;
-                    configuration.Transport = new UniversalTransport(log);
+                    configuration.TargetServiceName = settings.ServiceName ?? "HerculesGateway";
+                    configuration.ClusterProvider = settings.Cluster;
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
 
+                    configuration.SetupUniversalTransport();
                     configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
                     configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
                     configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);

@@ -37,36 +37,36 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// Creates a new instance of <see cref="HerculesSink"/>.
         /// </summary>
-        /// <param name="config">Configuration of this <see cref="HerculesSink"/></param>
+        /// <param name="settings">Configuration of this <see cref="HerculesSink"/></param>
         /// <param name="log">A <see cref="ILog"/> instance.</param>
-        public HerculesSink(HerculesSinkConfig config, ILog log)
+        public HerculesSink(HerculesSinkSettings settings, ILog log)
         {
             log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
-            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, RecordVersion, config.MaximumRecordSize);
+            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, RecordVersion, settings.MaximumRecordSize);
 
-            memoryManager = new MemoryManager(config.MaximumMemoryConsumption);
+            memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
 
             initialPooledBuffersCount = InitialPooledBuffersCount;
             initialPooledBufferSize = InitialPooledBufferSize;
-            maxRecordSize = config.MaximumRecordSize;
-            maxRequestBodySize = config.MaximumBatchSize;
-            maximumPerStreamMemoryConsumptionBytes = config.MaximumPerStreamMemoryConsumption;
+            maxRecordSize = settings.MaximumRecordSize;
+            maxRequestBodySize = settings.MaximumBatchSize;
+            maximumPerStreamMemoryConsumptionBytes = settings.MaximumPerStreamMemoryConsumption;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
             var jobScheduler = new HerculesRecordsSendingJobScheduler(
                 memoryManager,
-                config.RequestSendPeriod,
-                config.RequestSendPeriodCap);
+                settings.RequestSendPeriod,
+                settings.RequestSendPeriodCap);
 
-            var requestSender = new RequestSender(log, config);
+            var requestSender = new RequestSender(log, settings);
             
             var job = new HerculesRecordsSendingJob(
                 bufferPools,
                 jobScheduler,
                 requestSender,
                 log,
-                config.RequestTimeout);
+                settings.RequestTimeout);
             
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);
         }

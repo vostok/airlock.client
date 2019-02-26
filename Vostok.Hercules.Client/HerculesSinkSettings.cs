@@ -10,11 +10,11 @@ namespace Vostok.Hercules.Client
     /// <summary>
     /// Represents a settings of <see cref="HerculesSink"/>.
     /// </summary>
-    public class HerculesSinkConfig
+    public class HerculesSinkSettings
     {
         /// <param name="cluster">>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules gateway service.</param>
         /// <param name="apiKeyProvider">Delegate that returns Hercules gateway API key with write access.</param>
-        public HerculesSinkConfig(IClusterProvider cluster, Func<string> apiKeyProvider)
+        public HerculesSinkSettings(IClusterProvider cluster, Func<string> apiKeyProvider)
         {
             Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
             ApiKeyProvider = apiKeyProvider ?? throw new ArgumentNullException(nameof(apiKeyProvider));

@@ -14,7 +14,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test]
         public void LostRecordsCount_should_not_grows_infinitely_when_gate_is_offline()
         {
-            var config = new HerculesSinkConfig(
+            var config = new HerculesSinkSettings(
                 new FixedClusterProvider(new Uri("http://example.com/dev/null")),
                 () => "");
 
@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test, Explicit]
         public void Test()
         {
-            var config = new HerculesSinkConfig(new FixedClusterProvider(new Uri("")), () => "");
+            var config = new HerculesSinkSettings(new FixedClusterProvider(new Uri("")), () => "");
 
             var client = new HerculesSink(config, new ConsoleLog());
 

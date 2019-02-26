@@ -18,16 +18,16 @@ namespace Vostok.Hercules.Client
         private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 
-        public RequestSender(ILog log, HerculesSinkConfig sinkConfig)
+        public RequestSender(ILog log, HerculesSinkSettings sinkSettings)
         {
-            getGateApiKey = sinkConfig.ApiKeyProvider;
+            getGateApiKey = sinkSettings.ApiKeyProvider;
 
             client = new ClusterClient(
                 log,
                 configuration =>
                 {
                     configuration.TargetServiceName = ServiceName;
-                    configuration.ClusterProvider = sinkConfig.Cluster;
+                    configuration.ClusterProvider = sinkSettings.Cluster;
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
@@ -36,7 +36,7 @@ namespace Vostok.Hercules.Client
                     configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
                     configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
 
-                    sinkConfig.ClusterClientSetup?.Invoke(configuration);
+                    sinkSettings.ClusterClientSetup?.Invoke(configuration);
                 });
         }
 

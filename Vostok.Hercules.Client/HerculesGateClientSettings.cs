@@ -3,9 +3,9 @@ using Vostok.Clusterclient.Core.Topology;
 
 namespace Vostok.Hercules.Client
 {
-    public class HerculesGateClientConfig
+    public class HerculesGateClientSettings
     {
-        public HerculesGateClientConfig(IClusterProvider cluster, Func<string> apiKeyProvider)
+        public HerculesGateClientSettings(IClusterProvider cluster, Func<string> apiKeyProvider)
         {
             Cluster = cluster;
             ApiKeyProvider = apiKeyProvider;
