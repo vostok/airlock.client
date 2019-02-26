@@ -176,7 +176,7 @@ namespace Vostok.Hercules.Client
         {
             writer.WriteWithByteLength(key);
             writer.Write(TagType.Vector);
-            writer.Write(TagType.Byte);
+            writer.Write(TagType.Flag);
             writer.WriteReadOnlyCollection(value, (w, x) => w.Write(x));
 
             return this;
