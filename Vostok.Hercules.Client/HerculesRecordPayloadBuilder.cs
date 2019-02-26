@@ -65,7 +65,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, bool value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagType.Byte);
+            writer.Write(TagType.Flag);
             writer.Write(value);
 
             return this;
