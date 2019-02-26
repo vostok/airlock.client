@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Binary;
 
 namespace Vostok.Hercules.Client
 {
@@ -26,196 +26,169 @@ namespace Vostok.Hercules.Client
 
         public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)
         {
+            IncrementCounter();
             builder.AddContainer(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, byte value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, short value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, int value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, long value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, bool value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, float value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, double value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, Guid value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddValue(string key, string value)
         {
+            IncrementCounter();
             builder.AddValue(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> value)
         {
+            IncrementCounter();
             builder.AddVectorOfContainers(key, value);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddNull(string key)
         {
+            IncrementCounter();
             builder.AddNull(key);
-            checked
-            {
-                counter++;
-            }
 
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<byte> value)
         {
+            IncrementCounter();
             builder.AddVector(key, value);
-            counter++;
+
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<short> value)
         {
+            IncrementCounter();
             builder.AddVector(key, value);
-            counter++;
+
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<int> value)
         {
+            IncrementCounter();
             builder.AddVector(key, value);
-            counter++;
+            
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<long> value)
         {
+            IncrementCounter();
             builder.AddVector(key, value);
-            counter++;
+            
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<bool> value)
         {
+            IncrementCounter();
             builder.AddVector(key, value);
-            counter++;
+            
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<float> value)
         {
+            IncrementCounter();
             builder.AddVector(key, value);
-            counter++;
+            
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<double> value)
         {
+            IncrementCounter();
             builder.AddVector(key, value);
-            counter++;
+            
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values)
         {
+            IncrementCounter();
             builder.AddVector(key, values);
-            counter++;
+            
             return this;
         }
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<string> value)
         {
+            IncrementCounter();
             builder.AddVector(key, value);
-            counter++;
+            
             return this;
         }
 
@@ -223,6 +196,15 @@ namespace Vostok.Hercules.Client
         {
             using (binaryWriter.JumpTo(countPosition))
                 binaryWriter.Write(counter);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void IncrementCounter()
+        {
+            checked
+            {
+                ++counter;
+            }
         }
     }
 }
