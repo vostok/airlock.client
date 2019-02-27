@@ -15,6 +15,8 @@ namespace Vostok.Hercules.Client
         private readonly WeakReference<IReadOnlyDictionary<string, Lazy<IBufferPool>>> bufferPools;
         private readonly ILog log;
         private readonly IHerculesRecordsSendingJobScheduler scheduler;
+        private readonly IBufferSnapshotBatcher batcher;
+        private readonly IBodyFormatter formatter;
         private readonly IRequestSender requestSender;
         private readonly TimeSpan timeout;
 
@@ -26,6 +28,8 @@ namespace Vostok.Hercules.Client
         public HerculesRecordsSendingJob(
             IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools,
             IHerculesRecordsSendingJobScheduler scheduler,
+            IBufferSnapshotBatcher batcher,
+            IBodyFormatter formatter,
             IRequestSender requestSender,
             ILog log,
             TimeSpan timeout)
@@ -34,6 +38,8 @@ namespace Vostok.Hercules.Client
 
             this.log = log;
             this.scheduler = scheduler;
+            this.batcher = batcher;
+            this.formatter = formatter;
             this.requestSender = requestSender;
             this.timeout = timeout;
 
@@ -76,14 +82,6 @@ namespace Vostok.Hercules.Client
         public Task WaitNextOccurrenceAsync() =>
             delays.Count != 0 ? Task.WhenAny(delays.Select(x => x.Value)) : Task.CompletedTask;
 
-        private static unsafe void SetRecordsCount(byte[] buffer, int recordsCount)
-        {
-            if (buffer.Length < sizeof(int))
-                throw new ArgumentException($"Buffer length {buffer.Length} is less than {sizeof(int)}.");
-
-            fixed (byte* b = buffer)
-                *(int*)b = EndiannessConverter.Convert(recordsCount, Endianness.Big);
-        }
 
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
         {
@@ -92,16 +90,16 @@ namespace Vostok.Hercules.Client
             if (buffers == null)
                 return false;
 
-            var snapshots = buffers.Select(x => x.MakeSnapshot());
+            var snapshots = buffers
+                .Select(x => x.MakeSnapshot())
+                .Where(x => x.State.RecordsCount > 0)
+                .ToArray();
 
             var sendAny = false;
 
-            foreach (var snapshot in snapshots)
+            foreach (var snapshot in batcher.Batch(snapshots))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                if (snapshot.State.RecordsCount == 0)
-                    continue;
 
                 var apiKeyProvider = bufferPool.Settings.ApiKeyProvider;
                 
@@ -116,20 +114,18 @@ namespace Vostok.Hercules.Client
 
         private async Task<bool> PushAsync(
             string stream,
-            BufferSnapshot snapshot,
+            ArraySegment<BufferSnapshot> snapshots,
             Func<string> apiKeyProvider,
             CancellationToken cancellationToken)
         {
             var sw = Stopwatch.StartNew();
 
-            var recordsCount = snapshot.State.RecordsCount;
+            var body = formatter.GetContent(snapshots, out var recordsCount);
 
-            SetRecordsCount(snapshot.Buffer, recordsCount);
-
-            var sendingResult = await requestSender.SendAsync(stream, snapshot.Data, timeout, apiKeyProvider, cancellationToken)
+            var sendingResult = await requestSender.SendAsync(stream, body, timeout, apiKeyProvider, cancellationToken)
                 .ConfigureAwait(false);
 
-            LogSendingResult(sendingResult, recordsCount, snapshot.State.Length, stream, sw.Elapsed);
+            LogSendingResult(sendingResult, recordsCount, body.Count, stream, sw.Elapsed);
 
             switch (sendingResult)
             {
@@ -145,7 +141,8 @@ namespace Vostok.Hercules.Client
                     throw new ArgumentOutOfRangeException(nameof(sendingResult));
             }
 
-            snapshot.Parent.RequestGarbageCollection(snapshot.State);
+            foreach (var snapshot in snapshots)
+                snapshot.Parent.RequestGarbageCollection(snapshot.State);
 
             return true;
         }

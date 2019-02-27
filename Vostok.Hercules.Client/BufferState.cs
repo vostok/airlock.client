@@ -19,5 +19,7 @@ namespace Vostok.Hercules.Client
 
         public static BufferState operator-(BufferState a, BufferState b)
             => new BufferState(a.Length - b.Length, a.RecordsCount - b.RecordsCount);
+        
+        public int LengthOfRecords => Length - Buffer.InitialPosition;
     }
 }

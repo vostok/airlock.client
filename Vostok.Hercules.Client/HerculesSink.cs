@@ -30,8 +30,8 @@ namespace Vostok.Hercules.Client
 
         private int isDisposed;
         private long lostRecordsCounter;
-        private int maxRecordSize;
-        private int maxRequestBodySize;
+        private int maximumRecordSize;
+        private int maximumBatchSize;
         private long maximumPerStreamMemoryConsumptionBytes;
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace Vostok.Hercules.Client
 
             initialPooledBuffersCount = InitialPooledBuffersCount;
             initialPooledBufferSize = InitialPooledBufferSize;
-            maxRecordSize = settings.MaximumRecordSize;
-            maxRequestBodySize = settings.MaximumBatchSize;
+            maximumRecordSize = settings.MaximumRecordSize;
+            maximumBatchSize = settings.MaximumBatchSize;
             maximumPerStreamMemoryConsumptionBytes = settings.MaximumPerStreamMemoryConsumption;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
@@ -61,9 +61,15 @@ namespace Vostok.Hercules.Client
 
             var requestSender = new RequestSender(log, settings);
             
+            var batcher = new BufferSnapshotBatcher(maximumBatchSize);
+            
+            var formatter = new BodyFormatter(maximumBatchSize);
+            
             var job = new HerculesRecordsSendingJob(
                 bufferPools,
                 jobScheduler,
+                batcher,
+                formatter,
                 requestSender,
                 log,
                 settings.RequestTimeout);
@@ -144,8 +150,8 @@ namespace Vostok.Hercules.Client
                 perStreamMemoryManager,
                 initialPooledBuffersCount,
                 initialPooledBufferSize,
-                maxRecordSize,
-                maxRequestBodySize);
+                maximumRecordSize,
+                maximumBatchSize);
         }
     }
 }
