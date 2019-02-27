@@ -24,8 +24,12 @@ notests *default:
 
 full-build > notests: 
   deps:
+    - vostok.configuration.abstractions
+    - vostok.clusterconfig.client.abstractions
     - vostok.logging.console
     - vostok.hercules.client.management
+    - vostok.clusterconfig.client
+    - vostok.clusterclient.topology.cc
     - vostok.commons.testing/src
   build:
     target: Vostok.Hercules.Client.sln
