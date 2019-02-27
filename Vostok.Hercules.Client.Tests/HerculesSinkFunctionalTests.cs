@@ -4,6 +4,8 @@ using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Topology;
+using Vostok.Clusterclient.Topology.CC;
+using Vostok.ClusterConfig.Client;
 using Vostok.Commons.Testing;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
@@ -21,12 +23,13 @@ namespace Vostok.Hercules.Client.Tests
     {
         private readonly TimeSpan timeout = 20.Seconds();
         private readonly ConsoleLog log = new ConsoleLog();
+        private readonly ClusterConfigClient clusterConfigClient = new ClusterConfigClient();
 
         private string stream;
-        private string gateUrl = "http://vm-hercules04:6306";
+        private string gateTopology = "topology/hercules/gate.test";
         private string apiKey = "dotnet_api_key";
-        private string managementApiUrl = "http://vm-hercules05:6507";
-        private string streamApiUrl = "http://vm-hercules05:6407";
+        private string managementApiTopology = "topology/hercules/management-api.test";
+        private string streamApiTopology = "topology/hercules/stream-api.test";
         private TimeSpan ttl = 20.Seconds();
         private HerculesStreamClient streamClient;
         private HerculesSink sink;
@@ -41,12 +44,14 @@ namespace Vostok.Hercules.Client.Tests
             // var key = dt.Hour * 3600 + dt.Minute * 60 + dt.Second;
             // stream = $"dotnet_test_{key}";
 
-            var sinkConfig = new HerculesSinkSettings(new FixedClusterProvider(new Uri(gateUrl)), () => apiKey);
+            var sinkConfig = new HerculesSinkSettings(
+                new ClusterConfigClusterProvider(clusterConfigClient, gateTopology, log),
+                () => apiKey);
 
             managementClient = new HerculesManagementClient(
                 new HerculesManagementClientConfig
                 {
-                    Cluster = new FixedClusterProvider(new Uri(managementApiUrl)),
+                    Cluster = new ClusterConfigClusterProvider(clusterConfigClient, managementApiTopology, log),
                     ServiceName = "HerculesManagementApi",
                     ApiKeyProvider = () => apiKey
                 },
@@ -55,7 +60,7 @@ namespace Vostok.Hercules.Client.Tests
             sink = new HerculesSink(sinkConfig, log);
 
             streamClientSettings = new HerculesStreamClientSettings(
-                new FixedClusterProvider(new Uri(streamApiUrl)),
+                new ClusterConfigClusterProvider(clusterConfigClient, streamApiTopology, log),
                 () => apiKey);
 
             streamClient = new HerculesStreamClient(streamClientSettings, log);
