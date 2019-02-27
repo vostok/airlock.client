@@ -29,7 +29,8 @@ namespace Vostok.Hercules.Client
 
                 if (batchSize + recordsLength > maximumBatchSize - Buffer.InitialPosition)
                 {
-                    yield return CreateSegment();
+                    if (batchSize > 0)
+                        yield return CreateSegment();
                     offset = i;
                     batchSize = 0;
                 }
