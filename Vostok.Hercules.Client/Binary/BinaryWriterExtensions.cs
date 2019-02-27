@@ -10,7 +10,7 @@ namespace Vostok.Hercules.Client.Binary
     internal static class BinaryWriterExtensions
     {
         public static void Write(this IBinaryWriter writer, TagType valueType) =>
-            writer.Write((byte) valueType);
+            writer.Write((byte)valueType);
 
         public static void WriteReadOnlyCollection<T>(
             [NotNull] this IBinaryWriter writer,

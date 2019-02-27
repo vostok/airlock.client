@@ -7,7 +7,7 @@ using Vostok.Hercules.Client.Abstractions.Events;
 namespace Vostok.Hercules.Client
 {
     internal class HerculesRecordPayloadBuilderWithCounter : IHerculesTagsBuilder, IDisposable
-    {   
+    {
         private readonly IBinaryWriter binaryWriter;
         private readonly long countPosition;
         private readonly HerculesRecordPayloadBuilder builder;
@@ -140,7 +140,7 @@ namespace Vostok.Hercules.Client
         {
             IncrementCounter();
             builder.AddVector(key, value);
-            
+
             return this;
         }
 
@@ -148,7 +148,7 @@ namespace Vostok.Hercules.Client
         {
             IncrementCounter();
             builder.AddVector(key, value);
-            
+
             return this;
         }
 
@@ -156,7 +156,7 @@ namespace Vostok.Hercules.Client
         {
             IncrementCounter();
             builder.AddVector(key, value);
-            
+
             return this;
         }
 
@@ -164,7 +164,7 @@ namespace Vostok.Hercules.Client
         {
             IncrementCounter();
             builder.AddVector(key, value);
-            
+
             return this;
         }
 
@@ -172,7 +172,7 @@ namespace Vostok.Hercules.Client
         {
             IncrementCounter();
             builder.AddVector(key, value);
-            
+
             return this;
         }
 
@@ -180,7 +180,7 @@ namespace Vostok.Hercules.Client
         {
             IncrementCounter();
             builder.AddVector(key, values);
-            
+
             return this;
         }
 
@@ -188,7 +188,7 @@ namespace Vostok.Hercules.Client
         {
             IncrementCounter();
             builder.AddVector(key, value);
-            
+
             return this;
         }
 

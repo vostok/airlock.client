@@ -68,7 +68,7 @@ namespace Vostok.Hercules.Client
                 var sw = Stopwatch.StartNew();
 
                 var bufferPool = bufferPoolLazy.Value;
-                
+
                 bufferPool.NeedToFlushEvent.Reset();
 
                 var sendingResult = await PushAsync(stream, bufferPool, cancellationToken).ConfigureAwait(false);
@@ -81,7 +81,6 @@ namespace Vostok.Hercules.Client
 
         public Task WaitNextOccurrenceAsync() =>
             delays.Count != 0 ? Task.WhenAny(delays.Select(x => x.Value)) : Task.CompletedTask;
-
 
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
         {
@@ -102,7 +101,7 @@ namespace Vostok.Hercules.Client
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var apiKeyProvider = bufferPool.Settings.ApiKeyProvider;
-                
+
                 if (!await PushAsync(stream, snapshot, apiKeyProvider, cancellationToken).ConfigureAwait(false))
                     return false;
 

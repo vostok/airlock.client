@@ -15,8 +15,8 @@ namespace Vostok.Hercules.Client
     {
         private const int RecordVersion = 1;
         private const int InitialPooledBuffersCount = 1;
-        private const int InitialPooledBufferSize = 4 * (int) DataSizeConstants.Kilobyte;
-        
+        private const int InitialPooledBufferSize = 4 * (int)DataSizeConstants.Kilobyte;
+
         private readonly ILog log;
 
         private readonly IHerculesRecordWriter recordWriter;
@@ -60,11 +60,11 @@ namespace Vostok.Hercules.Client
                 settings.RequestSendPeriodCap);
 
             var requestSender = new RequestSender(log, settings);
-            
+
             var batcher = new BufferSnapshotBatcher(maximumBatchSize);
-            
+
             var formatter = new BodyFormatter(maximumBatchSize);
-            
+
             var job = new HerculesRecordsSendingJob(
                 bufferPools,
                 jobScheduler,
@@ -73,7 +73,7 @@ namespace Vostok.Hercules.Client
                 requestSender,
                 log,
                 settings.RequestTimeout);
-            
+
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);
         }
 

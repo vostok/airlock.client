@@ -40,6 +40,8 @@ namespace Vostok.Hercules.Client
 
         public StreamSettings Settings { get; set; } = new StreamSettings();
 
+        public AsyncManualResetEvent NeedToFlushEvent { get; } = new AsyncManualResetEvent(false);
+
         public bool TryAcquire(out IBuffer buffer)
         {
             var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer, true);
@@ -53,18 +55,16 @@ namespace Vostok.Hercules.Client
         public void Release(IBuffer buffer)
         {
             var needToFlush = buffer.GetState().Length > maxBufferSize / 4;
-            
+
             buffer.Unlock();
             buffers.Enqueue(buffer);
-            
+
             if (needToFlush)
                 NeedToFlushEvent.Set();
         }
 
         public long GetStoredRecordsCount() => buffers.Sum(x => x.GetState().RecordsCount);
-        
-        public AsyncManualResetEvent NeedToFlushEvent { get; } = new AsyncManualResetEvent(false);
-        
+
         public IReadOnlyCollection<IBuffer> MakeSnapshot()
         {
             var snapshot = null as List<IBuffer>;

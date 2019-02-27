@@ -14,7 +14,7 @@ namespace Vostok.Hercules.Client
     internal class RequestSender : IRequestSender
     {
         private const string ServiceName = "HerculesGateway";
-        
+
         private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 

@@ -8,7 +8,7 @@ namespace Vostok.Hercules.Client
         private readonly IMemoryManager underlyingMemoryManager;
         private long currentSize;
 
-        public MemoryManager(long maxSize, IMemoryManager underlyingMemoryManager=null)
+        public MemoryManager(long maxSize, IMemoryManager underlyingMemoryManager = null)
         {
             this.maxSize = maxSize;
             this.underlyingMemoryManager = underlyingMemoryManager;
