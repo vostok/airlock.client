@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Topology;
@@ -40,9 +42,6 @@ namespace Vostok.Hercules.Client.Tests
         public void Setup()
         {
             stream = $"dotnet_test_csharpclient_{Guid.NewGuid().ToString().Substring(0, 8)}";
-            // var dt = DateTime.UtcNow;
-            // var key = dt.Hour * 3600 + dt.Minute * 60 + dt.Second;
-            // stream = $"dotnet_test_{key}";
 
             var sinkConfig = new HerculesSinkSettings(
                 new ClusterConfigClusterProvider(clusterConfigClient, gateTopology, log),
@@ -65,17 +64,13 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient = new HerculesStreamClient(streamClientSettings, log);
 
-            managementClient.CreateStream(
-                    new CreateStreamQuery(
-                        new StreamDescription(stream)
-                        {
-                            TTL = ttl,
-                            Partitions = 3
-                        }),
-                    timeout)
-                .EnsureSuccess();
-            
-            new Action(() => managementClient.ListStreams(timeout).Payload.Should().Contain(stream)).ShouldPassIn(timeout);
+            managementClient.CreateStreamAndWait(
+                new CreateStreamQuery(
+                    new StreamDescription(stream)
+                    {
+                        TTL = ttl,
+                        Partitions = 3
+                    }));
         }
 
         [TearDown]
@@ -106,8 +101,7 @@ namespace Vostok.Hercules.Client.Tests
                 ClientShardCount = 1
             };
 
-            new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Should().NotBeEmpty())
-                .ShouldPassIn(timeout);
+            streamClient.WaitForAnyRecord(stream);
 
             sink.SentRecordsCount.Should().Be(1);
 
@@ -128,23 +122,32 @@ namespace Vostok.Hercules.Client.Tests
             @event.Tags["nullField"].IsNull.Should().BeTrue();
         }
 
-        [Test, Explicit]
-        public void Should_read_and_write_hercules_events()
+        [Explicit]
+        [TestCase(1, 100_000)]
+        [TestCase(2, 100_000)]
+        [TestCase(50, 10_000)]
+        public void Should_read_and_write_hercules_events(int writers, int countPerWriter)
         {
-            var count = 100_000;
-
-            var seen = new bool[count];
-
-            for (var i = 0; i < count; ++i)
+            var seen = new bool[writers][];
+            
+            for (var i = 0; i < writers; i++)
+                seen[i] = new bool[countPerWriter];
+            
+            for (var t = 0; t < writers; ++t)
             {
-                var t = i;
-                sink.Put(stream, x => x.AddValue("key", t));
+                var writer = t;
+                Task.Run(
+                    () =>
+                    {
+                        for (var i = 0; i < countPerWriter; ++i)
+                            sink.Put(stream, x => x.AddValue("writer", writer).AddValue("record", i));
+                    });
             }
 
             var read = 0;
             var state = new StreamCoordinates(new StreamPosition[0]);
 
-            while (read < count)
+            while (read < countPerWriter * writers)
             {
                 var readQuery = new ReadStreamQuery(stream)
                 {
@@ -158,18 +161,20 @@ namespace Vostok.Hercules.Client.Tests
 
                 readStreamResult.Status.Should().Be(HerculesStatus.Success);
 
+                new Action(() => sink.SentRecordsCount.Should().Be(writers * countPerWriter)).ShouldPassIn(1.Minutes());
+                
                 foreach (var @event in readStreamResult.Payload.Events)
                 {
-                    seen[@event.Tags["key"].AsInt] = true;
+                    seen[@event.Tags["writer"].AsInt][@event.Tags["record"].AsInt] = true;
                     read++;
                 }
                 
-                sink.LostRecordsCount.Should().Be(0);
+                
 
                 state = readStreamResult.Payload.Next;
             }
-            
-            seen.Should().AllBeEquivalentTo(true);
+
+            seen.SelectMany(x => x).Should().AllBeEquivalentTo(true);
         }
 
         [Test, Explicit]
@@ -195,8 +200,7 @@ namespace Vostok.Hercules.Client.Tests
                 ClientShardCount = 1
             };
 
-            new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Should().NotBeEmpty())
-                .ShouldPassIn(timeout);
+            streamClient.WaitForAnyRecord(stream);
 
             sink.SentRecordsCount.Should().Be(1);
 
@@ -229,9 +233,8 @@ namespace Vostok.Hercules.Client.Tests
                 ClientShardCount = 1
             };
 
-            new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Should().NotBeEmpty())
-                .ShouldPassIn(timeout);
-
+            streamClient.WaitForAnyRecord(stream);
+            
             sink.SentRecordsCount.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
@@ -260,8 +263,7 @@ namespace Vostok.Hercules.Client.Tests
                 ClientShardCount = 1
             };
 
-            new Action(() => streamClient.Read(readQuery, timeout).Payload.Events.Count.Should().BePositive())
-                .ShouldPassIn(timeout);
+            streamClient.WaitForAnyRecord(stream);
 
             managementClient.DeleteStream(stream, timeout);
 
