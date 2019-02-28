@@ -56,7 +56,6 @@ namespace Vostok.Hercules.Client
         {
             var needToFlush = buffer.GetState().Length > maxBufferSize / 4;
 
-            buffer.Unlock();
             buffers.Enqueue(buffer);
 
             if (needToFlush)
@@ -69,16 +68,13 @@ namespace Vostok.Hercules.Client
         {
             var snapshot = null as List<IBuffer>;
 
+            if (allBuffers.Any(x => x.HasGarbage()))
+                CollectGarbageFromAllBuffers();
+            
             foreach (var buffer in allBuffers)
             {
                 if (buffer.HasGarbage())
-                {
-                    if (!buffer.TryLock())
-                        continue;
-
-                    buffer.CollectGarbage();
-                    buffer.Unlock();
-                }
+                    continue;
 
                 if (!buffer.IsEmpty())
                     (snapshot ?? (snapshot = new List<IBuffer>())).Add(buffer);
@@ -89,22 +85,15 @@ namespace Vostok.Hercules.Client
 
         private bool TryDequeueBuffer(out IBuffer buffer)
         {
-            var dequeueAttempts = Math.Min(3, buffers.Count);
+            if (!buffers.TryDequeue(out buffer))
+                return false;
 
-            for (var i = 0; i < dequeueAttempts; i++)
-            {
-                if (!buffers.TryDequeue(out buffer))
-                    return false;
+            var state = buffer.GetState();
 
-                var state = buffer.GetState();
+            if (state.Length <= maxBufferSize - maxRecordSize)
+                return true;
 
-                if (state.Length <= maxBufferSize - maxRecordSize && buffer.TryLock())
-                    return true;
-
-                buffers.Enqueue(buffer);
-            }
-
-            buffer = null;
+            buffers.Enqueue(buffer);
             return false;
         }
 
@@ -120,10 +109,22 @@ namespace Vostok.Hercules.Client
 
             allBuffers.Enqueue(buffer);
 
-            if (lockCreatedBuffer)
-                buffer.TryLock();
-
             return true;
+        }
+
+        private void CollectGarbageFromAllBuffers()
+        {
+            var count = allBuffers.Count;
+            for (var i = 0; i < count; i++)
+            {
+                // garabage collection from buffers is not thread safe,
+                // so buffer should not be available for write.
+                if (!buffers.TryDequeue(out var buffer))
+                    continue;
+                
+                buffer.CollectGarbage();
+                buffers.Enqueue(buffer);
+            }
         }
     }
 }

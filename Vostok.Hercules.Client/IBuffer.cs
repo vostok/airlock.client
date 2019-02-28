@@ -11,8 +11,6 @@ namespace Vostok.Hercules.Client
         BufferSnapshot MakeSnapshot();
         void CollectGarbage();
         void RequestGarbageCollection(BufferState state);
-        bool TryLock();
-        void Unlock();
         bool HasGarbage();
     }
 }

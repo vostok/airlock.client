@@ -26,27 +26,6 @@ namespace Vostok.Hercules.Client.Tests
         }
         
         [Test]
-        public void TryLock_should_return_false_if_buffer_is_already_locked()
-        {
-            var memManager = new MemoryManager(0);
-            var buffer = new Buffer(16, memManager);
-
-            buffer.TryLock().Should().BeTrue();
-            buffer.TryLock().Should().BeFalse();
-        }
-        
-        [Test]
-        public void Unlock_should_unlock_buffer()
-        {
-            var memManager = new MemoryManager(0);
-            var buffer = new Buffer(16, memManager);
-
-            buffer.TryLock().Should().BeTrue();
-            buffer.Unlock();
-            buffer.TryLock().Should().BeTrue();
-        }
-        
-        [Test]
         public void CollectGarbage_should_reset_buffer_when_all_records_are_garbage()
         {
             var memManager = new MemoryManager(0);
