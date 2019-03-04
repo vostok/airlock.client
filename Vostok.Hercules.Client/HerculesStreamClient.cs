@@ -26,12 +26,12 @@ namespace Vostok.Hercules.Client
         
         private readonly ILog log;
         private readonly IClusterClient client;
-        private readonly Func<string> getGateApiKey;
+        private readonly Func<string> apiKeyProvider;
 
         public HerculesStreamClient(HerculesStreamClientSettings settings, ILog log)
         {
             this.log = log?.ForContext<HerculesStreamClient>() ?? new SilentLog();
-            getGateApiKey = settings.ApiKeyProvider;
+            apiKeyProvider = settings.ApiKeyProvider;
 
             client = new ClusterClient(
                 log,
@@ -53,7 +53,7 @@ namespace Vostok.Hercules.Client
         {
             try
             {
-                var apiKey = getGateApiKey();
+                var apiKey = apiKeyProvider();
                 if (apiKey == null)
                 {
                     log.Warn("Hercules API key is null.");
@@ -67,24 +67,13 @@ namespace Vostok.Hercules.Client
                     .AppendToQuery("shardCount", query.ClientShardCount)
                     .Build();
 
-                var body = new BinaryBufferWriter(
-                    sizeof(int) + query.Coordinates.Positions.Length * (sizeof(int) + sizeof(long)))
-                {
-                    Endianness = Endianness.Big
-                };
-
-                body.Write(query.Coordinates.Positions.Length);
-                foreach (var position in query.Coordinates.Positions)
-                {
-                    body.Write(position.Partition);
-                    body.Write(position.Offset);
-                }
+                var body = CreateRequestBody(query);
 
                 var request = Request
                     .Post(url)
                     .WithHeader(HeaderNames.ContentType, Constants.OctetStreamContentType)
-                    .WithHeader("apiKey", getGateApiKey())
-                    .WithContent(body.FilledSegment);
+                    .WithHeader(Constants.ApiKeyHeaderName, apiKey)
+                    .WithContent(body);
 
                 var result = await client
                     .SendAsync(request, timeout, cancellationToken: cancellationToken)
@@ -98,28 +87,7 @@ namespace Vostok.Hercules.Client
                 if (response.Code != ResponseCode.Ok)
                     return new ReadStreamResult(ConvertResponseCodeToHerculesStatus(response.Code), null);
 
-                var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
-                {
-                    Endianness = Endianness.Big
-                };
-
-                var positions = new StreamPosition[reader.ReadInt32()];
-
-                for (var i = 0; i < positions.Length; i++)
-                {
-                    positions[i] = new StreamPosition
-                    {
-                        Partition = reader.ReadInt32(),
-                        Offset = reader.ReadInt64()
-                    };
-                }
-
-                var events = new HerculesEvent[reader.ReadInt32()];
-
-                for (var i = 0; i < events.Length; i++)
-                {
-                    events[i] = reader.ReadEvent();
-                }
+                var (events, positions) = ReadResponseBody(response);
 
                 return new ReadStreamResult(HerculesStatus.Success, new ReadStreamPayload(events, new StreamCoordinates(positions)));
             }
@@ -128,6 +96,52 @@ namespace Vostok.Hercules.Client
                 log.Warn(e);
                 return new ReadStreamResult(HerculesStatus.UnknownError, null);
             }
+        }
+
+        private static (HerculesEvent[] events, StreamPosition[] positions) ReadResponseBody(Response response)
+        {
+            var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
+            {
+                Endianness = Endianness.Big
+            };
+
+            var positions = new StreamPosition[reader.ReadInt32()];
+
+            for (var i = 0; i < positions.Length; i++)
+            {
+                positions[i] = new StreamPosition
+                {
+                    Partition = reader.ReadInt32(),
+                    Offset = reader.ReadInt64()
+                };
+            }
+
+            var events = new HerculesEvent[reader.ReadInt32()];
+
+            for (var i = 0; i < events.Length; i++)
+            {
+                events[i] = reader.ReadEvent();
+            }
+
+            return (events, positions);
+        }
+
+        private static ArraySegment<byte> CreateRequestBody(ReadStreamQuery query)
+        {
+            var body = new BinaryBufferWriter(
+                sizeof(int) + query.Coordinates.Positions.Length * (sizeof(int) + sizeof(long)))
+            {
+                Endianness = Endianness.Big
+            };
+
+            body.Write(query.Coordinates.Positions.Length);
+            foreach (var position in query.Coordinates.Positions)
+            {
+                body.Write(position.Partition);
+                body.Write(position.Offset);
+            }
+
+            return body.FilledSegment;
         }
 
         private static HerculesStatus ConvertFailureToHerculesStatus(ClusterResultStatus status)
