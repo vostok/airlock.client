@@ -94,7 +94,8 @@ namespace Vostok.Hercules.Client.Sending
                 .Where(x => x.State.RecordsCount > 0)
                 .ToArray();
 
-            var sendAny = false;
+            if (snapshots.Length == 0)
+                return false;
 
             foreach (var snapshot in batcher.Batch(snapshots))
             {
@@ -104,11 +105,9 @@ namespace Vostok.Hercules.Client.Sending
 
                 if (!await PushAsync(stream, snapshot, apiKeyProvider, cancellationToken).ConfigureAwait(false))
                     return false;
-
-                sendAny = true;
             }
 
-            return sendAny;
+            return true;
         }
 
         private async Task<bool> PushAsync(
@@ -127,33 +126,39 @@ namespace Vostok.Hercules.Client.Sending
             LogSendingResult(sendingResult, recordsCount, body.Length, stream, sw.Elapsed);
 
             if (sendingResult.IsSuccessful)
+            {
                 sentRecordsCounter += recordsCount;
-            else if (sendingResult.IsDefinitiveFailure)
+                RequestGarbageCollection(snapshots);
+                return true;
+            }
+
+            if (sendingResult.IsDefinitiveFailure)
+            {
                 lostRecordsCounter += recordsCount;
-            else
-                return false;
+                RequestGarbageCollection(snapshots);
+            }
 
-            foreach (var snapshot in snapshots)
-                snapshot.Parent.RequestGarbageCollection(snapshot.State);
-
-            return true;
+            return false;
         }
 
         private void LogSendingResult(RequestSendingResult result, int recordsCount, long bytesCount, string stream, TimeSpan elapsed)
         {
             if (result.IsSuccessful)
             {
-                log.Info("Sending {RecordsCount} records of size {DataSize.FromBytes(bytesCount).ToString()} to stream {StreamName} succeeded in {ElapsedTime}", new
-                {
-                    RecordsCount = recordsCount,
-                    RecordsLength = DataSize.FromBytes(bytesCount).ToString(),
-                    StreamName = stream,
-                    ElapsedTime = elapsed
-                });
+                log.Info(
+                    "Sending {RecordsCount} records of size {DataSize.FromBytes(bytesCount).ToString()} to stream {StreamName} succeeded in {ElapsedTime}",
+                    new
+                    {
+                        RecordsCount = recordsCount,
+                        RecordsLength = DataSize.FromBytes(bytesCount).ToString(),
+                        StreamName = stream,
+                        ElapsedTime = elapsed
+                    });
             }
             else
             {
-                log.Warn("Sending {RecordsCount} records of size {RecordsLength} to stream {StreamName} failed after {ElapsedTime} with status {Status} and code {Code}",
+                log.Warn(
+                    "Sending {RecordsCount} records of size {RecordsLength} to stream {StreamName} failed after {ElapsedTime} with status {Status} and code {Code}",
                     new
                     {
                         RecordsCount = recordsCount,
@@ -164,6 +169,12 @@ namespace Vostok.Hercules.Client.Sending
                         result.Code
                     });
             }
+        }
+
+        private static void RequestGarbageCollection(ArraySegment<BufferSnapshot> snapshots)
+        {
+            foreach (var snapshot in snapshots)
+                snapshot.Parent.RequestGarbageCollection(snapshot.State);
         }
     }
 }
