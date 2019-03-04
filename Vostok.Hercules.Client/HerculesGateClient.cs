@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Clusterclient.Core;
@@ -59,86 +60,9 @@ namespace Vostok.Hercules.Client
                 foreach (var @event in query.Events)
                 {
                     var eventBuilder = new HerculesEventBuilder(body, () => PreciseDateTime.UtcNow);
-                    eventBuilder.SetTimestamp(@event.Timestamp);
-                    foreach (var tag in @event.Tags)
-                    {
-                        switch (tag.Value.Type)
-                        {
-                            case HerculesValueType.Byte:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsByte);
-                                break;
-                            case HerculesValueType.Short:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsShort);
-                                break;
-                            case HerculesValueType.Int:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsInt);
-                                break;
-                            case HerculesValueType.Long:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsShort);
-                                break;
-                            case HerculesValueType.Bool:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsBool);
-                                break;
-                            case HerculesValueType.Float:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsFloat);
-                                break;
-                            case HerculesValueType.Double:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsDouble);
-                                break;
-                            case HerculesValueType.Guid:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsGuid);
-                                break;
-                            case HerculesValueType.String:
-                                eventBuilder.AddValue(tag.Key, tag.Value.AsString);
-                                break;
-                            case HerculesValueType.Vector:
-                                var vector = tag.Value.AsVector;
-                                switch (vector.ElementType)
-                                {
-                                    case HerculesValueType.Byte:
-                                        eventBuilder.AddVector(tag.Key, vector.AsByteList);
-                                        break;
-                                    case HerculesValueType.Short:
-                                        eventBuilder.AddVector(tag.Key, vector.AsShortList);
-                                        break;
-                                    case HerculesValueType.Int:
-                                        eventBuilder.AddVector(tag.Key, vector.AsIntList);
-                                        break;
-                                    case HerculesValueType.Long:
-                                        eventBuilder.AddVector(tag.Key, vector.AsLongList);
-                                        break;
-                                    case HerculesValueType.Bool:
-                                        eventBuilder.AddVector(tag.Key, vector.AsBoolList);
-                                        break;
-                                    case HerculesValueType.Float:
-                                        eventBuilder.AddVector(tag.Key, vector.AsFloatList);
-                                        break;
-                                    case HerculesValueType.Double:
-                                        eventBuilder.AddVector(tag.Key, vector.AsDoubleList);
-                                        break;
-                                    case HerculesValueType.Guid:
-                                        eventBuilder.AddVector(tag.Key, vector.AsGuidList);
-                                        break;
-                                    case HerculesValueType.String:
-                                        eventBuilder.AddVector(tag.Key, vector.AsStringList);
-                                        break;
-                                    case HerculesValueType.Vector:
-                                        break;
-                                    case HerculesValueType.Container:
-                                        //TODO
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                break;
-                            case HerculesValueType.Container:
-                                //TODO
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
+                    eventBuilder
+                        .SetTimestamp(@event.Timestamp)
+                        .AddTags(@event.Tags);
                 }
 
                 var request = Request
