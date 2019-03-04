@@ -9,7 +9,7 @@ using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests
 {
-    public class HerculesSinkTests
+    internal class HerculesSink_Tests
     {
         [Test]
         public void LostRecordsCount_should_not_grows_infinitely_when_gate_is_offline()

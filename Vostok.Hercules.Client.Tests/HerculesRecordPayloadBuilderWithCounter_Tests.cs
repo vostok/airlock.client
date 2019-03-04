@@ -12,7 +12,7 @@ using Vostok.Hercules.Client.Binary;
 namespace Vostok.Hercules.Client.Tests
 {
     [TestFixture]
-    internal class HerculesRecordPayloadBuilderWithCounterTests
+    internal class HerculesRecordPayloadBuilderWithCounter_Tests
     {
         private const int MaxNumberOfTags = ushort.MaxValue;
         

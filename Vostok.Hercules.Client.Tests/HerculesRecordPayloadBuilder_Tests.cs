@@ -9,7 +9,7 @@ using Vostok.Hercules.Client.Abstractions.Events;
 namespace Vostok.Hercules.Client.Tests
 {
     [TestFixture]
-    internal class HerculesRecordPayloadBuilderTests
+    internal class HerculesRecordPayloadBuilder_Tests
     {
         [TestCaseSource(nameof(TestCases))]
         public TagType Should_write_correct_tag_type(Action<IHerculesTagsBuilder> action)

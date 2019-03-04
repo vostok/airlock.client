@@ -4,7 +4,7 @@ using Vostok.Hercules.Client.Sink;
 
 namespace Vostok.Hercules.Client.Tests
 {
-    public class BufferTests
+    internal class Buffer_Tests
     {
         [Test]
         public void Position_should_be_zero_after_creation()
