@@ -19,6 +19,7 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
 {
+    /// <inheritdoc />
     public class HerculesStreamClient : IHerculesStreamClient
     {
         private const string ServiceName = "HerculesStreamApi";
@@ -49,6 +50,7 @@ namespace Vostok.Hercules.Client
                 });
         }
 
+        /// <inheritdoc />
         public async Task<ReadStreamResult> ReadAsync(ReadStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
         {
             try
