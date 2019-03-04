@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Abstractions;
 
@@ -54,6 +55,7 @@ namespace Vostok.Hercules.Client.Sink
 
         public long GetStoredRecordsCount() => buffers.Sum(x => x.GetState().RecordsCount);
 
+        [CanBeNull]
         public IReadOnlyCollection<IBuffer> MakeSnapshot()
         {
             var snapshot = null as List<IBuffer>;
