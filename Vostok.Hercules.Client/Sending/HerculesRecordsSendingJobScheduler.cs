@@ -33,11 +33,14 @@ namespace Vostok.Hercules.Client.Sending
             return delayToNextOccurrence;
         }
 
-        private int CalculateAttempt(string stream, bool lastSendingResult) =>
-            lastSendingResult
-                ? 0
-                : attempts.TryGetValue(stream, out var attempt)
-                    ? attempt + 1
-                    : 1;
+        private int CalculateAttempt(string stream, bool isLastSendingSuccessful)
+        {
+            if (isLastSendingSuccessful)
+                return 0;
+            return attempts.TryGetValue(stream, out var attempt)
+                ? Math.Min(int.MaxValue - 1, attempt + 1)
+                : 1;
+
+        }
     }
 }
