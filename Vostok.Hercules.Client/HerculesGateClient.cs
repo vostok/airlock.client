@@ -21,6 +21,8 @@ namespace Vostok.Hercules.Client
 {
     public class HerculesGateClient : IHerculesGateClient
     {
+        private const string ServiceName = "HerculesGateway";
+        
         private readonly ILog log;
         private readonly IClusterClient client;
         private readonly Func<string> getGateApiKey;
@@ -34,7 +36,7 @@ namespace Vostok.Hercules.Client
                 log,
                 configuration =>
                 {
-                    configuration.TargetServiceName = settings.ServiceName ?? "HerculesGateway";
+                    configuration.TargetServiceName = ServiceName;
                     configuration.ClusterProvider = settings.Cluster;
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;

@@ -19,6 +19,8 @@ namespace Vostok.Hercules.Client
 {
     public class HerculesStreamClient : IHerculesStreamClient
     {
+        private const string ServiceName = "HerculesStreamApi";
+        
         private readonly ILog log;
         private readonly IClusterClient client;
         private readonly Func<string> getGateApiKey;
@@ -32,9 +34,9 @@ namespace Vostok.Hercules.Client
                 log,
                 configuration =>
                 {
-                    configuration.TargetServiceName = settings.ServiceName ?? "HerculesStreamApi";
+                    configuration.TargetServiceName = ServiceName;
                     configuration.ClusterProvider = settings.Cluster;
-                    configuration.Transport = new UniversalTransport(log);
+                    configuration.Transport = new UniversalTransport(this.log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
 

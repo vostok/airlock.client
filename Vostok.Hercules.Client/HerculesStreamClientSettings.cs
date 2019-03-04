@@ -11,8 +11,6 @@ namespace Vostok.Hercules.Client
             ApiKeyProvider = apiKeyProvider;
         }
 
-        public string ServiceName { get; set; } = "HerculesStreamApi";
-
         public IClusterProvider Cluster { get; set; }
 
         public Func<string> ApiKeyProvider { get; set; }
