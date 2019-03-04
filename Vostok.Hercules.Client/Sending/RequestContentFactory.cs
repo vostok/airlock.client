@@ -1,8 +1,9 @@
 using System;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Binary;
+using Vostok.Hercules.Client.Sink;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sending
 {
     internal class RequestContentFactory : IBodyFormatter
     {

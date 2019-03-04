@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Abstractions;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sink
 {
     internal interface IBufferPool
     {

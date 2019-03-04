@@ -1,4 +1,4 @@
-﻿namespace Vostok.Hercules.Client
+﻿namespace Vostok.Hercules.Client.Sink
 {
     internal interface IMemoryManager
     {

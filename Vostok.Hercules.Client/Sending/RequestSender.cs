@@ -9,7 +9,7 @@ using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Time;
 using Vostok.Logging.Abstractions;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sending
 {
     internal class RequestSender : IRequestSender
     {

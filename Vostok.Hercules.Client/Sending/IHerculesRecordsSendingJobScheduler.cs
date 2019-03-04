@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sending
 {
     internal interface IHerculesRecordsSendingJobScheduler
     {

@@ -6,6 +6,8 @@ using Vostok.Commons.Primitives;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
+using Vostok.Hercules.Client.Sending;
+using Vostok.Hercules.Client.Sink;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client

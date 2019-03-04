@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sink
 {
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct BufferState

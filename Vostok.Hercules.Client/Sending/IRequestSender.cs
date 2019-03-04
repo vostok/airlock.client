@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Clusterclient.Core.Model;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sending
 {
     internal interface IRequestSender
     {

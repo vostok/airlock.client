@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Vostok.Commons.Helpers.Extensions;
 using Vostok.Logging.Abstractions;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sending
 {
     internal class HerculesRecordsSendingDaemon : IDisposable
     {

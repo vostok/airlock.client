@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
+using Vostok.Hercules.Client.Sending;
+using Vostok.Hercules.Client.Sink;
 
 namespace Vostok.Hercules.Client.Tests
 {

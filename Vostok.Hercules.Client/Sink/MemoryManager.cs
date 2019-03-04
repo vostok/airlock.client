@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sink
 {
     internal class MemoryManager : IMemoryManager
     {

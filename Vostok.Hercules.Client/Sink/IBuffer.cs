@@ -1,6 +1,6 @@
 ﻿using Vostok.Hercules.Client.Binary;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sink
 {
     internal interface IBuffer
     {

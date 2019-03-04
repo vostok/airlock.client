@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.Commons.Binary;
 using Vostok.Commons.Primitives;
+using Vostok.Hercules.Client.Sink;
 using Vostok.Logging.Abstractions;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sending
 {
     internal class HerculesRecordsSendingJob : IHerculesRecordsSendingJob
     {

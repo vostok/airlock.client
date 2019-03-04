@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Abstractions;
 
-namespace Vostok.Hercules.Client
+namespace Vostok.Hercules.Client.Sink
 {
     internal class BufferPool : IBufferPool
     {
