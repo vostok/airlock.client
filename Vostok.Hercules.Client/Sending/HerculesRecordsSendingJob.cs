@@ -120,7 +120,7 @@ namespace Vostok.Hercules.Client.Sending
 
             var body = formatter.GetContent(snapshots, out var recordsCount);
 
-            var sendingResult = await requestSender.SendAsync(stream, body, timeout, apiKeyProvider, cancellationToken)
+            var sendingResult = await requestSender.FireAndForgetAsync(stream, body, timeout, apiKeyProvider, cancellationToken)
                 .ConfigureAwait(false);
 
             LogSendingResult(sendingResult, recordsCount, body.Length, stream, sw.Elapsed);

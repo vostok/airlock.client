@@ -9,6 +9,13 @@ namespace Vostok.Hercules.Client.Sending
     {
         Task<RequestSendingResult> SendAsync(
             string stream,
+            Content content,
+            TimeSpan timeout,
+            Func<string> apiKeyProvider = null,
+            CancellationToken cancellationToken = default);
+
+        Task<RequestSendingResult> FireAndForgetAsync(
+            string stream,
             CompositeContent content,
             TimeSpan timeout,
             Func<string> apiKeyProvider = null,

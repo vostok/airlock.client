@@ -61,7 +61,7 @@ namespace Vostok.Hercules.Client
                 settings.RequestSendPeriod,
                 settings.RequestSendPeriodCap);
 
-            var requestSender = new RequestSender(log, settings);
+            var requestSender = new RequestSender(settings.Cluster, log, settings.ApiKeyProvider, settings.ClusterClientSetup);
 
             var batcher = new BufferSnapshotBatcher(maximumBatchSize);
 
@@ -142,7 +142,8 @@ namespace Vostok.Hercules.Client
         }
 
         private IBufferPool GetOrCreate(string stream) =>
-            bufferPools.GetOrAdd(stream, _ => new Lazy<IBufferPool>(CreateBufferPool, LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+            bufferPools.GetOrAdd(stream, 
+                _ => new Lazy<IBufferPool>(CreateBufferPool)).Value;
 
         private IBufferPool CreateBufferPool()
         {
