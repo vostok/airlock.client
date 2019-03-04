@@ -122,6 +122,38 @@ namespace Vostok.Hercules.Client.Tests
             @event.Tags["nullField"].IsNull.Should().BeTrue();
         }
 
+
+        [Test, Explicit]
+        public void Should_not_fail_on_duplicate_keys()
+        {
+            sink.Put(
+                stream,
+                x => x
+                    .AddValue("key", 1)
+                    .AddValue("key", 2));
+
+            var readQuery = new ReadStreamQuery(stream)
+            {
+                Limit = 10000,
+                Coordinates = new StreamCoordinates(new StreamPosition[0]),
+                ClientShard = 0,
+                ClientShardCount = 1
+            };
+
+            streamClient.WaitForAnyRecord(stream);
+
+            sink.SentRecordsCount.Should().Be(1);
+
+            var readStreamResult = streamClient.Read(readQuery, timeout);
+
+            readStreamResult.Status.Should().Be(HerculesStatus.Success);
+            readStreamResult.Payload.Events.Should().HaveCount(1);
+
+            var @event = readStreamResult.Payload.Events[0];
+
+            @event.Tags["key"].AsInt.Should().Be(2);
+        }
+
         [Explicit]
         [TestCase(1, 100_000)]
         [TestCase(2, 100_000)]
