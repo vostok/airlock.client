@@ -42,9 +42,9 @@ namespace Vostok.Hercules.Client
             }
             catch (Exception exception)
             {
-                log.Error(exception);
                 binaryWriter.Position = startingPosition;
                 recordSize = 0;
+                log.Error(exception);
                 return false;
             }
 
