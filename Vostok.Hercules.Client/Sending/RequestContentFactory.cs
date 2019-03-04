@@ -23,7 +23,7 @@ namespace Vostok.Hercules.Client.Sending
                 contents[i + 1] = new Content(snapshot.Data);
             }
 
-            var count = new byte[4];
+            var count = new byte[sizeof(int)];
 
             SetRecordsCount(count, recordsCount);
 
