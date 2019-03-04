@@ -23,7 +23,7 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// <para>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules gateway service.</para>
         /// </summary>
-        public IClusterProvider Cluster { get; }
+        public IClusterProvider Cluster { get; set; }
 
         /// <summary>
         /// <para>An optional delegate that can be used to tune underlying <see cref="IClusterClient"/> instance.</para>
