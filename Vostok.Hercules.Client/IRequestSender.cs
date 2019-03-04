@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Clusterclient.Core.Model;
 
 namespace Vostok.Hercules.Client
 {
@@ -8,7 +9,7 @@ namespace Vostok.Hercules.Client
     {
         Task<RequestSendingResult> SendAsync(
             string stream,
-            ArraySegment<byte> message,
+            CompositeContent content,
             TimeSpan timeout,
             Func<string> apiKeyProvider = null,
             CancellationToken cancellationToken = default);

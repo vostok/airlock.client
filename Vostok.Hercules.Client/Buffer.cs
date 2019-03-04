@@ -7,8 +7,6 @@ namespace Vostok.Hercules.Client
 {
     internal class Buffer : IBuffer, IHerculesBinaryWriter
     {
-        public const int InitialPosition = sizeof(int);
-
         private readonly BinaryBufferWriter writer;
         private readonly IMemoryManager memoryManager;
 
@@ -24,8 +22,7 @@ namespace Vostok.Hercules.Client
 
             this.memoryManager = memoryManager;
 
-            writer.Write(0);
-            committed.Value = new BufferState(InitialPosition, 0);
+            committed.Value = default;
         }
 
         public long Position
@@ -75,12 +72,12 @@ namespace Vostok.Hercules.Client
                 writer.Buffer,
                 garbageState.Length,
                 writer.Buffer,
-                InitialPosition,
+                0,
                 (int)writer.Position - garbageState.Length);
 
-            writer.Position -= garbageState.Length - InitialPosition;
-            committed.Value -= garbageState - new BufferState(InitialPosition, 0);
-            garbage.Value = new BufferState();
+            writer.Position -= garbageState.Length;
+            committed.Value -= garbageState;
+            garbage.Value = default;
         }
 
         public void Write(int value)

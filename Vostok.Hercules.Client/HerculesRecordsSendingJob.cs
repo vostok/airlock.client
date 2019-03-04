@@ -124,7 +124,7 @@ namespace Vostok.Hercules.Client
             var sendingResult = await requestSender.SendAsync(stream, body, timeout, apiKeyProvider, cancellationToken)
                 .ConfigureAwait(false);
 
-            LogSendingResult(sendingResult, recordsCount, body.Count, stream, sw.Elapsed);
+            LogSendingResult(sendingResult, recordsCount, body.Length, stream, sw.Elapsed);
 
             switch (sendingResult)
             {
@@ -146,7 +146,7 @@ namespace Vostok.Hercules.Client
             return true;
         }
 
-        private void LogSendingResult(RequestSendingResult result, int recordsCount, int bytesCount, string stream, TimeSpan elapsed)
+        private void LogSendingResult(RequestSendingResult result, int recordsCount, long bytesCount, string stream, TimeSpan elapsed)
         {
             if (result == RequestSendingResult.Success)
             {

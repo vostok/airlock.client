@@ -42,7 +42,7 @@ namespace Vostok.Hercules.Client
 
         public async Task<RequestSendingResult> SendAsync(
             string stream,
-            ArraySegment<byte> message,
+            CompositeContent content,
             TimeSpan timeout,
             Func<string> apiKeyProvider = null,
             CancellationToken cancellationToken = default)
@@ -51,7 +51,7 @@ namespace Vostok.Hercules.Client
                 .WithAdditionalQueryParameter("stream", stream)
                 .WithContentTypeHeader("application/octet-stream")
                 .WithHeader("apiKey", apiKeyProvider?.Invoke() ?? getGateApiKey())
-                .WithContent(message);
+                .WithContent(content);
 
             var clusterResult = await client
                 .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)

@@ -20,9 +20,9 @@ namespace Vostok.Hercules.Client
 
             for (; i < snapshots.Length; i++)
             {
-                var recordsLength = snapshots[i].State.LengthOfRecords;
+                var recordsLength = snapshots[i].State.Length;
 
-                if (batchSize + recordsLength > maximumBatchSize - Buffer.InitialPosition)
+                if (batchSize + recordsLength > maximumBatchSize)
                 {
                     if (batchSize > 0)
                         yield return CreateSegment();

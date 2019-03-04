@@ -63,7 +63,7 @@ namespace Vostok.Hercules.Client
 
             var batcher = new BufferSnapshotBatcher(maximumBatchSize);
 
-            var formatter = new BodyFormatter(maximumBatchSize);
+            var formatter = new RequestContentFactory();
 
             var job = new HerculesRecordsSendingJob(
                 bufferPools,

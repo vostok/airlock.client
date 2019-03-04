@@ -36,8 +36,8 @@ namespace Vostok.Hercules.Client.Tests
             buffer.RequestGarbageCollection(buffer.GetState());
             buffer.CollectGarbage();
 
-            buffer.Position.Should().Be(Buffer.InitialPosition);
-            buffer.GetState().Should().Be(new BufferState(Buffer.InitialPosition, 0));
+            buffer.Position.Should().Be(0);
+            buffer.GetState().Should().Be(new BufferState());
         }
         
         [Test]
@@ -52,11 +52,11 @@ namespace Vostok.Hercules.Client.Tests
             buffer.Commit(sizeof(int));
             buffer.Commit(sizeof(int));
             buffer.Commit(sizeof(int));
-            buffer.RequestGarbageCollection(new BufferState(Buffer.InitialPosition + sizeof(int), 1));
+            buffer.RequestGarbageCollection(new BufferState(sizeof(int), 1));
             buffer.CollectGarbage();
 
-            buffer.Position.Should().Be(Buffer.InitialPosition + 2 * sizeof(int));
-            buffer.GetState().Should().Be(new BufferState(Buffer.InitialPosition + 2 * sizeof(int), 2));
+            buffer.Position.Should().Be(2 * sizeof(int));
+            buffer.GetState().Should().Be(new BufferState(2 * sizeof(int), 2));
         }
     }
 }
