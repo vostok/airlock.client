@@ -18,7 +18,6 @@ namespace Vostok.Hercules.Client.Sink
 
         public BufferPool(
             IMemoryManager memoryManager,
-            int initialCount,
             int initialBufferSize,
             int maxRecordSize,
             int maxBufferSize)
@@ -27,14 +26,6 @@ namespace Vostok.Hercules.Client.Sink
             this.initialBufferSize = initialBufferSize;
             this.maxRecordSize = maxRecordSize;
             this.maxBufferSize = maxBufferSize;
-
-            for (var i = 0; i < initialCount; i++)
-            {
-                if (TryCreateBuffer(out var buffer))
-                    buffers.Enqueue(buffer);
-                else
-                    break;
-            }
         }
 
         public StreamSettings Settings { get; set; } = new StreamSettings();

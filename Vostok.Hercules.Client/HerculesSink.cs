@@ -18,7 +18,6 @@ namespace Vostok.Hercules.Client
     public class HerculesSink : IHerculesSink, IDisposable
     {
         private const int RecordVersion = 1;
-        private const int InitialPooledBuffersCount = 1;
         private const int InitialPooledBufferSize = 4 * (int)DataSizeConstants.Kilobyte;
 
         private readonly ILog log;
@@ -51,7 +50,6 @@ namespace Vostok.Hercules.Client
 
             memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
 
-            initialPooledBuffersCount = InitialPooledBuffersCount;
             initialPooledBufferSize = InitialPooledBufferSize;
             maximumRecordSize = settings.MaximumRecordSize;
             maximumBatchSize = settings.MaximumBatchSize;
@@ -164,7 +162,6 @@ namespace Vostok.Hercules.Client
 
             return new BufferPool(
                 perStreamMemoryManager,
-                initialPooledBuffersCount,
                 initialPooledBufferSize,
                 maximumRecordSize,
                 maximumBatchSize);
