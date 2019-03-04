@@ -126,19 +126,12 @@ namespace Vostok.Hercules.Client.Sending
 
             LogSendingResult(sendingResult, recordsCount, body.Length, stream, sw.Elapsed);
 
-            switch (sendingResult)
-            {
-                case RequestSendingResult.Success:
-                    sentRecordsCounter += recordsCount;
-                    break;
-                case RequestSendingResult.DefinitiveFailure:
-                    lostRecordsCounter += recordsCount;
-                    break;
-                case RequestSendingResult.IntermittentFailure:
-                    return false;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(sendingResult));
-            }
+            if (sendingResult.IsSuccessful)
+                sentRecordsCounter += recordsCount;
+            else if (sendingResult.IsDefinitiveFailure)
+                lostRecordsCounter += recordsCount;
+            else
+                return false;
 
             foreach (var snapshot in snapshots)
                 snapshot.Parent.RequestGarbageCollection(snapshot.State);
@@ -148,13 +141,28 @@ namespace Vostok.Hercules.Client.Sending
 
         private void LogSendingResult(RequestSendingResult result, int recordsCount, long bytesCount, string stream, TimeSpan elapsed)
         {
-            if (result == RequestSendingResult.Success)
+            if (result.IsSuccessful)
             {
-                log.Info($"Sending {recordsCount.ToString()} records of size {DataSize.FromBytes(bytesCount).ToString()} to stream {stream} succeeded in {elapsed.ToString()}");
+                log.Info("Sending {RecordsCount} records of size {DataSize.FromBytes(bytesCount).ToString()} to stream {StreamName} succeeded in {ElapsedTime}", new
+                {
+                    RecordsCount = recordsCount,
+                    RecordsLength = DataSize.FromBytes(bytesCount).ToString(),
+                    StreamName = stream,
+                    ElapsedTime = elapsed
+                });
             }
             else
             {
-                log.Warn($"Sending {recordsCount.ToString()} records of size {DataSize.FromBytes(bytesCount).ToString()} to stream {stream} failed after {elapsed.ToString()}");
+                log.Warn("Sending {RecordsCount} records of size {RecordsLength} to stream {StreamName} failed after {ElapsedTime} with status {Status} and code {Code}",
+                    new
+                    {
+                        RecordsCount = recordsCount,
+                        RecordsLength = DataSize.FromBytes(bytesCount).ToString(),
+                        StreamName = stream,
+                        ElapsedTime = elapsed,
+                        result.Status,
+                        result.Code
+                    });
             }
         }
     }

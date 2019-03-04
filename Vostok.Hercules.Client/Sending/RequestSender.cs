@@ -60,29 +60,11 @@ namespace Vostok.Hercules.Client.Sending
             return GetSendingResult(clusterResult);
         }
 
-        private static RequestSendingResult GetSendingResult(ClusterResult clusterResult)
-        {
-            switch (clusterResult.Status)
+        private static RequestSendingResult GetSendingResult(ClusterResult clusterResult) =>
+            new RequestSendingResult
             {
-                case ClusterResultStatus.Success:
-                    return clusterResult.Response.IsSuccessful
-                        ? RequestSendingResult.Success
-                        : RequestSendingResult.DefinitiveFailure;
-
-                case ClusterResultStatus.TimeExpired:
-                case ClusterResultStatus.ReplicasExhausted:
-                case ClusterResultStatus.Throttled:
-                    return RequestSendingResult.IntermittentFailure;
-
-                case ClusterResultStatus.ReplicasNotFound:
-                case ClusterResultStatus.IncorrectArguments:
-                case ClusterResultStatus.UnexpectedException:
-                case ClusterResultStatus.Canceled:
-                    return RequestSendingResult.DefinitiveFailure;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(clusterResult.Status));
-            }
-        }
+                Status = clusterResult.Status,
+                Code = clusterResult.Response.Code
+            };
     }
 }
