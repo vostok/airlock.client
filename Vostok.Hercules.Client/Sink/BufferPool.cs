@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client.Sink
 
             for (var i = 0; i < initialCount; i++)
             {
-                if (TryCreateBuffer(out var buffer, false))
+                if (TryCreateBuffer(out var buffer))
                     buffers.Enqueue(buffer);
                 else
                     break;
@@ -43,7 +43,7 @@ namespace Vostok.Hercules.Client.Sink
 
         public bool TryAcquire(out IBuffer buffer)
         {
-            var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer, true);
+            var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer);
 
             if (result) // we can collect garbage not on every iteration
                 buffer.CollectGarbage();
@@ -96,7 +96,7 @@ namespace Vostok.Hercules.Client.Sink
             return false;
         }
 
-        private bool TryCreateBuffer(out IBuffer buffer, bool lockCreatedBuffer)
+        private bool TryCreateBuffer(out IBuffer buffer)
         {
             if (!memoryManager.TryReserveBytes(initialBufferSize))
             {
