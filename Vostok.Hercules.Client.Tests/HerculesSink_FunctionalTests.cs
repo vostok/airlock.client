@@ -48,12 +48,11 @@ namespace Vostok.Hercules.Client.Tests
                 () => apiKey);
 
             managementClient = new HerculesManagementClient(
-                new HerculesManagementClientConfig
-                {
-                    Cluster = new ClusterConfigClusterProvider(clusterConfigClient, managementApiTopology, log),
-                    ServiceName = "HerculesManagementApi",
-                    ApiKeyProvider = () => apiKey
-                },
+                new HerculesManagementClientSettings
+                (
+                    new ClusterConfigClusterProvider(clusterConfigClient, managementApiTopology, log),
+                    () => apiKey
+                ),
                 log);
 
             sink = new HerculesSink(sinkConfig, log);
