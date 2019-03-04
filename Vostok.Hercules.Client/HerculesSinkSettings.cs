@@ -57,8 +57,7 @@ namespace Vostok.Hercules.Client
         public int MaximumBatchSize { get; set; } = 4 * (int)DataSizeConstants.Megabyte;
 
         /// <summary>
-        /// <para>Default delay between attempts of sending records to Hercules gateway.</para>
-        /// TODO
+        /// <para>Base delay between attempts of sending records to Hercules gateway.</para>
         /// </summary>
         public TimeSpan RequestSendPeriod { get; set; } = 2.Seconds();
 
