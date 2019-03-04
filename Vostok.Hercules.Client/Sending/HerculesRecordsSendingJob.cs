@@ -39,7 +39,7 @@ namespace Vostok.Hercules.Client.Sending
             TimeSpan timeout)
         {
             sinkWeakReference = new WeakReference<IHerculesSink>(sink);
-            
+
             this.bufferPools = bufferPools;
             this.log = log;
             this.scheduler = scheduler;
@@ -58,7 +58,7 @@ namespace Vostok.Hercules.Client.Sending
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
             var sendAny = false;
-            
+
             foreach (var pair in bufferPools)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -79,7 +79,7 @@ namespace Vostok.Hercules.Client.Sending
 
                 if (sendingResult)
                     sendAny = true;
-                
+
                 var delayTime = scheduler.GetDelayToNextOccurrence(stream, sendingResult, sw.Elapsed);
 
                 delays[stream] = Task.WhenAny(bufferPool.NeedToFlushEvent, Task.Delay(delayTime, cancellationToken));
@@ -91,6 +91,12 @@ namespace Vostok.Hercules.Client.Sending
 
         public Task WaitNextOccurrenceAsync() =>
             delays.Count != 0 ? Task.WhenAny(delays.Select(x => x.Value)) : Task.CompletedTask;
+
+        private static void RequestGarbageCollection(ArraySegment<BufferSnapshot> snapshots)
+        {
+            foreach (var snapshot in snapshots)
+                snapshot.Parent.RequestGarbageCollection(snapshot.State);
+        }
 
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
         {
@@ -157,20 +163,22 @@ namespace Vostok.Hercules.Client.Sending
             {
                 log.Info(
                     "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} succeeded in {ElapsedTime}",
-                    recordsCount, DataSize.FromBytes(bytesCount).ToString(), stream, elapsed);
+                    recordsCount,
+                    DataSize.FromBytes(bytesCount).ToString(),
+                    stream,
+                    elapsed);
             }
             else
             {
                 log.Warn(
                     "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} failed after {ElapsedTime} with status {Status} and code {Code}",
-                    recordsCount, DataSize.FromBytes(bytesCount).ToString(), stream, elapsed, result.Status, result.Code);
+                    recordsCount,
+                    DataSize.FromBytes(bytesCount).ToString(),
+                    stream,
+                    elapsed,
+                    result.Status,
+                    result.Code);
             }
-        }
-
-        private static void RequestGarbageCollection(ArraySegment<BufferSnapshot> snapshots)
-        {
-            foreach (var snapshot in snapshots)
-                snapshot.Parent.RequestGarbageCollection(snapshot.State);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

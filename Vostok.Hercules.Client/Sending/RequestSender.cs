@@ -55,6 +55,13 @@ namespace Vostok.Hercules.Client.Sending
         public Task<RequestSendingResult> FireAndForgetAsync(string stream, CompositeContent content, TimeSpan timeout, Func<string> apiKeyProvider = null, CancellationToken cancellationToken = default) =>
             SendAsync(FireAndForgetPath, stream, timeout, apiKeyProvider, cancellationToken, content);
 
+        private static RequestSendingResult GetSendingResult(ClusterResult clusterResult) =>
+            new RequestSendingResult
+            {
+                Status = clusterResult.Status,
+                Code = clusterResult.Response.Code
+            };
+
         private async Task<RequestSendingResult> SendAsync(
             string path,
             string stream,
@@ -70,7 +77,7 @@ namespace Vostok.Hercules.Client.Sending
                 log.Warn("Hercules API key is null.");
                 return new RequestSendingResult {Status = ClusterResultStatus.IncorrectArguments, Code = ResponseCode.Unauthorized};
             }
-            
+
             var request = Request.Post(path)
                 .WithAdditionalQueryParameter(Constants.StreamQueryParameter, stream)
                 .WithContentTypeHeader(Constants.OctetStreamContentType)
@@ -87,12 +94,5 @@ namespace Vostok.Hercules.Client.Sending
 
             return GetSendingResult(clusterResult);
         }
-
-        private static RequestSendingResult GetSendingResult(ClusterResult clusterResult) =>
-            new RequestSendingResult
-            {
-                Status = clusterResult.Status,
-                Code = clusterResult.Response.Code
-            };
     }
 }

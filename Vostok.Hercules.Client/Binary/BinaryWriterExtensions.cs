@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using JetBrains.Annotations;
 using Vostok.Commons.Binary;
 
@@ -31,7 +29,7 @@ namespace Vostok.Hercules.Client.Binary
 
             var lengthPosition = writer.Position;
             writer.Write((byte)0);
-            
+
             var startPosition = writer.Position;
             writer.WriteWithoutLength(value);
             var positionAfter = writer.Position;

@@ -69,7 +69,7 @@ namespace Vostok.Hercules.Client.Sink
 
             if (allBuffers.Any(x => x.HasGarbage()))
                 CollectGarbageFromAllBuffers();
-            
+
             foreach (var buffer in allBuffers)
             {
                 if (buffer.HasGarbage())
@@ -120,7 +120,7 @@ namespace Vostok.Hercules.Client.Sink
                 // so buffer should not be available for write.
                 if (!buffers.TryDequeue(out var buffer))
                     continue;
-                
+
                 buffer.CollectGarbage();
                 buffers.Enqueue(buffer);
             }

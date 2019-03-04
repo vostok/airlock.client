@@ -40,7 +40,6 @@ namespace Vostok.Hercules.Client.Sending
             return attempts.TryGetValue(stream, out var attempt)
                 ? Math.Min(int.MaxValue - 1, attempt + 1)
                 : 1;
-
         }
     }
 }

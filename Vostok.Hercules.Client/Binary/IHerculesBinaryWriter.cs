@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using Vostok.Commons.Binary;
+﻿using Vostok.Commons.Binary;
 
 namespace Vostok.Hercules.Client.Binary
 {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Clusterclient.Core;
@@ -24,7 +23,7 @@ namespace Vostok.Hercules.Client
     {
         private const string ServiceName = "HerculesStreamApi";
         private const string ReadPath = "stream/read";
-        
+
         private readonly ILog log;
         private readonly IClusterClient client;
         private readonly Func<string> apiKeyProvider;

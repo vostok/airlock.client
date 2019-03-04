@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Vostok.Commons.Primitives;
@@ -105,7 +104,7 @@ namespace Vostok.Hercules.Client
         public void Put(string stream, Action<IHerculesEventBuilder> build)
         {
             ThrowIfDisposed();
-            
+
             var bufferPool = GetOrCreate(stream);
 
             if (!bufferPool.TryAcquire(out var buffer))
@@ -146,8 +145,10 @@ namespace Vostok.Hercules.Client
         }
 
         private IBufferPool GetOrCreate(string stream) =>
-            bufferPools.GetOrAdd(stream, 
-                _ => new Lazy<IBufferPool>(CreateBufferPool)).Value;
+            bufferPools.GetOrAdd(
+                    stream,
+                    _ => new Lazy<IBufferPool>(CreateBufferPool))
+                .Value;
 
         private void ThrowIfDisposed()
         {

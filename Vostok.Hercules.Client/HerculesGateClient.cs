@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
-using Vostok.Clusterclient.Core.Ordering.Weighed;
-using Vostok.Clusterclient.Core.Strategies;
-using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
-using Vostok.Hercules.Client.Abstractions.Values;
 using Vostok.Hercules.Client.Sending;
 using Vostok.Logging.Abstractions;
 
@@ -25,7 +18,7 @@ namespace Vostok.Hercules.Client
     {
         private const string ServiceName = "HerculesGateway";
         private const int InitialBodyBufferSize = 4 * 1024;
-        
+
         private readonly ILog log;
         private readonly IRequestSender sender;
 
