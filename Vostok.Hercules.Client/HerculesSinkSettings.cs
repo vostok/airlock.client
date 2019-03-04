@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Primitives;
@@ -10,6 +11,7 @@ namespace Vostok.Hercules.Client
     /// <summary>
     /// Represents a settings of <see cref="HerculesSink"/>.
     /// </summary>
+    [PublicAPI]
     public class HerculesSinkSettings
     {
         /// <param name="cluster">>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules gateway service.</param>
@@ -21,7 +23,7 @@ namespace Vostok.Hercules.Client
         }
 
         /// <summary>
-        /// <para>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules gateway service.</para>
+        /// <para>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules Gateway service.</para>
         /// </summary>
         public IClusterProvider Cluster { get; set; }
 

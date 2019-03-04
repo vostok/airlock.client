@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
@@ -14,6 +15,7 @@ using Vostok.Logging.Abstractions;
 namespace Vostok.Hercules.Client
 {
     /// <inheritdoc />
+    [PublicAPI]
     public class HerculesGateClient : IHerculesGateClient
     {
         private const string ServiceName = "HerculesGateway";

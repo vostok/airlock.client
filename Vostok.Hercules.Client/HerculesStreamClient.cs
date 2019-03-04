@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Ordering.Weighed;
@@ -19,6 +20,7 @@ using Vostok.Logging.Abstractions;
 namespace Vostok.Hercules.Client
 {
     /// <inheritdoc />
+    [PublicAPI]
     public class HerculesStreamClient : IHerculesStreamClient
     {
         private const string ServiceName = "HerculesStreamApi";

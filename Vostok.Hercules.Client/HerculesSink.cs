@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using JetBrains.Annotations;
 using Vostok.Commons.Primitives;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
@@ -13,6 +14,7 @@ using Vostok.Logging.Abstractions;
 namespace Vostok.Hercules.Client
 {
     /// <inheritdoc cref="IHerculesSink" />
+    [PublicAPI]
     public class HerculesSink : IHerculesSink, IDisposable
     {
         private const int RecordVersion = 1;
