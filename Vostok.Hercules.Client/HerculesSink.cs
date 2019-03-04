@@ -17,7 +17,6 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesSink : IHerculesSink, IDisposable
     {
-        private const int RecordVersion = 1;
         private const int InitialPooledBufferSize = 4 * (int)DataSizeConstants.Kilobyte;
 
         private readonly ILog log;
@@ -46,7 +45,7 @@ namespace Vostok.Hercules.Client
         {
             log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
-            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, RecordVersion, settings.MaximumRecordSize);
+            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion, settings.MaximumRecordSize);
 
             memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
 

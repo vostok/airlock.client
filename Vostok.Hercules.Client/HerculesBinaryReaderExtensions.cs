@@ -13,8 +13,8 @@ namespace Vostok.Hercules.Client
         {
             var builder = new Abstractions.Events.HerculesEventBuilder();
             var version = reader.ReadByte();
-            if (version != 1)
-                throw new NotSupportedException();
+            if (version != Constants.ProtocolVersion)
+                throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
             var timestamp = EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64());
             builder.SetTimestamp(timestamp);
             reader.ReadGuid();
@@ -121,6 +121,8 @@ namespace Vostok.Hercules.Client
                     builder.AddVector(key, reader.ReadArray(r => r.ReadGuid()));
                     break;
                 case TagType.Null:
+                    builder.AddNull(key);
+                    break;
                 case TagType.Vector:
                     throw new NotSupportedException();
                 default:
