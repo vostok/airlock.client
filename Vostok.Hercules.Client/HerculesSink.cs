@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Vostok.Commons.Primitives;
@@ -68,6 +69,7 @@ namespace Vostok.Hercules.Client
             var contentFactory = new RequestContentFactory();
 
             var job = new HerculesRecordsSendingJob(
+                this,
                 bufferPools,
                 jobScheduler,
                 batcher,

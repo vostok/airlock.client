@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Primitives;
+using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Sink;
 using Vostok.Logging.Abstractions;
 
@@ -12,7 +14,8 @@ namespace Vostok.Hercules.Client.Sending
 {
     internal class HerculesRecordsSendingJob : IHerculesRecordsSendingJob
     {
-        private readonly WeakReference<IReadOnlyDictionary<string, Lazy<IBufferPool>>> bufferPools;
+        private readonly IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools;
+        private readonly WeakReference<IHerculesSink> sinkWeakReference;
         private readonly ILog log;
         private readonly IHerculesRecordsSendingJobScheduler scheduler;
         private readonly IBufferSnapshotBatcher batcher;
@@ -26,6 +29,7 @@ namespace Vostok.Hercules.Client.Sending
         private long lostRecordsCounter;
 
         public HerculesRecordsSendingJob(
+            IHerculesSink sink,
             IReadOnlyDictionary<string, Lazy<IBufferPool>> bufferPools,
             IHerculesRecordsSendingJobScheduler scheduler,
             IBufferSnapshotBatcher batcher,
@@ -34,8 +38,9 @@ namespace Vostok.Hercules.Client.Sending
             ILog log,
             TimeSpan timeout)
         {
-            this.bufferPools = new WeakReference<IReadOnlyDictionary<string, Lazy<IBufferPool>>>(bufferPools);
-
+            sinkWeakReference = new WeakReference<IHerculesSink>(sink);
+            
+            this.bufferPools = bufferPools;
             this.log = log;
             this.scheduler = scheduler;
             this.batcher = batcher;
@@ -52,10 +57,7 @@ namespace Vostok.Hercules.Client.Sending
 
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
-            if (!bufferPools.TryGetTarget(out var pools))
-                throw new OperationCanceledException();
-
-            foreach (var pair in pools)
+            foreach (var pair in bufferPools)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -72,6 +74,9 @@ namespace Vostok.Hercules.Client.Sending
                 bufferPool.NeedToFlushEvent.Reset();
 
                 var sendingResult = await PushAsync(stream, bufferPool, cancellationToken).ConfigureAwait(false);
+                
+                if (!sendingResult && SinkIsCollectedByGC())
+                    throw new OperationCanceledException();
 
                 var delayTime = scheduler.GetDelayToNextOccurrence(stream, sendingResult, sw.Elapsed);
 
@@ -175,6 +180,12 @@ namespace Vostok.Hercules.Client.Sending
         {
             foreach (var snapshot in snapshots)
                 snapshot.Parent.RequestGarbageCollection(snapshot.State);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool SinkIsCollectedByGC()
+        {
+            return !sinkWeakReference.TryGetTarget(out _);
         }
     }
 }
