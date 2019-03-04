@@ -57,6 +57,8 @@ namespace Vostok.Hercules.Client.Sending
 
         public async Task RunAsync(CancellationToken cancellationToken = default)
         {
+            var sendAny = false;
+            
             foreach (var pair in bufferPools)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -74,14 +76,17 @@ namespace Vostok.Hercules.Client.Sending
                 bufferPool.NeedToFlushEvent.Reset();
 
                 var sendingResult = await PushAsync(stream, bufferPool, cancellationToken).ConfigureAwait(false);
-                
-                if (!sendingResult && SinkIsCollectedByGC())
-                    throw new OperationCanceledException();
 
+                if (sendingResult)
+                    sendAny = true;
+                
                 var delayTime = scheduler.GetDelayToNextOccurrence(stream, sendingResult, sw.Elapsed);
 
                 delays[stream] = Task.WhenAny(bufferPool.NeedToFlushEvent, Task.Delay(delayTime, cancellationToken));
             }
+
+            if (!sendAny && SinkIsCollectedByGC())
+                throw new OperationCanceledException();
         }
 
         public Task WaitNextOccurrenceAsync() =>
