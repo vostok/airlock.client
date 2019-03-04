@@ -7,11 +7,11 @@ namespace Vostok.Hercules.Client.Tests
     public class BufferTests
     {
         [Test]
-        public void Should_have_reserved_space_for_size()
+        public void Position_should_be_zero_after_creation()
         {
             var memManager = new MemoryManager(sizeof(int)*4);
             var buffer = new Buffer(0, memManager);
-            buffer.Position.Should().Be(sizeof(int));
+            buffer.Position.Should().Be(0);
         }
         
         [Test]
@@ -20,7 +20,7 @@ namespace Vostok.Hercules.Client.Tests
             var memManager = new MemoryManager(0);
             var buffer = new Buffer(16, memManager);
             
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < 5; i++)
                 buffer.Write(0);
 
             buffer.IsOverflowed.Should().BeTrue();

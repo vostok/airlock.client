@@ -58,7 +58,8 @@ namespace Vostok.Hercules.Client.Tests
         {
             var snapshotLength = 10;
             var snapshotCount = 200;
-            var expectedBatchCount = snapshotLength * snapshotCount / MaxBatchSize + 1;
+            var totalLength = snapshotLength * snapshotCount;
+            var expectedBatchCount = Math.DivRem(totalLength, MaxBatchSize, out var rem) + (rem == 0 ? 0 : 1);
             
             var snapshots = Enumerable.Repeat(new BufferState(snapshotLength, 4), snapshotCount).Select(x => new BufferSnapshot(null, null, x)).ToArray();
             var segments = batcher.Batch(snapshots).ToArray();
