@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Clusterclient.Core;
@@ -13,6 +14,7 @@ using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
+using Vostok.Hercules.Client.Sending;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -20,6 +22,7 @@ namespace Vostok.Hercules.Client
     public class HerculesStreamClient : IHerculesStreamClient
     {
         private const string ServiceName = "HerculesStreamApi";
+        private const string ReadPath = "stream/read";
         
         private readonly ILog log;
         private readonly IClusterClient client;
@@ -50,8 +53,15 @@ namespace Vostok.Hercules.Client
         {
             try
             {
-                var url = new RequestUrlBuilder("stream/read")
-                    .AppendToQuery("stream", query.Name)
+                var apiKey = getGateApiKey();
+                if (apiKey == null)
+                {
+                    log.Warn("Hercules API key is null.");
+                    return new ReadStreamResult(HerculesStatus.Unauthorized, null);
+                }
+
+                var url = new RequestUrlBuilder(ReadPath)
+                    .AppendToQuery(Constants.StreamQueryParameter, query.Name)
                     .AppendToQuery("take", query.Limit)
                     .AppendToQuery("shardIndex", query.ClientShard)
                     .AppendToQuery("shardCount", query.ClientShardCount)
@@ -72,7 +82,7 @@ namespace Vostok.Hercules.Client
 
                 var request = Request
                     .Post(url)
-                    .WithHeader(HeaderNames.ContentType, "application/octet-stream")
+                    .WithHeader(HeaderNames.ContentType, Constants.OctetStreamContentType)
                     .WithHeader("apiKey", getGateApiKey())
                     .WithContent(body.FilledSegment);
 

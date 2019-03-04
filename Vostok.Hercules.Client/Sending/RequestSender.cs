@@ -18,6 +18,7 @@ namespace Vostok.Hercules.Client.Sending
         private const string SynchronousPath = "stream/send";
         private const string FireAndForgetPath = "stream/sendAsync";
 
+        private readonly ILog log;
         private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 
@@ -27,6 +28,7 @@ namespace Vostok.Hercules.Client.Sending
             Func<string> getGateApiKey,
             ClusterClientSetup clusterClientSetup = null)
         {
+            this.log = log;
             this.getGateApiKey = getGateApiKey;
 
             client = new ClusterClient(
@@ -62,10 +64,17 @@ namespace Vostok.Hercules.Client.Sending
             CompositeContent compositeContent = null,
             Content content = null)
         {
+            var apiKey = getGateApiKey();
+            if (apiKey == null)
+            {
+                log.Warn("Hercules API key is null.");
+                return new RequestSendingResult {Status = ClusterResultStatus.IncorrectArguments, Code = ResponseCode.Unauthorized};
+            }
+            
             var request = Request.Post(path)
-                .WithAdditionalQueryParameter("stream", stream)
-                .WithContentTypeHeader("application/octet-stream")
-                .WithHeader("apiKey", apiKeyProvider?.Invoke() ?? getGateApiKey());
+                .WithAdditionalQueryParameter(Constants.StreamQueryParameter, stream)
+                .WithContentTypeHeader(Constants.OctetStreamContentType)
+                .WithHeader(Constants.ApiKeyHeaderName, apiKeyProvider?.Invoke() ?? getGateApiKey());
 
             if (compositeContent != null)
                 request = request.WithContent(compositeContent);
