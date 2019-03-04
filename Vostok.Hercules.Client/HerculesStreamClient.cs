@@ -30,6 +30,8 @@ namespace Vostok.Hercules.Client
         private readonly IClusterClient client;
         private readonly Func<string> apiKeyProvider;
 
+        /// <param name="settings">Settings of this <see cref="HerculesStreamClient"/></param>
+        /// <param name="log">An <see cref="ILog"/> instance.</param>
         public HerculesStreamClient(HerculesStreamClientSettings settings, ILog log)
         {
             this.log = log?.ForContext<HerculesStreamClient>() ?? new SilentLog();
@@ -149,6 +151,7 @@ namespace Vostok.Hercules.Client
 
         private static HerculesStatus ConvertFailureToHerculesStatus(ClusterResultStatus status)
         {
+            // ReSharper disable once SwitchStatementMissingSomeCases
             switch (status)
             {
                 case ClusterResultStatus.TimeExpired:
@@ -164,6 +167,7 @@ namespace Vostok.Hercules.Client
 
         private static HerculesStatus ConvertResponseCodeToHerculesStatus(ResponseCode code)
         {
+            // ReSharper disable once SwitchStatementMissingSomeCases
             switch (code)
             {
                 case ResponseCode.RequestTimeout:

@@ -10,6 +10,8 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesGateClientSettings
     {
+        /// <param name="cluster">An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules Gateway service.</param>
+        /// <param name="apiKeyProvider">Delegate that returns Hercules gateway API key with write access.</param>
         public HerculesGateClientSettings(IClusterProvider cluster, Func<string> apiKeyProvider)
         {
             Cluster = cluster;

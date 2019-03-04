@@ -41,8 +41,8 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// Creates a new instance of <see cref="HerculesSink"/>.
         /// </summary>
-        /// <param name="settings">Configuration of this <see cref="HerculesSink"/></param>
-        /// <param name="log">A <see cref="ILog"/> instance.</param>
+        /// <param name="settings">Settings of this <see cref="HerculesSink"/></param>
+        /// <param name="log">An <see cref="ILog"/> instance.</param>
         public HerculesSink(HerculesSinkSettings settings, ILog log)
         {
             log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();

@@ -10,6 +10,8 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesStreamClientSettings
     {
+        /// <param name="cluster">An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules Stream API service.</param>
+        /// <param name="apiKeyProvider">Delegate that returns Hercules gateway API key with read access.</param>
         public HerculesStreamClientSettings(IClusterProvider cluster, Func<string> apiKeyProvider)
         {
             Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));

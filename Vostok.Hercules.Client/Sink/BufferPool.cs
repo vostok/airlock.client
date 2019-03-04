@@ -116,7 +116,7 @@ namespace Vostok.Hercules.Client.Sink
             var count = allBuffers.Count;
             for (var i = 0; i < count; i++)
             {
-                // garabage collection from buffers is not thread safe,
+                // garbage collection from buffers is not thread safe,
                 // so buffer should not be available for write.
                 if (!buffers.TryDequeue(out var buffer))
                     continue;

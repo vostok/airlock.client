@@ -188,6 +188,7 @@ namespace Vostok.Hercules.Client.Sink
 
         public int WriteVarlen(uint value)
         {
+            // ReSharper disable once ConvertIfStatementToReturnStatement
             if (!TryEnsureAvailableBytes(sizeof(uint) + 1))
                 return 0;
 
@@ -196,6 +197,7 @@ namespace Vostok.Hercules.Client.Sink
 
         public int WriteVarlen(ulong value)
         {
+            // ReSharper disable once ConvertIfStatementToReturnStatement
             if (!TryEnsureAvailableBytes(sizeof(ulong) + 1))
                 return 0;
 

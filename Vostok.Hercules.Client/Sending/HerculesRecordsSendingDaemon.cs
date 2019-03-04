@@ -30,6 +30,7 @@ namespace Vostok.Hercules.Client.Sending
 
         public void Initialize()
         {
+            // ReSharper disable once InvertIf
             if (daemonTask == null)
             {
                 lock (startLock)

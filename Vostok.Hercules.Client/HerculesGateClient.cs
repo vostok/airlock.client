@@ -48,10 +48,9 @@ namespace Vostok.Hercules.Client
                 if (result.Status != ClusterResultStatus.Success)
                     return new InsertEventsResult(ConvertFailureToHerculesStatus(result.Status));
 
-                if (result.Code != ResponseCode.Ok)
-                    return new InsertEventsResult(ConvertResponseCodeToHerculesStatus(result.Code));
-
-                return new InsertEventsResult(HerculesStatus.Success);
+                return result.Code == ResponseCode.Ok
+                    ? new InsertEventsResult(HerculesStatus.Success)
+                    : new InsertEventsResult(ConvertResponseCodeToHerculesStatus(result.Code));
             }
             catch (Exception e)
             {
@@ -78,6 +77,7 @@ namespace Vostok.Hercules.Client
 
         private static HerculesStatus ConvertFailureToHerculesStatus(ClusterResultStatus status)
         {
+            // ReSharper disable once SwitchStatementMissingSomeCases
             switch (status)
             {
                 case ClusterResultStatus.TimeExpired:
@@ -93,6 +93,7 @@ namespace Vostok.Hercules.Client
 
         private static HerculesStatus ConvertResponseCodeToHerculesStatus(ResponseCode code)
         {
+            // ReSharper disable once SwitchStatementMissingSomeCases
             switch (code)
             {
                 case ResponseCode.RequestTimeout:

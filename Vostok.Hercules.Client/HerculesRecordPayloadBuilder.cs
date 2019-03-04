@@ -92,7 +92,7 @@ namespace Vostok.Hercules.Client
         public IHerculesTagsBuilder AddValue(string key, Guid value)
         {
             writer.WriteWithByteLength(key);
-            writer.Write(TagType.UUID);
+            writer.Write(TagType.Uuid);
             writer.Write(value);
 
             return this;
@@ -206,7 +206,7 @@ namespace Vostok.Hercules.Client
         {
             writer.WriteWithByteLength(key);
             writer.Write(TagType.Vector);
-            writer.Write(TagType.UUID);
+            writer.Write(TagType.Uuid);
             writer.WriteReadOnlyCollection(values, (w, x) => w.Write(x));
 
             return this;
