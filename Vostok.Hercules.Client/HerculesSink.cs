@@ -102,6 +102,8 @@ namespace Vostok.Hercules.Client
         /// <inheritdoc />
         public void Put(string stream, Action<IHerculesEventBuilder> build)
         {
+            ThrowIfDisposed();
+            
             var bufferPool = GetOrCreate(stream);
 
             if (!bufferPool.TryAcquire(out var buffer))
@@ -137,13 +139,19 @@ namespace Vostok.Hercules.Client
         /// <inheritdoc />
         public void Dispose()
         {
-            if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 1)
+            if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
                 recordsSendingDaemon.Dispose();
         }
 
         private IBufferPool GetOrCreate(string stream) =>
             bufferPools.GetOrAdd(stream, 
                 _ => new Lazy<IBufferPool>(CreateBufferPool)).Value;
+
+        private void ThrowIfDisposed()
+        {
+            if (isDisposed == 1)
+                throw new ObjectDisposedException(nameof(HerculesSink));
+        }
 
         private IBufferPool CreateBufferPool()
         {
