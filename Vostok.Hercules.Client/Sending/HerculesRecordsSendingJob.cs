@@ -118,7 +118,7 @@ namespace Vostok.Hercules.Client.Sending
         {
             var sw = Stopwatch.StartNew();
 
-            var body = formatter.GetContent(snapshots, out var recordsCount);
+            var body = formatter.CreateContent(snapshots, out var recordsCount);
 
             var sendingResult = await requestSender.FireAndForgetAsync(stream, body, timeout, apiKeyProvider, cancellationToken)
                 .ConfigureAwait(false);

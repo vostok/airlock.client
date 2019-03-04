@@ -6,6 +6,6 @@ namespace Vostok.Hercules.Client.Sending
 {
     internal interface IBodyFormatter
     {
-        CompositeContent GetContent(ArraySegment<BufferSnapshot> snapshots, out int recordsCount);
+        CompositeContent CreateContent(ArraySegment<BufferSnapshot> snapshots, out int recordsCount);
     }
 }

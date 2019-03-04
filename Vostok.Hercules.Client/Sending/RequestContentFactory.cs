@@ -7,7 +7,7 @@ namespace Vostok.Hercules.Client.Sending
 {
     internal class RequestContentFactory : IBodyFormatter
     {
-        public CompositeContent GetContent(ArraySegment<BufferSnapshot> snapshots, out int recordsCount)
+        public CompositeContent CreateContent(ArraySegment<BufferSnapshot> snapshots, out int recordsCount)
         {
             recordsCount = 0;
 
