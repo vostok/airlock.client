@@ -156,28 +156,14 @@ namespace Vostok.Hercules.Client.Sending
             if (result.IsSuccessful)
             {
                 log.Info(
-                    "Sending {RecordsCount} records of size {DataSize.FromBytes(bytesCount).ToString()} to stream {StreamName} succeeded in {ElapsedTime}",
-                    new
-                    {
-                        RecordsCount = recordsCount,
-                        RecordsLength = DataSize.FromBytes(bytesCount).ToString(),
-                        StreamName = stream,
-                        ElapsedTime = elapsed
-                    });
+                    "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} succeeded in {ElapsedTime}",
+                    recordsCount, DataSize.FromBytes(bytesCount).ToString(), stream, elapsed);
             }
             else
             {
                 log.Warn(
-                    "Sending {RecordsCount} records of size {RecordsLength} to stream {StreamName} failed after {ElapsedTime} with status {Status} and code {Code}",
-                    new
-                    {
-                        RecordsCount = recordsCount,
-                        RecordsLength = DataSize.FromBytes(bytesCount).ToString(),
-                        StreamName = stream,
-                        ElapsedTime = elapsed,
-                        result.Status,
-                        result.Code
-                    });
+                    "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} failed after {ElapsedTime} with status {Status} and code {Code}",
+                    recordsCount, DataSize.FromBytes(bytesCount).ToString(), stream, elapsed, result.Status, result.Code);
             }
         }
 
