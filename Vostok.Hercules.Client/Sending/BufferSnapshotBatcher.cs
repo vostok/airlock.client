@@ -15,19 +15,19 @@ namespace Vostok.Hercules.Client.Sending
         {
             Array.Sort(snapshots, (a, b) => b.State.Length.CompareTo(a.State.Length));
 
-            var offset = 0;
+            var firstSnapshot = 0;
+            var currentSnapshot = 0;
             var batchSize = 0;
-            var i = 0;
 
-            for (; i < snapshots.Length; i++)
+            for (; currentSnapshot < snapshots.Length; currentSnapshot++)
             {
-                var recordsLength = snapshots[i].State.Length;
+                var recordsLength = snapshots[currentSnapshot].State.Length;
 
                 if (batchSize + recordsLength > maximumBatchSize)
                 {
                     if (batchSize > 0)
                         yield return CreateSegment();
-                    offset = i;
+                    firstSnapshot = currentSnapshot;
                     batchSize = 0;
                 }
 
@@ -38,7 +38,7 @@ namespace Vostok.Hercules.Client.Sending
                 yield return CreateSegment();
 
             ArraySegment<BufferSnapshot> CreateSegment() =>
-                new ArraySegment<BufferSnapshot>(snapshots, offset, i - offset);
+                new ArraySegment<BufferSnapshot>(snapshots, firstSnapshot, currentSnapshot - firstSnapshot);
         }
     }
 }
