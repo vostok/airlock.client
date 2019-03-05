@@ -17,14 +17,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Title>Vostok hercules client library</Title>
-    <Description>Hercules client library for microservice toolkit http://vostok.tools/</Description>
+    <Title>Vostok Hercules client library</Title>
+    <Description>An implementations of clients to Hercules services: Gateway, Stream API, Timeline API.</Description>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageProjectUrl>https://github.com/vostok/hercules.client</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/vostok/hercules.client/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageTags>vostok vostok.hercules.client</PackageTags>
+    <PackageTags>vostok vostok.hercules</PackageTags>
     <RepositoryUrl>https://github.com/vostok/hercules.client</RepositoryUrl>
   </PropertyGroup>
 
