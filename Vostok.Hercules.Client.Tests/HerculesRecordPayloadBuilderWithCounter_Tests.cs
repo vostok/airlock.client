@@ -89,16 +89,16 @@ namespace Vostok.Hercules.Client.Tests
                 ("Double", builder => builder.AddValue("key", 0D)),
                 ("String", builder => builder.AddValue("key", "value")),
                 ("Guid", builder => builder.AddValue("key", Guid.Empty)),
-                ("ContainerArray", builder => builder.AddVectorOfContainers("key", new Action<IHerculesTagsBuilder>[] {x => x.AddValue("nested", 0)})),
-                ("ByteArray", builder => builder.AddVector("key", new[] {(byte)0})),
-                ("Int16Array", builder => builder.AddVector("key", new[] {(short)0})),
-                ("Int32Array", builder => builder.AddVector("key", new[] {0})),
-                ("Int64Array", builder => builder.AddVector("key", new[] {0L})),
-                ("BoolArray", builder => builder.AddVector("key", new[] {true})),
-                ("FloatArray", builder => builder.AddVector("key", new[] {0F})),
-                ("DoubleArray", builder => builder.AddVector("key", new[] {0D})),
-                ("StringArray", builder => builder.AddVector("key", new[] {"value"})),
-                ("GuidArray", builder => builder.AddVector("key", new[] {Guid.Empty}))
+                ("ContainerVector", builder => builder.AddVectorOfContainers("key", new Action<IHerculesTagsBuilder>[] {x => x.AddValue("nested", 0)})),
+                ("ByteVector", builder => builder.AddVector("key", new[] {(byte)0})),
+                ("Int16Vector", builder => builder.AddVector("key", new[] {(short)0})),
+                ("Int32Vector", builder => builder.AddVector("key", new[] {0})),
+                ("Int64Vector", builder => builder.AddVector("key", new[] {0L})),
+                ("BoolVector", builder => builder.AddVector("key", new[] {true})),
+                ("FloatVector", builder => builder.AddVector("key", new[] {0F})),
+                ("DoubleVector", builder => builder.AddVector("key", new[] {0D})),
+                ("StringVector", builder => builder.AddVector("key", new[] {"value"})),
+                ("GuidVector", builder => builder.AddVector("key", new[] {Guid.Empty}))
             };
 
             return cases.Select(x => new TestCaseData(x.testCase).SetName(x.name));
