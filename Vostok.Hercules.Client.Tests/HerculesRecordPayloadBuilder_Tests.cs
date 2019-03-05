@@ -33,7 +33,6 @@ namespace Vostok.Hercules.Client.Tests
             
             var builder = CreateBuilder(writer);
             action.Invoke(builder);
-
             writer.Buffer[key.Length + 1].Should().Be((byte)TagType.Vector);
             return (TagType)writer.Buffer[key.Length + 2];
         }
@@ -51,7 +50,7 @@ namespace Vostok.Hercules.Client.Tests
                 (TagType.Float, builder => builder.AddValue("key", 0F)),
                 (TagType.Double, builder => builder.AddValue("key", 0D)),
                 (TagType.String, builder => builder.AddValue("key", "value")),
-                (UUID: TagType.Uuid, builder => builder.AddValue("key", Guid.Empty)),
+                (TagType.Uuid, builder => builder.AddValue("key", Guid.Empty)),
             };
 
             return cases.Select(x => new TestCaseData(x.testCase).SetName(x.type.ToString()).Returns(x.type));
@@ -70,7 +69,7 @@ namespace Vostok.Hercules.Client.Tests
                 (TagType.Float, builder => builder.AddVector("key", new[] {0F})),
                 (TagType.Double, builder => builder.AddVector("key", new[] {0D})),
                 (TagType.String, builder => builder.AddVector("key", new[] {"value"})),
-                (UUID: TagType.Uuid, builder => builder.AddVector("key", new[] {Guid.Empty})),
+                (TagType.Uuid, builder => builder.AddVector("key", new[] {Guid.Empty})),
             };
 
             return cases.Select(x => new TestCaseData(x.testCase).SetName(x.type + "Vector").Returns(x.type));
