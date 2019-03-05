@@ -1,6 +1,5 @@
 using FluentAssertions;
 using NUnit.Framework;
-using Vostok.Hercules.Client.Sink;
 using Vostok.Hercules.Client.Sink.Buffers;
 
 namespace Vostok.Hercules.Client.Tests.Sink

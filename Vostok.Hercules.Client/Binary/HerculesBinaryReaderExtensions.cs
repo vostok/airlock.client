@@ -5,6 +5,7 @@ using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Sink.Writing;
+using HerculesEventBuilder = Vostok.Hercules.Client.Abstractions.Events.HerculesEventBuilder;
 
 namespace Vostok.Hercules.Client.Binary
 {
@@ -12,7 +13,7 @@ namespace Vostok.Hercules.Client.Binary
     {
         public static HerculesEvent ReadEvent(this IBinaryReader reader)
         {
-            var builder = new Abstractions.Events.HerculesEventBuilder();
+            var builder = new HerculesEventBuilder();
             var version = reader.ReadByte();
             if (version != Constants.ProtocolVersion)
                 throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
