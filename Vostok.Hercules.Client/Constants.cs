@@ -5,6 +5,6 @@ namespace Vostok.Hercules.Client
         public const string ApiKeyHeaderName = "apiKey";
         public const string OctetStreamContentType = "application/octet-stream";
         public const string StreamQueryParameter = "stream";
-        public const int ProtocolVersion = 1;
+        public const byte ProtocolVersion = 1;
     }
 }
