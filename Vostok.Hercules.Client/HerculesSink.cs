@@ -102,13 +102,8 @@ namespace Vostok.Hercules.Client
         /// <inheritdoc />
         public void Put(string stream, Action<IHerculesEventBuilder> build)
         {
-            ThrowIfDisposed();
-
-            if (string.IsNullOrEmpty(stream))
-                throw new ArgumentNullException(nameof(stream), "Stream name is null or empty.");
-
-            if (build == null)
-                throw new ArgumentNullException(nameof(build));
+            if (!ValidateParameters(stream, build))
+                return;
 
             var bufferPool = GetOrCreate(stream);
 
@@ -149,17 +144,35 @@ namespace Vostok.Hercules.Client
                 recordsSendingDaemon.Dispose();
         }
 
+        private bool ValidateParameters(string stream, Action<IHerculesEventBuilder> build)
+        {
+            if (IsDisposed())
+            {
+                log.Warn("An attempt to put event to disposed HerculesSink.");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(stream))
+            {
+                log.Warn("An attempt to put event to stream which name is null or empty.");
+                return false;
+            }
+
+            // ReSharper disable once InvertIf
+            if (build == null)
+            {
+                log.Warn("A delegate that provided to build an event is null.");
+                return false;
+            }
+
+            return true;
+        }
+
         private IBufferPool GetOrCreate(string stream) =>
             bufferPools.GetOrAdd(
                     stream,
                     _ => new Lazy<IBufferPool>(CreateBufferPool))
                 .Value;
-
-        private void ThrowIfDisposed()
-        {
-            if (isDisposed == 1)
-                throw new ObjectDisposedException(nameof(HerculesSink));
-        }
 
         private IBufferPool CreateBufferPool()
         {
@@ -170,6 +183,11 @@ namespace Vostok.Hercules.Client
                 initialPooledBufferSize,
                 maximumRecordSize,
                 maximumBatchSize);
+        }
+
+        private bool IsDisposed()
+        {
+            return isDisposed == 1;
         }
     }
 }
