@@ -13,8 +13,11 @@ namespace Vostok.Hercules.Client.Tests
         public static void CreateStreamAndWait(this IHerculesManagementClient client, CreateStreamQuery query)
         {
             client.CreateStream(query, 10.Seconds()).EnsureSuccess();
-            new Action(() => client.ListStreams(10.Seconds()).Payload
-                    .Should().Contain(query.Description.Name))
+            new Action(
+                    () => client.ListStreams(10.Seconds())
+                        .Payload
+                        .Should()
+                        .Contain(query.Description.Name))
                 .ShouldPassIn(20.Seconds());
         }
 

@@ -8,9 +8,9 @@ namespace Vostok.Hercules.Client.Tests
     internal class BufferPool_Tests
     {
         private IMemoryManager memoryManager;
-        private int initialBufferSize = 100;
-        private int maxRecordSize = 300;
-        private int maxBufferSize = 1000;
+        private readonly int initialBufferSize = 100;
+        private readonly int maxRecordSize = 300;
+        private readonly int maxBufferSize = 1000;
         private BufferPool bufferPool;
 
         [SetUp]

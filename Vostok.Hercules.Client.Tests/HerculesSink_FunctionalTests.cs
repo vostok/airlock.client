@@ -28,11 +28,11 @@ namespace Vostok.Hercules.Client.Tests
         private readonly ClusterConfigClient clusterConfigClient = new ClusterConfigClient();
 
         private string stream;
-        private string gateTopology = "topology/hercules/gate.test";
-        private string apiKey = "dotnet_api_key";
-        private string managementApiTopology = "topology/hercules/management-api.test";
-        private string streamApiTopology = "topology/hercules/stream-api.test";
-        private TimeSpan ttl = 20.Seconds();
+        private readonly string gateTopology = "topology/hercules/gate.test";
+        private readonly string apiKey = "dotnet_api_key";
+        private readonly string managementApiTopology = "topology/hercules/management-api.test";
+        private readonly string streamApiTopology = "topology/hercules/stream-api.test";
+        private readonly TimeSpan ttl = 20.Seconds();
         private HerculesStreamClient streamClient;
         private HerculesSink sink;
         private HerculesManagementClient managementClient;
@@ -48,8 +48,7 @@ namespace Vostok.Hercules.Client.Tests
                 () => apiKey);
 
             managementClient = new HerculesManagementClient(
-                new HerculesManagementClientSettings
-                (
+                new HerculesManagementClientSettings(
                     new ClusterConfigClusterProvider(clusterConfigClient, managementApiTopology, log),
                     () => apiKey
                 ),
@@ -78,7 +77,8 @@ namespace Vostok.Hercules.Client.Tests
             managementClient.DeleteStream(stream, timeout).EnsureSuccess();
         }
 
-        [Test, Explicit]
+        [Test]
+        [Explicit]
         public void Should_read_and_write_one_hercules_event()
         {
             var intValue = 100500;
@@ -121,8 +121,8 @@ namespace Vostok.Hercules.Client.Tests
             @event.Tags["nullField"].IsNull.Should().BeTrue();
         }
 
-
-        [Test, Explicit]
+        [Test]
+        [Explicit]
         public void Should_not_fail_on_duplicate_keys()
         {
             sink.Put(
@@ -160,10 +160,10 @@ namespace Vostok.Hercules.Client.Tests
         public void Should_read_and_write_hercules_events(int writers, int countPerWriter)
         {
             var seen = new bool[writers][];
-            
+
             for (var i = 0; i < writers; i++)
                 seen[i] = new bool[countPerWriter];
-            
+
             for (var t = 0; t < writers; ++t)
             {
                 var writer = t;
@@ -193,14 +193,12 @@ namespace Vostok.Hercules.Client.Tests
                 readStreamResult.Status.Should().Be(HerculesStatus.Success);
 
                 new Action(() => sink.SentRecordsCount.Should().Be(writers * countPerWriter)).ShouldPassIn(1.Minutes());
-                
+
                 foreach (var @event in readStreamResult.Payload.Events)
                 {
                     seen[@event.Tags["writer"].AsInt][@event.Tags["record"].AsInt] = true;
                     read++;
                 }
-                
-                
 
                 state = readStreamResult.Payload.Next;
             }
@@ -208,7 +206,8 @@ namespace Vostok.Hercules.Client.Tests
             seen.SelectMany(x => x).Should().AllBeEquivalentTo(true);
         }
 
-        [Test, Explicit]
+        [Test]
+        [Explicit]
         public void Should_read_and_write_hercules_event_with_vector_of_containers()
         {
             sink.Put(
@@ -220,7 +219,7 @@ namespace Vostok.Hercules.Client.Tests
                         {
                             b => b.AddValue("a", 0),
                             b => b.AddValue("a", 1),
-                            b => b.AddValue("a", 2),
+                            b => b.AddValue("a", 2)
                         }));
 
             var readQuery = new ReadStreamQuery(stream)
@@ -247,7 +246,8 @@ namespace Vostok.Hercules.Client.Tests
             @event.Tags["tag"].AsVector.AsContainerList[2]["a"].AsInt.Should().Be(2);
         }
 
-        [Test, Explicit]
+        [Test]
+        [Explicit]
         public void Should_read_and_write_hercules_event_with_string_values()
         {
             sink.Put(
@@ -265,7 +265,7 @@ namespace Vostok.Hercules.Client.Tests
             };
 
             streamClient.WaitForAnyRecord(stream);
-            
+
             sink.SentRecordsCount.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
@@ -279,7 +279,8 @@ namespace Vostok.Hercules.Client.Tests
             @event.Tags["k2"].AsString.Should().Be("v2");
         }
 
-        [Test, Explicit]
+        [Test]
+        [Explicit]
         public void Should_delete_stream()
         {
             sink.Put(stream, x => x.AddValue("key", 1));
@@ -311,8 +312,9 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.Read(readQuery, timeout).Payload.Events.Count.Should().Be(0);
         }
-        
-        [Test, Explicit]
+
+        [Test]
+        [Explicit]
         public void Should_not_fall_into_infinite_loop_after_creation()
         {
             new HerculesSink(new HerculesSinkSettings(new FixedClusterProvider(new Uri("http://localhost/")), () => ""), new SilentLog())

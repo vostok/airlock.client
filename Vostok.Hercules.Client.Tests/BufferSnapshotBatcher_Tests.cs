@@ -9,10 +9,9 @@ namespace Vostok.Hercules.Client.Tests
 {
     internal class BufferSnapshotBatcher_Tests
     {
-        
         private const int MaxBatchSize = 100;
-        private BufferSnapshotBatcher batcher = new BufferSnapshotBatcher(MaxBatchSize);
-        
+        private readonly BufferSnapshotBatcher batcher = new BufferSnapshotBatcher(MaxBatchSize);
+
         [Test]
         public void Should_return_single_batch_for_single_snapshot()
         {
@@ -27,11 +26,12 @@ namespace Vostok.Hercules.Client.Tests
         public void Should_merge_small_snapshots_when_all_snapshots_fit_in_one_batch()
         {
             var snapshots = new[]
-            {
-                new BufferState(10, 4),
-                new BufferState(14, 2),
-                new BufferState(20, 3)
-            }.Select(x => new BufferSnapshot(null, null, x)).ToArray();
+                {
+                    new BufferState(10, 4),
+                    new BufferState(14, 2),
+                    new BufferState(20, 3)
+                }.Select(x => new BufferSnapshot(null, null, x))
+                .ToArray();
             var segments = batcher.Batch(snapshots).ToArray();
 
             segments.Should().HaveCount(1);
@@ -42,17 +42,18 @@ namespace Vostok.Hercules.Client.Tests
         public void Should_keep_big_snapshots()
         {
             var snapshots = new[]
-            {
-                new BufferState(10, 4),
-                new BufferState(14, 2),
-                new BufferState(1000, 2),
-                new BufferState(20, 3)
-            }.Select(x => new BufferSnapshot(null, null, x)).ToArray();
+                {
+                    new BufferState(10, 4),
+                    new BufferState(14, 2),
+                    new BufferState(1000, 2),
+                    new BufferState(20, 3)
+                }.Select(x => new BufferSnapshot(null, null, x))
+                .ToArray();
             var segments = batcher.Batch(snapshots).ToArray();
 
             segments.Should().HaveCount(2);
         }
-        
+
         [Test]
         public void Should_merge_small_snapshots()
         {
@@ -60,7 +61,7 @@ namespace Vostok.Hercules.Client.Tests
             var snapshotCount = 200;
             var totalLength = snapshotLength * snapshotCount;
             var expectedBatchCount = Math.DivRem(totalLength, MaxBatchSize, out var rem) + (rem == 0 ? 0 : 1);
-            
+
             var snapshots = Enumerable.Repeat(new BufferState(snapshotLength, 4), snapshotCount).Select(x => new BufferSnapshot(null, null, x)).ToArray();
             var segments = batcher.Batch(snapshots).ToArray();
 

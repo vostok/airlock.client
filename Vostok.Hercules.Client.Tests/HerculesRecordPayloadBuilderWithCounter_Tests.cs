@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Binary;
 
 namespace Vostok.Hercules.Client.Tests
 {
@@ -15,7 +12,7 @@ namespace Vostok.Hercules.Client.Tests
     internal class HerculesRecordPayloadBuilderWithCounter_Tests
     {
         private const int MaxNumberOfTags = ushort.MaxValue;
-        
+
         [TestCaseSource(nameof(TestCases))]
         public void Should_count_all_kinds_of_write_operations(Action<IHerculesTagsBuilder> add)
         {
@@ -25,7 +22,7 @@ namespace Vostok.Hercules.Client.Tests
 
             GetFieldsCount(writer.Buffer).Should().Be(1);
         }
-        
+
         [TestCase]
         public void Should_count_write_operations()
         {
@@ -35,7 +32,7 @@ namespace Vostok.Hercules.Client.Tests
 
             GetFieldsCount(writer.Buffer).Should().Be(3);
         }
-        
+
         [TestCase]
         public void Should_have_zero_count_when_no_tags_written()
         {
@@ -47,7 +44,7 @@ namespace Vostok.Hercules.Client.Tests
 
         [TestCase]
         public void Should_not_throw_when_maximum_number_of_tags_are_written()
-        {   
+        {
             var writer = CreateWriter();
             using (var builder = CreateBuilder(writer))
             {
@@ -60,7 +57,7 @@ namespace Vostok.Hercules.Client.Tests
 
         [TestCase]
         public void Should_throw_OverflowException_when_too_many_tags_are_written()
-        {   
+        {
             var writer = CreateWriter();
             using (var builder = CreateBuilder(writer))
             {
@@ -101,12 +98,11 @@ namespace Vostok.Hercules.Client.Tests
                 ("FloatArray", builder => builder.AddVector("key", new[] {0F})),
                 ("DoubleArray", builder => builder.AddVector("key", new[] {0D})),
                 ("StringArray", builder => builder.AddVector("key", new[] {"value"})),
-                ("GuidArray", builder => builder.AddVector("key", new[] {Guid.Empty})),
+                ("GuidArray", builder => builder.AddVector("key", new[] {Guid.Empty}))
             };
 
             return cases.Select(x => new TestCaseData(x.testCase).SetName(x.name));
         }
-
 
         private static BinaryBufferWriter CreateWriter()
             => new BinaryBufferWriter(0) {Endianness = Endianness.Big};

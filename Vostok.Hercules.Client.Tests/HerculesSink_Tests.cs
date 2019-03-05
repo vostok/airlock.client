@@ -27,7 +27,8 @@ namespace Vostok.Hercules.Client.Tests
             action.ShouldNotFailIn(3.Seconds());
         }
 
-        [Test, Explicit]
+        [Test]
+        [Explicit]
         public void Test()
         {
             var config = new HerculesSinkSettings(new FixedClusterProvider(new Uri("")), () => "");
