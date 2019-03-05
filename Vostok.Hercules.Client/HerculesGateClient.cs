@@ -10,8 +10,9 @@ using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
-using Vostok.Hercules.Client.Sending;
+using Vostok.Hercules.Client.Gateway;
 using Vostok.Logging.Abstractions;
+using HerculesEventBuilder = Vostok.Hercules.Client.Sink.Writing.HerculesEventBuilder;
 
 namespace Vostok.Hercules.Client
 {

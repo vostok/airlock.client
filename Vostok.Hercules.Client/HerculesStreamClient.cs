@@ -14,6 +14,7 @@ using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
+using Vostok.Hercules.Client.Binary;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client

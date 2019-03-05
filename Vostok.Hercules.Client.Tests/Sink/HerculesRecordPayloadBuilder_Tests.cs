@@ -5,6 +5,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
+using Vostok.Hercules.Client.Sink.Writing;
 
 namespace Vostok.Hercules.Client.Tests.Sink
 {
