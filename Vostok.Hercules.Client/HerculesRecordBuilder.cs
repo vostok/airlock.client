@@ -105,7 +105,7 @@ namespace Vostok.Hercules.Client
                 : timeProvider();
 
             using (binaryWriter.JumpTo(timestampPosition))
-                binaryWriter.Write(EpochHelper.ToUnixTimeUtcTicks(timestamp.DateTime));
+                binaryWriter.Write(EpochHelper.ToUnixTimeUtcTicks(timestamp.UtcDateTime));
         }
     }
 }
