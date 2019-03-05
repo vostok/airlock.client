@@ -281,6 +281,125 @@ namespace Vostok.Hercules.Client.Tests
 
         [Test]
         [Explicit]
+        public void Should_read_and_write_hercules_event_with_all_data_types()
+        {
+            var guid = Guid.NewGuid();
+            var @bool = true;
+            var @byte = (byte)42;
+            var @double = Math.PI;
+            var @float = (float)@double;
+            var @int = int.MaxValue;
+            var @long = long.MinValue;
+            var @short = short.MinValue;
+            var @string = "dotnet";
+
+            var guidVec = new[] {Guid.NewGuid(), Guid.NewGuid()};
+            var boolVec = new[] {true, false};
+            var byteVec = new[] {(byte)42, (byte)25};
+            var doubleVec = new[] {Math.PI, Math.E};
+            var floatVec = doubleVec.Select(x => (float)x).ToArray();
+            var intVec = new[] {1337, 31337, int.MaxValue, int.MinValue};
+            var longVec = new[] {long.MaxValue, long.MinValue, (long)1e18 + 1};
+            var shortVec = new short[] {1000, 2000};
+            var stringVec = new[] {"dotnet", "hercules"};
+
+            sink.Put(
+                stream,
+                x => x
+                    .AddNull("null")
+                    .AddValue("guid", guid)
+                    .AddValue("bool", @bool)
+                    .AddValue("byte", @byte)
+                    .AddValue("double", @double)
+                    .AddValue("float", @float)
+                    .AddValue("int", @int)
+                    .AddValue("long", @long)
+                    .AddValue("short", @short)
+                    .AddValue("string", @string)
+                    // Bug with Guid vector on server side: https://yt.skbkontur.ru/issue/HERCULES-226
+                    // .AddVector("guidVec", guidVec)
+                    .AddVector("boolVec", boolVec)
+                    .AddVector("byteVec", byteVec)
+                    .AddVector("doubleVec", doubleVec)
+                    .AddVector("floatVec", floatVec)
+                    .AddVector("intVec", intVec)
+                    .AddVector("longVec", longVec)
+                    .AddVector("shortVec", shortVec)
+                    .AddVector("stringVec", stringVec)
+                    .AddVector("emptyVec", new int[0])
+                    .AddContainer(
+                        "container",
+                        b => b
+                            .AddValue("inner", "x")
+                            .AddVector("innerVec", new[] {1, 2, 3}))
+                    .AddVectorOfContainers(
+                        "containerVec",
+                        new Action<IHerculesTagsBuilder>[]
+                        {
+                            b => b
+                                .AddValue("inner", "y")
+                                .AddVector("innerVec", new long[] {1, 3, 5})
+                        })
+                    .AddVectorOfContainers("emptyContainerVec", new Action<IHerculesTagsBuilder>[0])
+            );
+
+            void Assert(HerculesTags tags)
+            {
+                tags["null"].IsNull.Should().BeTrue();
+
+                tags["guid"].AsGuid.Should().Be(guid);
+                tags["bool"].AsBool.Should().Be(@bool);
+                tags["byte"].AsByte.Should().Be(@byte);
+                tags["double"].AsDouble.Should().Be(@double);
+                tags["float"].AsFloat.Should().Be(@float);
+                tags["int"].AsInt.Should().Be(@int);
+                tags["long"].AsLong.Should().Be(@long);
+                tags["short"].AsShort.Should().Be(@short);
+                tags["string"].AsString.Should().Be(@string);
+                // tags["guidVec"].AsVector.AsGuidList.Should().BeEquivalentTo(guidVec, c => c.WithStrictOrdering());
+                tags["boolVec"].AsVector.AsBoolList.Should().BeEquivalentTo(boolVec, c => c.WithStrictOrdering());
+                tags["byteVec"].AsVector.AsByteList.Should().BeEquivalentTo(byteVec, c => c.WithStrictOrdering());
+                tags["doubleVec"].AsVector.AsDoubleList.Should().BeEquivalentTo(doubleVec, c => c.WithStrictOrdering());
+                tags["floatVec"].AsVector.AsFloatList.Should().BeEquivalentTo(floatVec, c => c.WithStrictOrdering());
+                tags["intVec"].AsVector.AsIntList.Should().BeEquivalentTo(intVec, c => c.WithStrictOrdering());
+                tags["longVec"].AsVector.AsLongList.Should().BeEquivalentTo(longVec, c => c.WithStrictOrdering());
+                tags["shortVec"].AsVector.AsShortList.Should().BeEquivalentTo(shortVec, c => c.WithStrictOrdering());
+                tags["stringVec"].AsVector.AsStringList.Should().BeEquivalentTo(stringVec, c => c.WithStrictOrdering());
+                tags["emptyVec"].AsVector.AsIntList.Should().BeEmpty();
+
+                tags["container"].AsContainer["inner"].AsString.Should().Be("x");
+                tags["container"].AsContainer["innerVec"].AsVector.AsIntList.Should().BeEquivalentTo(new[] {1, 2, 3}, c => c.WithStrictOrdering());
+
+                tags["containerVec"].AsVector.AsContainerList[0]["inner"].AsString.Should().Be("y");
+                tags["containerVec"].AsVector.AsContainerList[0]["innerVec"].AsVector.AsLongList.Should().BeEquivalentTo(new long[] {1, 3, 5}, c => c.WithStrictOrdering());
+
+                tags["emptyContainerVec"].AsVector.AsContainerList.Should().BeEmpty();
+            }
+
+            var readQuery = new ReadStreamQuery(stream)
+            {
+                Limit = 100,
+                Coordinates = new StreamCoordinates(new StreamPosition[0]),
+                ClientShard = 0,
+                ClientShardCount = 1
+            };
+
+            streamClient.WaitForAnyRecord(stream);
+
+            sink.SentRecordsCount.Should().Be(1);
+
+            var readStreamResult = streamClient.Read(readQuery, timeout);
+
+            readStreamResult.Status.Should().Be(HerculesStatus.Success);
+            readStreamResult.Payload.Events.Should().HaveCount(1);
+
+            var @event = readStreamResult.Payload.Events[0];
+
+            Assert(@event.Tags);
+        }
+
+        [Test]
+        [Explicit]
         public void Should_delete_stream()
         {
             sink.Put(stream, x => x.AddValue("key", 1));
