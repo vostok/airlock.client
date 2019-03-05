@@ -26,13 +26,13 @@ namespace Vostok.Hercules.Client.Tests
         private readonly TimeSpan timeout = 20.Seconds();
         private readonly ConsoleLog log = new ConsoleLog();
         private readonly ClusterConfigClient clusterConfigClient = new ClusterConfigClient();
-
-        private string stream;
         private readonly string gateTopology = "topology/hercules/gate.test";
         private readonly string apiKey = "dotnet_api_key";
         private readonly string managementApiTopology = "topology/hercules/management-api.test";
         private readonly string streamApiTopology = "topology/hercules/stream-api.test";
         private readonly TimeSpan ttl = 20.Seconds();
+
+        private string stream;
         private HerculesStreamClient streamClient;
         private HerculesSink sink;
         private HerculesManagementClient managementClient;

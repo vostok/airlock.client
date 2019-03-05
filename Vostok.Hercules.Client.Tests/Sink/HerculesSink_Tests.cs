@@ -14,7 +14,7 @@ using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Logging.Console;
 
-namespace Vostok.Hercules.Client.Tests
+namespace Vostok.Hercules.Client.Tests.Sink
 {
     internal class HerculesSink_Tests
     {
@@ -203,16 +203,16 @@ namespace Vostok.Hercules.Client.Tests
             Thread.Sleep(1000000);
         }
 
-        private void SetResponse(Response response) =>
-            transport
-                .SendAsync(null, TimeSpan.Zero, TimeSpan.Zero, CancellationToken.None)
-                .ReturnsForAnyArgs(response)
-                .AndDoes(x => lastRequest = x.Arg<Request>());
-
         private static void Fill(byte[] arr, byte value, int startIndex, int count)
         {
             for (var i = 0; i < count; i++)
                 arr[startIndex + i] = value;
         }
+
+        private void SetResponse(Response response) =>
+            transport
+                .SendAsync(null, TimeSpan.Zero, TimeSpan.Zero, CancellationToken.None)
+                .ReturnsForAnyArgs(response)
+                .AndDoes(x => lastRequest = x.Arg<Request>());
     }
 }

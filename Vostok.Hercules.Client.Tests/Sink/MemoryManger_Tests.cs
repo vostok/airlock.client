@@ -3,7 +3,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Hercules.Client.Sink;
 
-namespace Vostok.Hercules.Client.Tests
+namespace Vostok.Hercules.Client.Tests.Sink
 {
     internal class MemoryManger_Tests
     {

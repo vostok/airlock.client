@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 
-namespace Vostok.Hercules.Client.Tests
+namespace Vostok.Hercules.Client.Tests.Sink
 {
     [TestFixture]
     internal class HerculesRecordPayloadBuilder_Tests

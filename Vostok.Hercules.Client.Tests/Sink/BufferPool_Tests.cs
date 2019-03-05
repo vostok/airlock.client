@@ -3,14 +3,14 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Hercules.Client.Sink;
 
-namespace Vostok.Hercules.Client.Tests
+namespace Vostok.Hercules.Client.Tests.Sink
 {
     internal class BufferPool_Tests
     {
-        private IMemoryManager memoryManager;
         private readonly int initialBufferSize = 100;
         private readonly int maxRecordSize = 300;
         private readonly int maxBufferSize = 1000;
+        private IMemoryManager memoryManager;
         private BufferPool bufferPool;
 
         [SetUp]

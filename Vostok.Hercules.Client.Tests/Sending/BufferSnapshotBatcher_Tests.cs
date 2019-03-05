@@ -5,7 +5,7 @@ using NUnit.Framework;
 using Vostok.Hercules.Client.Sending;
 using Vostok.Hercules.Client.Sink;
 
-namespace Vostok.Hercules.Client.Tests
+namespace Vostok.Hercules.Client.Tests.Sending
 {
     internal class BufferSnapshotBatcher_Tests
     {
