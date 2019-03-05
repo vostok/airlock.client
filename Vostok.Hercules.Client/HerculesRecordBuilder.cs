@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Binary;
 
 namespace Vostok.Hercules.Client
 {
@@ -106,7 +105,7 @@ namespace Vostok.Hercules.Client
                 : timeProvider();
 
             using (binaryWriter.JumpTo(timestampPosition))
-                binaryWriter.Write(EpochHelper.ToUnixTimeUtcTicks(timestamp.DateTime));
+                binaryWriter.Write(EpochHelper.ToUnixTimeUtcTicks(timestamp.UtcDateTime));
         }
     }
 }

@@ -2,15 +2,23 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using JetBrains.Annotations;
+using Vostok.Commons.Primitives;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
+using Vostok.Hercules.Client.Sending;
+using Vostok.Hercules.Client.Sink;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
 {
+    /// <inheritdoc cref="IHerculesSink" />
+    [PublicAPI]
     public class HerculesSink : IHerculesSink, IDisposable
     {
+        private const int InitialPooledBufferSize = 4 * (int)DataSizeConstants.Kilobyte;
+
         private readonly ILog log;
 
         private readonly IHerculesRecordWriter recordWriter;
@@ -24,43 +32,84 @@ namespace Vostok.Hercules.Client
 
         private int isDisposed;
         private long lostRecordsCounter;
-        private int maxRecordSize;
-        private int maxRequestBodySize;
+        private int maximumRecordSize;
+        private int maximumBatchSize;
+        private long maximumPerStreamMemoryConsumptionBytes;
 
-        public HerculesSink(HerculesSinkConfig config, ILog log)
+        /// <summary>
+        /// Creates a new instance of <see cref="HerculesSink"/>.
+        /// </summary>
+        /// <param name="settings">Settings of this <see cref="HerculesSink"/></param>
+        /// <param name="log">An <see cref="ILog"/> instance.</param>
+        public HerculesSink(HerculesSinkSettings settings, ILog log)
         {
-            log = log?.ForContext<HerculesSink>() ?? new SilentLog();
+            log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
-            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, config.RecordVersion, (int)config.MaximumRecordSizeBytes);
+            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion, settings.MaximumRecordSize);
 
-            memoryManager = new MemoryManager(config.MaximumMemoryConsumptionBytes);
+            memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
 
-            initialPooledBuffersCount = config.InitialPooledBuffersCount;
-            initialPooledBufferSize = (int)config.InitialPooledBufferSizeBytes;
-            maxRecordSize = (int)config.MaximumRecordSizeBytes;
-            maxRequestBodySize = (int)config.MaximumRequestContentSizeBytes;
+            initialPooledBufferSize = InitialPooledBufferSize;
+            maximumRecordSize = settings.MaximumRecordSize;
+            maximumBatchSize = settings.MaximumBatchSize;
+            maximumPerStreamMemoryConsumptionBytes = settings.MaximumPerStreamMemoryConsumption;
             bufferPools = new ConcurrentDictionary<string, Lazy<IBufferPool>>();
 
-            var jobScheduler = new HerculesRecordsSendingJobScheduler(memoryManager, config.RequestSendPeriod, config.RequestSendPeriodCap);
+            var jobScheduler = new HerculesRecordsSendingJobScheduler(
+                memoryManager,
+                settings.RequestSendPeriod,
+                settings.RequestSendPeriodCap);
 
-            var requestSender = new RequestSender(log, config);
-            var job = new HerculesRecordsSendingJob(bufferPools, jobScheduler, requestSender, log, config.RequestTimeout);
+            var requestSender = new RequestSender(settings.Cluster, log, settings.ApiKeyProvider, settings.ClusterClientSetup);
+
+            var batcher = new BufferSnapshotBatcher(maximumBatchSize);
+
+            var contentFactory = new RequestContentFactory();
+
+            var job = new HerculesRecordsSendingJob(
+                this,
+                bufferPools,
+                jobScheduler,
+                batcher,
+                contentFactory,
+                requestSender,
+                log,
+                settings.RequestTimeout);
+
             recordsSendingDaemon = new HerculesRecordsSendingDaemon(log, job);
         }
 
+        /// <summary>
+        /// How many records are lost due to memory limit violation and network communication errors.
+        /// </summary>
         public long LostRecordsCount => Interlocked.Read(ref lostRecordsCounter) + recordsSendingDaemon.LostRecordsCount;
 
+        /// <summary>
+        /// How many records already sent with this <see cref="HerculesSink"/>.
+        /// </summary>
         public long SentRecordsCount =>
             recordsSendingDaemon.SentRecordsCount;
 
+        /// <summary>
+        /// How many records stored inside <see cref="HerculesSink"/> internal buffers and waiting to be sent.
+        /// </summary>
         public long StoredRecordsCount =>
             bufferPools
                 .Where(x => x.Value.IsValueCreated)
                 .Select(x => x.Value.Value)
                 .Sum(x => x.GetStoredRecordsCount());
 
+        /// <inheritdoc />
         public void Put(string stream, Action<IHerculesEventBuilder> build)
         {
+            ThrowIfDisposed();
+
+            if (string.IsNullOrEmpty(stream))
+                throw new ArgumentNullException(nameof(stream), "Stream name is null or empty.");
+
+            if (build == null)
+                throw new ArgumentNullException(nameof(build));
+
             var bufferPool = GetOrCreate(stream);
 
             if (!bufferPool.TryAcquire(out var buffer))
@@ -86,16 +135,41 @@ namespace Vostok.Hercules.Client
             recordsSendingDaemon.Initialize();
         }
 
+        /// <inheritdoc />
+        public void ConfigureStream(string stream, StreamSettings settings)
+        {
+            var bufferPool = GetOrCreate(stream);
+            bufferPool.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
-            if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 1)
+            if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
                 recordsSendingDaemon.Dispose();
         }
 
         private IBufferPool GetOrCreate(string stream) =>
-            bufferPools.GetOrAdd(stream, _ => new Lazy<IBufferPool>(CreateBufferPool, LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+            bufferPools.GetOrAdd(
+                    stream,
+                    _ => new Lazy<IBufferPool>(CreateBufferPool))
+                .Value;
 
-        private IBufferPool CreateBufferPool() =>
-            new BufferPool(memoryManager, initialPooledBuffersCount, initialPooledBufferSize, maxRecordSize, maxRequestBodySize);
+        private void ThrowIfDisposed()
+        {
+            if (isDisposed == 1)
+                throw new ObjectDisposedException(nameof(HerculesSink));
+        }
+
+        private IBufferPool CreateBufferPool()
+        {
+            var perStreamMemoryManager = new MemoryManager(maximumPerStreamMemoryConsumptionBytes, memoryManager);
+
+            return new BufferPool(
+                perStreamMemoryManager,
+                initialPooledBufferSize,
+                maximumRecordSize,
+                maximumBatchSize);
+        }
     }
 }

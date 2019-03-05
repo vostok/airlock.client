@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Ordering.Weighed;
@@ -17,24 +18,31 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
 {
+    /// <inheritdoc />
+    [PublicAPI]
     public class HerculesStreamClient : IHerculesStreamClient
     {
+        private const string ServiceName = "HerculesStreamApi";
+        private const string ReadPath = "stream/read";
+
         private readonly ILog log;
         private readonly IClusterClient client;
-        private readonly Func<string> getGateApiKey;
+        private readonly Func<string> apiKeyProvider;
 
-        public HerculesStreamClient(HerculesStreamClientConfig config, ILog log)
+        /// <param name="settings">Settings of this <see cref="HerculesStreamClient"/></param>
+        /// <param name="log">An <see cref="ILog"/> instance.</param>
+        public HerculesStreamClient(HerculesStreamClientSettings settings, ILog log)
         {
             this.log = log?.ForContext<HerculesStreamClient>() ?? new SilentLog();
-            getGateApiKey = config.ApiKeyProvider;
+            apiKeyProvider = settings.ApiKeyProvider;
 
             client = new ClusterClient(
                 log,
                 configuration =>
                 {
-                    configuration.TargetServiceName = config.ServiceName ?? "HerculesStreamApi";
-                    configuration.ClusterProvider = config.Cluster;
-                    configuration.Transport = new UniversalTransport(log);
+                    configuration.TargetServiceName = ServiceName;
+                    configuration.ClusterProvider = settings.Cluster;
+                    configuration.Transport = new UniversalTransport(this.log);
                     configuration.DefaultTimeout = 30.Seconds();
                     configuration.DefaultRequestStrategy = Strategy.Forking2;
 
@@ -44,35 +52,32 @@ namespace Vostok.Hercules.Client
                 });
         }
 
+        /// <inheritdoc />
         public async Task<ReadStreamResult> ReadAsync(ReadStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
         {
             try
             {
-                var url = new RequestUrlBuilder("stream/read")
-                    .AppendToQuery("stream", query.Name)
+                var apiKey = apiKeyProvider();
+                if (apiKey == null)
+                {
+                    log.Warn("Hercules API key is null.");
+                    return new ReadStreamResult(HerculesStatus.Unauthorized, null);
+                }
+
+                var url = new RequestUrlBuilder(ReadPath)
+                    .AppendToQuery(Constants.StreamQueryParameter, query.Name)
                     .AppendToQuery("take", query.Limit)
                     .AppendToQuery("shardIndex", query.ClientShard)
                     .AppendToQuery("shardCount", query.ClientShardCount)
                     .Build();
 
-                var body = new BinaryBufferWriter(
-                    sizeof(int) + query.Coordinates.Positions.Length * (sizeof(int) + sizeof(long)))
-                {
-                    Endianness = Endianness.Big
-                };
-
-                body.Write(query.Coordinates.Positions.Length);
-                foreach (var position in query.Coordinates.Positions)
-                {
-                    body.Write(position.Partition);
-                    body.Write(position.Offset);
-                }
+                var body = CreateRequestBody(query);
 
                 var request = Request
                     .Post(url)
-                    .WithHeader(HeaderNames.ContentType, "application/octet-stream")
-                    .WithHeader("apiKey", getGateApiKey())
-                    .WithContent(body.FilledSegment);
+                    .WithHeader(HeaderNames.ContentType, Constants.OctetStreamContentType)
+                    .WithHeader(Constants.ApiKeyHeaderName, apiKey)
+                    .WithContent(body);
 
                 var result = await client
                     .SendAsync(request, timeout, cancellationToken: cancellationToken)
@@ -86,28 +91,7 @@ namespace Vostok.Hercules.Client
                 if (response.Code != ResponseCode.Ok)
                     return new ReadStreamResult(ConvertResponseCodeToHerculesStatus(response.Code), null);
 
-                var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
-                {
-                    Endianness = Endianness.Big
-                };
-
-                var positions = new StreamPosition[reader.ReadInt32()];
-
-                for (var i = 0; i < positions.Length; i++)
-                {
-                    positions[i] = new StreamPosition
-                    {
-                        Partition = reader.ReadInt32(),
-                        Offset = reader.ReadInt64()
-                    };
-                }
-
-                var events = new HerculesEvent[reader.ReadInt32()];
-
-                for (var i = 0; i < events.Length; i++)
-                {
-                    events[i] = reader.ReadEvent();
-                }
+                var (events, positions) = ReadResponseBody(response);
 
                 return new ReadStreamResult(HerculesStatus.Success, new ReadStreamPayload(events, new StreamCoordinates(positions)));
             }
@@ -118,8 +102,55 @@ namespace Vostok.Hercules.Client
             }
         }
 
+        private static (HerculesEvent[] events, StreamPosition[] positions) ReadResponseBody(Response response)
+        {
+            var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
+            {
+                Endianness = Endianness.Big
+            };
+
+            var positions = new StreamPosition[reader.ReadInt32()];
+
+            for (var i = 0; i < positions.Length; i++)
+            {
+                positions[i] = new StreamPosition
+                {
+                    Partition = reader.ReadInt32(),
+                    Offset = reader.ReadInt64()
+                };
+            }
+
+            var events = new HerculesEvent[reader.ReadInt32()];
+
+            for (var i = 0; i < events.Length; i++)
+            {
+                events[i] = reader.ReadEvent();
+            }
+
+            return (events, positions);
+        }
+
+        private static ArraySegment<byte> CreateRequestBody(ReadStreamQuery query)
+        {
+            var body = new BinaryBufferWriter(
+                sizeof(int) + query.Coordinates.Positions.Length * (sizeof(int) + sizeof(long)))
+            {
+                Endianness = Endianness.Big
+            };
+
+            body.Write(query.Coordinates.Positions.Length);
+            foreach (var position in query.Coordinates.Positions)
+            {
+                body.Write(position.Partition);
+                body.Write(position.Offset);
+            }
+
+            return body.FilledSegment;
+        }
+
         private static HerculesStatus ConvertFailureToHerculesStatus(ClusterResultStatus status)
         {
+            // ReSharper disable once SwitchStatementMissingSomeCases
             switch (status)
             {
                 case ClusterResultStatus.TimeExpired:
@@ -135,6 +166,7 @@ namespace Vostok.Hercules.Client
 
         private static HerculesStatus ConvertResponseCodeToHerculesStatus(ResponseCode code)
         {
+            // ReSharper disable once SwitchStatementMissingSomeCases
             switch (code)
             {
                 case ResponseCode.RequestTimeout:

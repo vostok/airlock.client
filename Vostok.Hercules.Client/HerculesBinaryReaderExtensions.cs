@@ -13,8 +13,8 @@ namespace Vostok.Hercules.Client
         {
             var builder = new Abstractions.Events.HerculesEventBuilder();
             var version = reader.ReadByte();
-            if (version != 1)
-                throw new NotSupportedException();
+            if (version != Constants.ProtocolVersion)
+                throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
             var timestamp = EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64());
             builder.SetTimestamp(timestamp);
             reader.ReadGuid();
@@ -31,12 +31,10 @@ namespace Vostok.Hercules.Client
                 var key = ReadShortString(reader);
                 var valueType = (TagType)reader.ReadByte();
 
-                Action<IHerculesTagsBuilder> readContainer = tagsBuilder => reader.ReadContainer(tagsBuilder);
-
                 switch (valueType)
                 {
                     case TagType.Container:
-                        builder.AddContainer(key, readContainer);
+                        builder.AddContainer(key, reader.ReadContainer);
                         break;
                     case TagType.Byte:
                         builder.AddValue(key, reader.ReadByte());
@@ -62,7 +60,7 @@ namespace Vostok.Hercules.Client
                     case TagType.String:
                         builder.AddValue(key, reader.ReadString());
                         break;
-                    case TagType.UUID:
+                    case TagType.Uuid:
                         builder.AddValue(key, reader.ReadGuid());
                         break;
                     case TagType.Null:
@@ -119,10 +117,12 @@ namespace Vostok.Hercules.Client
                 case TagType.String:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadString()));
                     break;
-                case TagType.UUID:
+                case TagType.Uuid:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadGuid()));
                     break;
                 case TagType.Null:
+                    builder.AddNull(key);
+                    break;
                 case TagType.Vector:
                     throw new NotSupportedException();
                 default:

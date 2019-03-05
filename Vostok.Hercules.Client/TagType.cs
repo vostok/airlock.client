@@ -11,7 +11,7 @@
         Float = 0x07,
         Double = 0x08,
         String = 0x09,
-        UUID = 0x0A,
+        Uuid = 0x0A,
         Null = 0x0B,
         Vector = 0x80
     }

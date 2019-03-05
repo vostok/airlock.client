@@ -42,9 +42,9 @@ namespace Vostok.Hercules.Client
             }
             catch (Exception exception)
             {
-                log.Error(exception);
                 binaryWriter.Position = startingPosition;
                 recordSize = 0;
+                log.Error(exception);
                 return false;
             }
 
@@ -53,7 +53,7 @@ namespace Vostok.Hercules.Client
             if (recordSize <= maxRecordSize)
                 return true;
 
-            log.Warn($"Discarded record with size {DataSize.FromBytes(recordSize)} larger than maximum allowed size {DataSize.FromBytes(maxRecordSize)}");
+            log.Warn("Discarded record with size {RecordSize} larger than maximum allowed size {MaximumRecordSize}", DataSize.FromBytes(recordSize), DataSize.FromBytes(maxRecordSize));
             binaryWriter.Position = startingPosition;
             return false;
         }

@@ -38,5 +38,21 @@
     <Reference Include="Vostok.ClusterClient.Core">
       <HintPath>..\..\vostok.clusterclient.core\Vostok.ClusterClient.Core\bin\Release\netstandard2.0\Vostok.ClusterClient.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Vostok.Configuration.Abstractions">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.configuration.abstractions\Vostok.Configuration.Abstractions\bin\Release\netstandard2.0\Vostok.Configuration.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.ClusterClient.Topology.CC">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.clusterclient.topology.cc\Vostok.ClusterClient.Topology.CC\bin\Release\netstandard2.0\Vostok.ClusterClient.Topology.CC.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.ClusterConfig.Client">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.clusterconfig.client\Vostok.ClusterConfig.Client\bin\Release\netstandard2.0\Vostok.ClusterConfig.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.ClusterConfig.Client.Abstractions">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.clusterconfig.client.abstractions\Vostok.ClusterConfig.Client.Abstractions\bin\Release\netstandard2.0\Vostok.ClusterConfig.Client.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
