@@ -104,6 +104,12 @@ namespace Vostok.Hercules.Client
         {
             ThrowIfDisposed();
 
+            if (string.IsNullOrEmpty(stream))
+                throw new ArgumentNullException(nameof(stream), "Stream name is null or empty.");
+
+            if (build == null)
+                throw new ArgumentNullException(nameof(build));
+
             var bufferPool = GetOrCreate(stream);
 
             if (!bufferPool.TryAcquire(out var buffer))
