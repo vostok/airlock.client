@@ -17,7 +17,7 @@ namespace Vostok.Hercules.Client.Tests
                     () => client.ListStreams(10.Seconds())
                         .Payload
                         .Should()
-                        .Contain(query.Description.Name))
+                        .Contain(query.Name))
                 .ShouldPassIn(20.Seconds());
         }
 

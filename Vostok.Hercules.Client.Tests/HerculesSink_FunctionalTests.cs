@@ -63,12 +63,11 @@ namespace Vostok.Hercules.Client.Tests
             streamClient = new HerculesStreamClient(streamClientSettings, log);
 
             managementClient.CreateStreamAndWait(
-                new CreateStreamQuery(
-                    new StreamDescription(stream)
-                    {
-                        TTL = ttl,
-                        Partitions = 3
-                    }));
+                new CreateStreamQuery(stream)
+                {
+                    TTL = ttl,
+                    Partitions = 3
+                });
         }
 
         [TearDown]
@@ -421,12 +420,11 @@ namespace Vostok.Hercules.Client.Tests
             streamClient.Read(readQuery, timeout).IsSuccessful.Should().BeFalse();
 
             managementClient.CreateStream(
-                new CreateStreamQuery(
-                    new StreamDescription(stream)
-                    {
-                        Partitions = 3,
-                        TTL = 1.Minutes()
-                    }),
+                new CreateStreamQuery(stream)
+                {
+                    Partitions = 3,
+                    TTL = 1.Minutes()
+                },
                 timeout);
 
             streamClient.Read(readQuery, timeout).Payload.Events.Count.Should().Be(0);
