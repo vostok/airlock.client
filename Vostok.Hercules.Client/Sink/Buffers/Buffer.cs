@@ -1,11 +1,10 @@
 using System;
 using System.Text;
 using Vostok.Commons.Binary;
-using Vostok.Hercules.Client.Binary;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
-    internal class Buffer : IBuffer, IHerculesBinaryWriter
+    internal class Buffer : IBuffer
     {
         private readonly BinaryBufferWriter writer;
         private readonly IMemoryManager memoryManager;
@@ -35,8 +34,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         public bool IsOverflowed { get; set; }
         public byte[] Array => writer.Buffer;
         public ArraySegment<byte> FilledSegment => writer.FilledSegment;
-
-        public IHerculesBinaryWriter BeginRecord() => this;
 
         public void Commit(int recordSize)
         {

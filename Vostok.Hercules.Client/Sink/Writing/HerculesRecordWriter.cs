@@ -1,7 +1,7 @@
 ﻿using System;
 using Vostok.Commons.Primitives;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Binary;
+using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Sink.Writing
@@ -21,7 +21,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
             this.maxRecordSize = maxRecordSize;
         }
 
-        public bool TryWrite(IHerculesBinaryWriter binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize)
+        public bool TryWrite(IBuffer binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize)
         {
             var startingPosition = binaryWriter.Position;
 

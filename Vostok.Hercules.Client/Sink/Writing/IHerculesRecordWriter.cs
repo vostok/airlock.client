@@ -1,11 +1,11 @@
 ﻿using System;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Binary;
+using Vostok.Hercules.Client.Sink.Buffers;
 
 namespace Vostok.Hercules.Client.Sink.Writing
 {
     internal interface IHerculesRecordWriter
     {
-        bool TryWrite(IHerculesBinaryWriter binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize);
+        bool TryWrite(IBuffer binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize);
     }
 }

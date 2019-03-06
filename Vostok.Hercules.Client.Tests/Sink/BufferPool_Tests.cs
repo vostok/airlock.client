@@ -74,8 +74,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         public void MakeSnapshot_should_return_acquired_buffer()
         {
             bufferPool.TryAcquire(out var buffer);
-            var writer = buffer.BeginRecord();
-            writer.Write(0);
+            buffer.Write(0);
             buffer.Commit(sizeof(int));
 
             var snapshot = bufferPool.MakeSnapshot();
@@ -87,8 +86,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         public void MakeSnapshot_should_return_released_buffer_with_data()
         {
             bufferPool.TryAcquire(out var buffer);
-            var writer = buffer.BeginRecord();
-            writer.Write(0);
+            buffer.Write(0);
             buffer.Commit(sizeof(int));
             bufferPool.Release(buffer);
 
@@ -112,8 +110,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         {
             bufferPool.TryAcquire(out var buffer);
             bufferPool.TryAcquire(out _);
-            var writer = buffer.BeginRecord();
-            writer.Write(0);
+            buffer.Write(0);
             buffer.Commit(sizeof(int));
 
             var snapshot = bufferPool.MakeSnapshot();

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Vostok.Commons.Threading;
-using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Models;
 
 namespace Vostok.Hercules.Client.Sink.Buffers

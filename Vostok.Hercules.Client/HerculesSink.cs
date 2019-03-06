@@ -119,9 +119,7 @@ namespace Vostok.Hercules.Client
 
             try
             {
-                var binaryWriter = buffer.BeginRecord();
-
-                if (recordWriter.TryWrite(binaryWriter, build, out var recordSize))
+                if (recordWriter.TryWrite(buffer, build, out var recordSize))
                     buffer.Commit(recordSize);
                 else
                     Interlocked.Increment(ref lostRecordsCounter);

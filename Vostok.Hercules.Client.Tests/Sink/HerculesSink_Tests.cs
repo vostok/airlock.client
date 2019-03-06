@@ -11,7 +11,6 @@ using Vostok.Clusterclient.Core.Transport;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Testing;
 using Vostok.Commons.Time;
-using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Sink.Writing;
 using Vostok.Logging.Console;

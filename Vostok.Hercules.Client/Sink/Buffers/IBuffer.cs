@@ -1,10 +1,10 @@
-﻿using Vostok.Hercules.Client.Binary;
+﻿using Vostok.Commons.Binary;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
-    internal interface IBuffer
+    internal interface IBuffer : IBinaryWriter
     {
-        IHerculesBinaryWriter BeginRecord();
+        bool IsOverflowed { get; set; }
         void Commit(int recordSize);
         BufferState GetState();
         bool IsEmpty();
