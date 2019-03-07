@@ -22,5 +22,20 @@ namespace Vostok.Hercules.Client
         /// How many records stored inside internal buffers and waiting to be sent.
         /// </summary>
         public long StoredRecordsCount { get; set; }
+
+        /// <summary>
+        /// How many bytes of records have already been sent.
+        /// </summary>
+        public long SentRecordsSize { get; set; }
+
+        /// <summary>
+        /// How many bytes of records are lost due to memory limit violation and network communication errors.
+        /// </summary>
+        public long LostRecordsSize { get; set; }
+
+        /// <summary>
+        /// How many bytes of records are stored inside internal buffers and waiting to be sent.
+        /// </summary>
+        public long StoredRecordsSize { get; set; }
     }
 }
