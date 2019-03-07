@@ -101,7 +101,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecordsCount.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -140,7 +140,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecordsCount.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -192,7 +192,7 @@ namespace Vostok.Hercules.Client.Tests
 
                 readStreamResult.Status.Should().Be(HerculesStatus.Success);
 
-                new Action(() => sink.SentRecordsCount.Should().Be(writers * countPerWriter)).ShouldPassIn(1.Minutes());
+                new Action(() => sink.GetStatistics().SentRecordsCount.Should().Be(writers * countPerWriter)).ShouldPassIn(1.Minutes());
 
                 foreach (var @event in readStreamResult.Payload.Events)
                 {
@@ -232,7 +232,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecordsCount.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -266,7 +266,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecordsCount.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -386,7 +386,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecordsCount.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 

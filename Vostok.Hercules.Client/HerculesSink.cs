@@ -47,7 +47,7 @@ namespace Vostok.Hercules.Client
         /// <param name="log">An <see cref="ILog"/> instance.</param>
         public HerculesSink(HerculesSinkSettings settings, ILog log)
         {
-            log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
+            this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
             recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion, settings.MaximumRecordSize);
 
@@ -84,24 +84,17 @@ namespace Vostok.Hercules.Client
         }
 
         /// <summary>
-        /// How many records are lost due to memory limit violation and network communication errors.
+        /// <para>Provides diagnostics information about <see cref="HerculesSink"/>.</para>
         /// </summary>
-        public long LostRecordsCount => Interlocked.Read(ref lostRecordsCounter) + recordsSendingDaemon.LostRecordsCount;
-
-        /// <summary>
-        /// How many records already sent with this <see cref="HerculesSink"/>.
-        /// </summary>
-        public long SentRecordsCount =>
-            recordsSendingDaemon.SentRecordsCount;
-
-        /// <summary>
-        /// How many records stored inside <see cref="HerculesSink"/> internal buffers and waiting to be sent.
-        /// </summary>
-        public long StoredRecordsCount =>
-            bufferPools
+        public HerculesSinkStatistics GetStatistics() => new HerculesSinkStatistics
+        {
+            SentRecordsCount = recordsSendingDaemon.SentRecordsCount,
+            LostRecordsCount = Interlocked.Read(ref lostRecordsCounter) + recordsSendingDaemon.LostRecordsCount,
+            StoredRecordsCount = bufferPools
                 .Where(x => x.Value.IsValueCreated)
                 .Select(x => x.Value.Value)
-                .Sum(x => x.GetStoredRecordsCount());
+                .Sum(x => x.GetStoredRecordsCount())
+        };
 
         /// <inheritdoc />
         public void Put(string stream, Action<IHerculesEventBuilder> build)
