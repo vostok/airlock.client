@@ -23,9 +23,6 @@ namespace Vostok.Hercules.Client.Sink.Worker
 
         public TimeSpan GetDelayToNextOccurrence(string stream, bool lastSendingResult, TimeSpan lastSendingElapsed)
         {
-            if (lastSendingResult && memoryManager.IsConsumptionAchievedThreshold(50))
-                return TimeSpan.Zero;
-
             attempts[stream] = CalculateAttempt(stream, lastSendingResult);
             var sendPeriod = Delays.ExponentialWithJitter(requestSendPeriodCap, requestSendPeriod, attempts[stream]);
             var delayToNextOccurrence = lastSendingResult ? sendPeriod - lastSendingElapsed : sendPeriod;
