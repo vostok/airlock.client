@@ -59,5 +59,26 @@ namespace Vostok.Hercules.Client.Tests.Sink
             buffer.Position.Should().Be(2 * sizeof(int));
             buffer.GetState().Should().Be(new BufferState(2 * sizeof(int), 2));
         }
+
+        [Test]
+        public void TryLock_should_return_false_if_buffer_is_already_locked()
+        {
+            var memManager = new MemoryManager(0);
+            var buffer = new Buffer(16, memManager);
+
+            buffer.TryLock().Should().BeTrue();
+            buffer.TryLock().Should().BeFalse();
+        }
+
+        [Test]
+        public void Unlock_should_unlock_buffer()
+        {
+            var memManager = new MemoryManager(0);
+            var buffer = new Buffer(16, memManager);
+
+            buffer.TryLock().Should().BeTrue();
+            buffer.Unlock();
+            buffer.TryLock().Should().BeTrue();
+        }
     }
 }

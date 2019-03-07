@@ -1,7 +1,8 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Abstractions.Models;
 
@@ -37,7 +38,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         {
             var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer);
 
-            if (result) // we can collect garbage not on every iteration
+            if (result)
                 buffer.CollectGarbage();
 
             return result;
@@ -47,6 +48,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         {
             var needToFlush = buffer.GetState().Length > maxBufferSize / 4;
 
+            buffer.Unlock();
             buffers.Enqueue(buffer);
 
             if (needToFlush)
@@ -55,37 +57,26 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public long GetStoredRecordsCount() => buffers.Sum(x => x.GetState().RecordsCount);
 
-        [CanBeNull]
-        public IReadOnlyCollection<IBuffer> MakeSnapshot()
-        {
-            var snapshot = null as List<IBuffer>;
-
-            if (allBuffers.Any(x => x.HasGarbage()))
-                CollectGarbageFromAllBuffers();
-
-            foreach (var buffer in allBuffers)
-            {
-                if (buffer.HasGarbage())
-                    continue;
-
-                if (!buffer.IsEmpty())
-                    (snapshot ?? (snapshot = new List<IBuffer>())).Add(buffer);
-            }
-
-            return snapshot;
-        }
-
         private bool TryDequeueBuffer(out IBuffer buffer)
         {
-            if (!buffers.TryDequeue(out buffer))
-                return false;
+            const int maxDequeueAttempts = 10;
 
-            var state = buffer.GetState();
+            var dequeueAttempts = Math.Min(maxDequeueAttempts, buffers.Count);
 
-            if (state.Length <= maxBufferSize - maxRecordSize)
-                return true;
+            for (var i = 0; i < dequeueAttempts; ++i)
+            {
+                if (!buffers.TryDequeue(out buffer))
+                    return false;
 
-            buffers.Enqueue(buffer);
+                var state = buffer.GetState();
+
+                if (state.Length <= maxBufferSize - maxRecordSize && buffer.TryLock())
+                    return true;
+
+                buffers.Enqueue(buffer);
+            }
+
+            buffer = null;
             return false;
         }
 
@@ -98,25 +89,16 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             }
 
             buffer = new Buffer(initialBufferSize, memoryManager);
+            buffer.TryLock();
 
             allBuffers.Enqueue(buffer);
 
             return true;
         }
 
-        private void CollectGarbageFromAllBuffers()
-        {
-            var count = allBuffers.Count;
-            for (var i = 0; i < count; i++)
-            {
-                // garbage collection from buffers is not thread safe,
-                // so buffer should not be available for write.
-                if (!buffers.TryDequeue(out var buffer))
-                    continue;
+        public IEnumerator<IBuffer> GetEnumerator() => allBuffers.GetEnumerator();
 
-                buffer.CollectGarbage();
-                buffers.Enqueue(buffer);
-            }
-        }
+        IEnumerator IEnumerable.GetEnumerator() =>
+            GetEnumerator();
     }
 }

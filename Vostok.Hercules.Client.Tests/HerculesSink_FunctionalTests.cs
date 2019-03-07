@@ -155,6 +155,7 @@ namespace Vostok.Hercules.Client.Tests
         [Explicit]
         [TestCase(1, 100_000)]
         [TestCase(2, 100_000)]
+        [TestCase(10, 50_000)]
         [TestCase(50, 10_000)]
         public void Should_read_and_write_hercules_events(int writers, int countPerWriter)
         {

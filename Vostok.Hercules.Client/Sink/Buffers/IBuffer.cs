@@ -1,4 +1,5 @@
-﻿using Vostok.Commons.Binary;
+﻿using JetBrains.Annotations;
+using Vostok.Commons.Binary;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
@@ -7,10 +8,10 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         bool IsOverflowed { get; set; }
         void Commit(int recordSize);
         BufferState GetState();
-        bool IsEmpty();
-        BufferSnapshot MakeSnapshot();
+        [CanBeNull] BufferSnapshot TryMakeSnapshot();
         void CollectGarbage();
         void RequestGarbageCollection(BufferState state);
-        bool HasGarbage();
+        bool TryLock();
+        void Unlock();
     }
 }

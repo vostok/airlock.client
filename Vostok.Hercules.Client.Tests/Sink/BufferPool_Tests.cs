@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -26,7 +27,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         public void Should_respect_initialBufferSize_setting()
         {
             bufferPool.TryAcquire(out var buffer).Should().BeTrue();
-            buffer.MakeSnapshot().Buffer.Length.Should().Be(initialBufferSize);
+            buffer.TryMakeSnapshot().Buffer.Length.Should().Be(initialBufferSize);
         }
 
         [TestCase(false)]
@@ -71,49 +72,26 @@ namespace Vostok.Hercules.Client.Tests.Sink
         }
 
         [Test]
-        public void MakeSnapshot_should_return_acquired_buffer()
+        public void Enumerator_should_return_acquired_buffer()
         {
             bufferPool.TryAcquire(out var buffer);
             buffer.Write(0);
             buffer.Commit(sizeof(int));
 
-            var snapshot = bufferPool.MakeSnapshot();
+            var snapshot = bufferPool.ToArray();
 
             snapshot.Should().BeEquivalentTo(buffer);
         }
 
         [Test]
-        public void MakeSnapshot_should_return_released_buffer_with_data()
+        public void Enumerator_should_return_released_buffer_with_data()
         {
             bufferPool.TryAcquire(out var buffer);
             buffer.Write(0);
             buffer.Commit(sizeof(int));
             bufferPool.Release(buffer);
 
-            var snapshot = bufferPool.MakeSnapshot();
-
-            snapshot.Should().BeEquivalentTo(buffer);
-        }
-
-        [Test]
-        public void MakeSnapshot_should_return_null_when_buffers_is_empty()
-        {
-            bufferPool.TryAcquire(out _);
-            bufferPool.TryAcquire(out _);
-            var snapshot = bufferPool.MakeSnapshot();
-
-            snapshot.Should().BeNull();
-        }
-
-        [Test]
-        public void MakeSnapshot_should_return_only_buffers_with_data()
-        {
-            bufferPool.TryAcquire(out var buffer);
-            bufferPool.TryAcquire(out _);
-            buffer.Write(0);
-            buffer.Commit(sizeof(int));
-
-            var snapshot = bufferPool.MakeSnapshot();
+            var snapshot = bufferPool.ToArray();
 
             snapshot.Should().BeEquivalentTo(buffer);
         }

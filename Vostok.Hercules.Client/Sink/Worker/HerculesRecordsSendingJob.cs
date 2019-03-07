@@ -102,14 +102,9 @@ namespace Vostok.Hercules.Client.Sink.Worker
 
         private async Task<bool> PushAsync(string stream, IBufferPool bufferPool, CancellationToken cancellationToken)
         {
-            var buffers = bufferPool.MakeSnapshot();
-
-            if (buffers == null)
-                return false;
-
-            var snapshots = buffers
-                .Select(x => x.MakeSnapshot())
-                .Where(x => x.State.RecordsCount > 0)
+            var snapshots = bufferPool
+                .Select(x => x.TryMakeSnapshot())
+                .Where(x => x != null && x.State.RecordsCount > 0)
                 .ToArray();
 
             if (snapshots.Length == 0)

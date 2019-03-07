@@ -1,11 +1,14 @@
 using System;
 using System.Text;
 using Vostok.Commons.Binary;
+using Vostok.Commons.Threading;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
     internal class Buffer : IBuffer
     {
+        private readonly AtomicBoolean isLockedForWrite = new AtomicBoolean(false);
+        
         private readonly BinaryBufferWriter writer;
         private readonly IMemoryManager memoryManager;
 
@@ -43,18 +46,35 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public BufferState GetState() => committed.Value;
 
-        public bool IsEmpty() => writer.Position == 0;
+        public BufferSnapshot TryMakeSnapshot()
+        {
+            return TryCollectGarbage() 
+                ? new BufferSnapshot(this, writer.Buffer, committed.Value)
+                : null;
+        }
 
-        public BufferSnapshot MakeSnapshot() =>
-            new BufferSnapshot(this, writer.Buffer, committed.Value);
+        private bool TryCollectGarbage()
+        {
+            if (garbage.Value.Length == 0)
+                return true;
+            
+            if (isLockedForWrite.TrySetTrue())
+            {
+                CollectGarbage();
+                isLockedForWrite.Value = false;
+                return true;
+            }
+
+            return false;
+        }
 
         public void RequestGarbageCollection(BufferState state)
         {
             garbage.Value = state;
         }
 
-        public bool HasGarbage() =>
-            garbage.Value.RecordsCount != 0;
+        public bool TryLock() => isLockedForWrite.TrySetTrue();
+        public void Unlock() => isLockedForWrite.Value = false;
 
         /// <summary>
         /// <threadsafety>This method is NOT threadsafe and should be called only when buffer is not available for write.</threadsafety>
