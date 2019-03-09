@@ -8,7 +8,10 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         bool IsOverflowed { get; set; }
         void Commit(int recordSize);
         BufferState GetState();
-        [CanBeNull] BufferSnapshot TryMakeSnapshot();
+
+        [CanBeNull]
+        BufferSnapshot TryMakeSnapshot();
+
         void CollectGarbage();
         void RequestGarbageCollection(BufferState state);
         bool TryLock();

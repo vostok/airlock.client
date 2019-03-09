@@ -101,7 +101,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -140,7 +140,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -155,6 +155,7 @@ namespace Vostok.Hercules.Client.Tests
         [Explicit]
         [TestCase(1, 100_000)]
         [TestCase(2, 100_000)]
+        [TestCase(2, 250_000)]
         [TestCase(10, 50_000)]
         [TestCase(50, 10_000)]
         public void Should_read_and_write_hercules_events(int writers, int countPerWriter)
@@ -192,7 +193,7 @@ namespace Vostok.Hercules.Client.Tests
 
                 readStreamResult.Status.Should().Be(HerculesStatus.Success);
 
-                new Action(() => sink.GetStatistics().SentRecordsCount.Should().Be(writers * countPerWriter)).ShouldPassIn(1.Minutes());
+                new Action(() => sink.GetStatistics().SentRecords.Count.Should().Be(writers * countPerWriter)).ShouldPassIn(1.Minutes());
 
                 foreach (var @event in readStreamResult.Payload.Events)
                 {
@@ -232,7 +233,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -266,7 +267,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -386,7 +387,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecordsCount.Should().Be(1);
+            sink.GetStatistics().SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 

@@ -5,7 +5,7 @@ using Vostok.Hercules.Client.Sink.Buffers;
 
 namespace Vostok.Hercules.Client.Sink.Requests
 {
-    internal class RequestContentFactory : IBodyFormatter
+    internal class RequestContentFactory : IRequestContentFactory
     {
         public CompositeContent CreateContent(ArraySegment<BufferSnapshot> snapshots, out int recordsCount)
         {

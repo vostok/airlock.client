@@ -1,12 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Vostok.Hercules.Client.Sink.Worker
+namespace Vostok.Hercules.Client.Sink.Daemon
 {
-    internal interface IHerculesRecordsSendingJob
+    internal interface IRecordsSendingJob
     {
-        long SentRecordsCount { get; }
-        long LostRecordsCount { get; }
         Task WaitNextOccurrenceAsync();
         Task RunAsync(CancellationToken cancellationToken = default);
     }

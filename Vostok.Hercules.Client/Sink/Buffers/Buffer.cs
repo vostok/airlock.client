@@ -8,7 +8,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
     internal class Buffer : IBuffer
     {
         private readonly AtomicBoolean isLockedForWrite = new AtomicBoolean(false);
-        
+
         private readonly BinaryBufferWriter writer;
         private readonly IMemoryManager memoryManager;
 
@@ -32,7 +32,12 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             get => writer.Position;
             set => writer.Position = value;
         }
-        public Endianness Endianness { get; set; }
+
+        public Endianness Endianness
+        {
+            get => Endianness.Big;
+            set => throw new NotSupportedException();
+        }
 
         public bool IsOverflowed { get; set; }
         public byte[] Array => writer.Buffer;
@@ -48,24 +53,9 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public BufferSnapshot TryMakeSnapshot()
         {
-            return TryCollectGarbage() 
+            return TryCollectGarbage()
                 ? new BufferSnapshot(this, writer.Buffer, committed.Value)
                 : null;
-        }
-
-        private bool TryCollectGarbage()
-        {
-            if (garbage.Value.Length == 0)
-                return true;
-            
-            if (isLockedForWrite.TrySetTrue())
-            {
-                CollectGarbage();
-                isLockedForWrite.Value = false;
-                return true;
-            }
-
-            return false;
         }
 
         public void RequestGarbageCollection(BufferState state)
@@ -267,6 +257,21 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 return;
 
             writer.Write(value);
+        }
+
+        private bool TryCollectGarbage()
+        {
+            if (garbage.Value.Length == 0)
+                return true;
+
+            if (isLockedForWrite.TrySetTrue())
+            {
+                CollectGarbage();
+                isLockedForWrite.Value = false;
+                return true;
+            }
+
+            return false;
         }
 
         private bool TryEnsureAvailableBytes(int amount)

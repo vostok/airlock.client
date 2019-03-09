@@ -9,33 +9,33 @@ namespace Vostok.Hercules.Client
     public class HerculesSinkStatistics
     {
         /// <summary>
-        /// How many records have already been sent.
+        /// Statistics about records that already have been sent.
         /// </summary>
-        public long SentRecordsCount { get; set; }
-        
-        /// <summary>
-        /// How many records are lost due to memory limit violation and network communication errors.
-        /// </summary>
-        public long LostRecordsCount { get; set; }
-        
-        /// <summary>
-        /// How many records stored inside internal buffers and waiting to be sent.
-        /// </summary>
-        public long StoredRecordsCount { get; set; }
+        public (long Count, long Size) SentRecords { get; set; }
 
         /// <summary>
-        /// How many bytes of records have already been sent.
+        /// Statistics about records that lost due to non-retriable sending errors.
         /// </summary>
-        public long SentRecordsSize { get; set; }
+        public (long Count, long Size) LostRecords { get; set; }
 
         /// <summary>
-        /// How many bytes of records are lost due to memory limit violation and network communication errors.
+        /// Statistics about records that stored inside internal buffers and waiting to be sent.
         /// </summary>
-        public long LostRecordsSize { get; set; }
+        public (long Count, long Size) StoredRecords { get; set; }
 
         /// <summary>
-        /// How many bytes of records are stored inside internal buffers and waiting to be sent.
+        /// How many records are lost due to exception in record building delegate.
         /// </summary>
-        public long StoredRecordsSize { get; set; }
+        public long WriteFailuresCount { get; set; }
+
+        /// <summary>
+        /// How many records are lost because they are large than <see cref="HerculesSinkSettings.MaximumRecordSize"/>.
+        /// </summary>
+        public long TooLargeRecordsCount { get; set; }
+
+        /// <summary>
+        /// How many records are lost due to memory limit violation.
+        /// </summary>
+        public long OverflowsCount { get; set; }
     }
 }

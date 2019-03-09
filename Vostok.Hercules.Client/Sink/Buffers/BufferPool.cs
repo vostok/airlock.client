@@ -2,9 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using Vostok.Commons.Threading;
-using Vostok.Hercules.Client.Abstractions.Models;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
@@ -30,8 +28,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             this.maxBufferSize = maxBufferSize;
         }
 
-        public StreamSettings Settings { get; set; } = new StreamSettings();
-
         public AsyncManualResetEvent NeedToFlushEvent { get; } = new AsyncManualResetEvent(false);
 
         public bool TryAcquire(out IBuffer buffer)
@@ -55,7 +51,21 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 NeedToFlushEvent.Set();
         }
 
-        public long GetStoredRecordsCount() => buffers.Sum(x => x.GetState().RecordsCount);
+        public (long count, long size) GetStoredRecordsStatistics()
+        {
+            long count = 0, size = 0;
+
+            foreach (var buffer in this)
+            {
+                var state = buffer.GetState();
+                count += state.RecordsCount;
+                size += state.Length;
+            }
+
+            return (count, size);
+        }
+
+        public IEnumerator<IBuffer> GetEnumerator() => allBuffers.GetEnumerator();
 
         private bool TryDequeueBuffer(out IBuffer buffer)
         {
@@ -95,8 +105,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
             return true;
         }
-
-        public IEnumerator<IBuffer> GetEnumerator() => allBuffers.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
