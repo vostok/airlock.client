@@ -14,7 +14,5 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         void CollectGarbage();
         void RequestGarbageCollection(BufferState state);
-        bool TryLock();
-        void Unlock();
     }
 }

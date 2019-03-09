@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Vostok.Commons.Threading;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
@@ -28,8 +27,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             this.maxBufferSize = maxBufferSize;
         }
 
-        public AsyncManualResetEvent NeedToFlushEvent { get; } = new AsyncManualResetEvent(false);
-
         public bool TryAcquire(out IBuffer buffer)
         {
             var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer);
@@ -42,16 +39,15 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Release(IBuffer buffer)
         {
-            var needToFlush = buffer.GetState().Length > maxBufferSize / 4;
+            Unlock(buffer);
 
-            buffer.Unlock();
             buffers.Enqueue(buffer);
-
-            if (needToFlush)
-                NeedToFlushEvent.Set();
         }
 
         public IEnumerator<IBuffer> GetEnumerator() => allBuffers.GetEnumerator();
+
+        private static void Unlock(IBuffer buffer) => (buffer as Buffer)?.Unlock();
+        private static bool TryLock(IBuffer buffer) => (buffer as Buffer)?.TryLock() ?? true;
 
         private bool TryDequeueBuffer(out IBuffer buffer)
         {
@@ -66,7 +62,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
                 var state = buffer.GetState();
 
-                if (state.Length <= maxBufferSize - maxRecordSize && buffer.TryLock())
+                if (state.Length <= maxBufferSize - maxRecordSize && TryLock(buffer))
                     return true;
 
                 buffers.Enqueue(buffer);
@@ -85,14 +81,13 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             }
 
             buffer = new Buffer(initialBufferSize, memoryManager);
-            buffer.TryLock();
+            TryLock(buffer);
 
             allBuffers.Enqueue(buffer);
 
             return true;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() =>
-            GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
