@@ -14,9 +14,9 @@ namespace Vostok.Hercules.Client.Sink
         private long storedRecordsCount;
         private long storedRecordsSize;
 
-        public HerculesSinkStatistics Get()
+        public HerculesSinkCounters Get()
         {
-            return new HerculesSinkStatistics
+            return new HerculesSinkCounters
             {
                 LostRecords = ReadTupleAtomic(ref lostRecordsCount, ref lostRecordsSize),
                 SentRecords = ReadTupleAtomic(ref sentRecordsCount, ref sentRecordsSize),

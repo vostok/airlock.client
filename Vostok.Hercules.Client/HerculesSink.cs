@@ -108,14 +108,16 @@ namespace Vostok.Hercules.Client
         /// </summary>
         public HerculesSinkStatistics GetStatistics()
         {
-            var stats = new HerculesSinkStatistics();
+            var stats = new HerculesSinkCounters();
 
-            var streamsStats = streamStates
+            var perStreamStats = streamStates
                 .Where(x => x.Value.IsValueCreated)
-                .Select(x => x.Value.Value.State.Statistics.Get());
+                .ToDictionary(x => x.Key, x => x.Value.Value.State.Statistics.Get());
 
-            foreach (var streamStats in streamsStats)
+            foreach (var pair in perStreamStats)
             {
+                var streamStats = pair.Value;
+
                 stats.LostRecords = Sum(stats.LostRecords, streamStats.LostRecords);
                 stats.SentRecords = Sum(stats.SentRecords, streamStats.SentRecords);
                 stats.StoredRecords = Sum(stats.SentRecords, streamStats.StoredRecords);
@@ -124,7 +126,11 @@ namespace Vostok.Hercules.Client
                 stats.TooLargeRecordsCount += streamStats.TooLargeRecordsCount;
             }
 
-            return stats;
+            return new HerculesSinkStatistics
+            {
+                Global = stats,
+                Stream = perStreamStats
+            };
         }
 
         /// <inheritdoc />

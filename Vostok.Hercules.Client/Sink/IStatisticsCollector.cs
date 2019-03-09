@@ -2,7 +2,7 @@ namespace Vostok.Hercules.Client.Sink
 {
     internal interface IStatisticsCollector
     {
-        HerculesSinkStatistics Get();
+        HerculesSinkCounters Get();
         void ReportTooLargeRecord();
         void ReportWriteFailure();
         void ReportOverflow();

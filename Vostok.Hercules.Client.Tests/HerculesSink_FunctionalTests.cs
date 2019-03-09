@@ -101,7 +101,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecords.Count.Should().Be(1);
+            sink.GetStatistics().Global.SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -140,7 +140,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecords.Count.Should().Be(1);
+            sink.GetStatistics().Global.SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -193,7 +193,7 @@ namespace Vostok.Hercules.Client.Tests
 
                 readStreamResult.Status.Should().Be(HerculesStatus.Success);
 
-                new Action(() => sink.GetStatistics().SentRecords.Count.Should().Be(writers * countPerWriter)).ShouldPassIn(1.Minutes());
+                new Action(() => sink.GetStatistics().Global.SentRecords.Count.Should().Be(writers * countPerWriter)).ShouldPassIn(1.Minutes());
 
                 foreach (var @event in readStreamResult.Payload.Events)
                 {
@@ -233,7 +233,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecords.Count.Should().Be(1);
+            sink.GetStatistics().Global.SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -267,7 +267,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecords.Count.Should().Be(1);
+            sink.GetStatistics().Global.SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
@@ -387,7 +387,7 @@ namespace Vostok.Hercules.Client.Tests
 
             streamClient.WaitForAnyRecord(stream);
 
-            sink.GetStatistics().SentRecords.Count.Should().Be(1);
+            sink.GetStatistics().Global.SentRecords.Count.Should().Be(1);
 
             var readStreamResult = streamClient.Read(readQuery, timeout);
 
