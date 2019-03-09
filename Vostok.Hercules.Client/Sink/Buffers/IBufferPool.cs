@@ -6,6 +6,5 @@ namespace Vostok.Hercules.Client.Sink.Buffers
     {
         bool TryAcquire(out IBuffer buffer);
         void Release(IBuffer buffer);
-        (long count, long size) GetStoredRecordsStatistics();
     }
 }

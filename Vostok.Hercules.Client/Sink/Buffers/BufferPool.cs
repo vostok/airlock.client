@@ -51,20 +51,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 NeedToFlushEvent.Set();
         }
 
-        public (long count, long size) GetStoredRecordsStatistics()
-        {
-            long count = 0, size = 0;
-
-            foreach (var buffer in this)
-            {
-                var state = buffer.GetState();
-                count += state.RecordsCount;
-                size += state.Length;
-            }
-
-            return (count, size);
-        }
-
         public IEnumerator<IBuffer> GetEnumerator() => allBuffers.GetEnumerator();
 
         private bool TryDequeueBuffer(out IBuffer buffer)

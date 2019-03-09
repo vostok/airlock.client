@@ -34,8 +34,5 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                     return false;
             }
         }
-
-        public bool IsConsumptionAchievedThreshold(int percent) =>
-            currentSize * (100.0 / percent) > maxSize;
     }
 }
