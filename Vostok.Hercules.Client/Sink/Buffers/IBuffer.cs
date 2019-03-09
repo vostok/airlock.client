@@ -7,7 +7,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
     {
         bool IsOverflowed { get; set; }
         void Commit(int recordSize);
-        BufferState GetState();
+        long GetUsefulLength();
 
         [CanBeNull]
         BufferSnapshot TryMakeSnapshot();

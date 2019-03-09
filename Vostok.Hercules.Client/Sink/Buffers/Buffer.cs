@@ -50,6 +50,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         }
 
         public BufferState GetState() => committed.Value;
+        public long GetUsefulLength() => committed.Value.Length - garbage.Value.Length;
 
         public BufferSnapshot TryMakeSnapshot()
         {
@@ -82,9 +83,9 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 0,
                 (int)writer.Position - garbageState.Length);
 
+            garbage.Value = default;
             writer.Position -= garbageState.Length;
             committed.Value -= garbageState;
-            garbage.Value = default;
         }
 
         public void Write(int value)
