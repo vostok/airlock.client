@@ -11,15 +11,15 @@ namespace Vostok.Hercules.Client.Sink.Daemon
         private readonly object startLock = new object();
 
         private readonly ILog log;
-        private readonly IRecordsSendingJob job;
+        private readonly IScheduler scheduler;
 
         private readonly CancellationTokenSource daemonCancellation;
         private Task daemonTask;
 
-        public RecordsSendingDaemon(ILog log, IRecordsSendingJob job)
+        public RecordsSendingDaemon(ILog log, IScheduler scheduler)
         {
             this.log = log;
-            this.job = job;
+            this.scheduler = scheduler;
 
             daemonCancellation = new CancellationTokenSource();
         }
@@ -45,18 +45,16 @@ namespace Vostok.Hercules.Client.Sink.Daemon
             daemonTask?.SilentlyContinue()?.GetAwaiter().GetResult();
             daemonCancellation.Dispose();
 
-            job.RunAsync().SilentlyContinue().GetAwaiter().GetResult();
+            scheduler.Dispose();
+            ;
         }
 
         private async Task StartAsync()
         {
             try
             {
-                while (!daemonCancellation.IsCancellationRequested)
-                {
-                    await job.WaitNextOccurrenceAsync().ConfigureAwait(false);
-                    await job.RunAsync(daemonCancellation.Token).ConfigureAwait(false);
-                }
+                Console.WriteLine("start");
+                await scheduler.RunAsync(daemonCancellation.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -65,6 +63,10 @@ namespace Vostok.Hercules.Client.Sink.Daemon
             catch (Exception exception)
             {
                 log.Fatal(exception);
+            }
+            finally
+            {
+                Console.WriteLine("end");
             }
         }
     }

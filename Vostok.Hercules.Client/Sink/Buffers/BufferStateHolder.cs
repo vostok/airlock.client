@@ -2,7 +2,7 @@ using System.Threading;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
-    internal struct BufferStateHolder
+    internal class BufferStateHolder
     {
         private long state;
 

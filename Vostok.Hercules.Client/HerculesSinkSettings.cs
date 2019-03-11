@@ -72,5 +72,7 @@ namespace Vostok.Hercules.Client
         /// <para>Timeout of requests to Hercules gateway.</para>
         /// </summary>
         public TimeSpan RequestTimeout { get; set; } = 30.Seconds();
+
+        public int MaximumSendingParallelism { get; set; } = 2;
     }
 }

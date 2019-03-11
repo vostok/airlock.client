@@ -1,4 +1,4 @@
-namespace Vostok.Hercules.Client.Sink
+namespace Vostok.Hercules.Client.Sink.Statistics
 {
     internal interface IStatisticsCollector
     {

@@ -1,73 +1,153 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Commons.Helpers.Extensions;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Sink.Sending;
+using Vostok.Hercules.Client.Sink.StreamState;
+using Vostok.Hercules.Client.Utilities;
+using WaitingJob = System.Threading.Tasks.Task<string>;
+using RunningJob = System.Threading.Tasks.Task<(string stream, Vostok.Hercules.Client.Sink.Sending.StreamSendResult result)>;
 
 namespace Vostok.Hercules.Client.Sink.Daemon
 {
-    internal class RecordsSendingJob : IRecordsSendingJob
+    internal class Scheduler : IScheduler
     {
-        private readonly IReadOnlyDictionary<string, Lazy<StreamContext>> streamContexts;
-        private readonly WeakReference<IHerculesSink> sinkWeakReference;
-        private readonly TimeSpan timeout;
+        private readonly Dictionary<string, (IStreamSender sender, IPlanner planner)> senders = new Dictionary<string, (IStreamSender, IPlanner)>();
 
-        public RecordsSendingJob(
+        private readonly IStreamSenderFactory senderFactory;
+        private readonly WeakReference<IHerculesSink> sinkReference;
+        private readonly ConcurrentDictionary<string, Lazy<IStreamState>> states;
+        private readonly HerculesSinkSettings settings;
+        private readonly List<RunningJob> runningJobs = new List<RunningJob>();
+        private readonly List<WaitingJob> waitingJobs = new List<WaitingJob>();
+
+        public Scheduler(
             IHerculesSink sink,
-            IReadOnlyDictionary<string, Lazy<StreamContext>> streamContexts,
-            TimeSpan timeout)
+            ConcurrentDictionary<string, Lazy<IStreamState>> states,
+            HerculesSinkSettings settings,
+            IStreamSenderFactory senderFactory)
         {
-            sinkWeakReference = new WeakReference<IHerculesSink>(sink);
-
-            this.streamContexts = streamContexts;
-            this.timeout = timeout;
+            sinkReference = new WeakReference<IHerculesSink>(sink);
+            this.states = states;
+            this.settings = settings;
+            this.senderFactory = senderFactory;
         }
 
-        public async Task RunAsync(CancellationToken cancellationToken = default)
+        public async Task RunAsync(CancellationToken cancellationToken)
         {
-            var sendAny = false;
+            using (cancellationToken.CreateTask(out var cancellationTask))
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    if (SinkIsCollectedByGC() && AllBuffersIsEmpty())
+                        return;
 
-            foreach (var pair in streamContexts)
+                    LookForNewStreams(cancellationToken);
+
+                    var task = await WaitForNextTaskAsync(cancellationTask).ConfigureAwait(false);
+
+                    switch (task)
+                    {
+                        case RunningJob runningJob:
+                            var (stream, result) = runningJob.GetAwaiter().GetResult();
+                            runningJobs.Remove(runningJob);
+                            waitingJobs.Add(CreateWaiterAsync(stream, result, cancellationToken));
+                            break;
+                        case WaitingJob waitingJob:
+                            var nextStream = waitingJob.GetAwaiter().GetResult();
+                            waitingJobs.Remove(waitingJob);
+                            runningJobs.Add(RunJobAsync(nextStream, cancellationToken));
+                            break;
+                        default:
+                            task.GetAwaiter().GetResult();
+                            break;
+                    }
+                }
+        }
+
+        public void Dispose()
+        {
+            CompleteAllRunningJobs();
+            foreach (var sender in senders)
+                sender.Value.sender
+                    .SendAsync(settings.RequestTimeout, CancellationToken.None)
+                    .SilentlyContinue()
+                    .GetAwaiter()
+                    .GetResult();
+        }
+
+        private bool AllBuffersIsEmpty()
+        {
+            return states
+                .Where(x => x.Value.IsValueCreated)
+                .All(x => x.Value.Value.Statistics.EstimateStoredSize() == 0);
+        }
+
+        private void LookForNewStreams(CancellationToken cancellationToken)
+        {
+            foreach (var pair in states.Select(x => x))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var streamStateLazy = pair.Value;
-
-                if (!streamStateLazy.IsValueCreated)
+                if (!pair.Value.IsValueCreated)
                     continue;
 
-                var streamState = streamStateLazy.Value;
+                var stream = pair.Key;
 
-                if (!streamState.Sender.Signal.IsCompleted)
+                if (senders.ContainsKey(stream))
                     continue;
 
-                var sendingResult = await streamState.Sender.SendAsync(timeout, cancellationToken).ConfigureAwait(false);
+                var streamState = pair.Value.Value;
 
-                if (sendingResult == SendResult.Success)
-                    sendAny = true;
+                var (sender, planner) = senderFactory.Create(streamState);
+                senders[pair.Key] = (sender, planner);
+                waitingJobs.Add(CreateWaiterAsync(stream, StreamSendResult.Success, cancellationToken));
             }
-
-            if (!sendAny && SinkIsCollectedByGC())
-                throw new OperationCanceledException();
         }
 
-        public Task WaitNextOccurrenceAsync()
+        private Task<Task> WaitForNextTaskAsync(Task cancellationTask)
         {
-            var delays = streamContexts
-                .Select(x => x.Value)
-                .Where(x => x.IsValueCreated)
-                .Select(x => x.Value.Sender.Signal);
+            var tasks = new List<Task>();
 
-            return Task.WhenAny(delays);
+            tasks.AddRange(runningJobs);
+
+            if (runningJobs.Count < settings.MaximumSendingParallelism)
+                tasks.AddRange(waitingJobs);
+
+            if (tasks.Count == 0)
+                tasks.Add(Task.Delay(settings.RequestSendPeriod));
+
+            tasks.Add(cancellationTask);
+
+            return Task.WhenAny(tasks);
+        }
+
+        private async WaitingJob CreateWaiterAsync(string stream, StreamSendResult result, CancellationToken cancellationToken)
+        {
+            var (_, planner) = senders[stream];
+            await planner.WaitForNextSendAsync(result, cancellationToken).ConfigureAwait(false);
+            return stream;
+        }
+
+        private async RunningJob RunJobAsync(string stream, CancellationToken cancellationToken)
+        {
+            var (sender, _) = senders[stream];
+            var result = await sender.SendAsync(settings.RequestTimeout, cancellationToken).ConfigureAwait(false);
+            return (stream, result);
+        }
+
+        private void CompleteAllRunningJobs()
+        {
+            foreach (var job in runningJobs)
+                job.SilentlyContinue().GetAwaiter().GetResult();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool SinkIsCollectedByGC()
         {
-            return !sinkWeakReference.TryGetTarget(out _);
+            return !sinkReference.TryGetTarget(out _);
         }
     }
 }

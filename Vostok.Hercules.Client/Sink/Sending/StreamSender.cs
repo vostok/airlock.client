@@ -7,6 +7,7 @@ using Vostok.Commons.Primitives;
 using Vostok.Hercules.Client.Gateway;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
+using Vostok.Hercules.Client.Sink.StreamState;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Sink.Sending
@@ -33,7 +34,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
             this.log = log;
         }
 
-        public async Task<SendResult> SendAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public async Task<StreamSendResult> SendAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             var snapshots = state
                 .BufferPool
@@ -42,7 +43,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
                 .ToArray();
 
             if (snapshots.Length == 0)
-                return SendResult.NothingToSend;
+                return StreamSendResult.NothingToSend;
 
             foreach (var snapshot in batcher.Batch(snapshots))
             {
@@ -51,10 +52,10 @@ namespace Vostok.Hercules.Client.Sink.Sending
                 var apiKeyProvider = state.Settings.ApiKeyProvider;
 
                 if (!await PushAsync(state.StreamName, snapshot, apiKeyProvider, timeout, cancellationToken).ConfigureAwait(false))
-                    return SendResult.Failure;
+                    return StreamSendResult.Failure;
             }
 
-            return SendResult.Success;
+            return StreamSendResult.Success;
         }
 
         private static void RequestGarbageCollection(ArraySegment<BufferSnapshot> snapshots)
