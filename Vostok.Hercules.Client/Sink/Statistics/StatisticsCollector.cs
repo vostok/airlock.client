@@ -18,9 +18,9 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         {
             return new HerculesSinkCounters
             {
-                LostRecords = ReadTupleAtomic(ref lostRecordsCount, ref lostRecordsSize),
-                SentRecords = ReadTupleAtomic(ref sentRecordsCount, ref sentRecordsSize),
-                StoredRecords = ReadTupleAtomic(ref storedRecordsCount, ref storedRecordsSize),
+                LostRecords = ReadTuple(ref lostRecordsCount, ref lostRecordsSize),
+                SentRecords = ReadTuple(ref sentRecordsCount, ref sentRecordsSize),
+                StoredRecords = ReadTuple(ref storedRecordsCount, ref storedRecordsSize),
                 WriteFailuresCount = Interlocked.Read(ref writeFailures)
             };
         }
@@ -57,7 +57,7 @@ namespace Vostok.Hercules.Client.Sink.Statistics
 
         public long EstimateStoredSize() => Interlocked.Read(ref storedRecordsSize);
 
-        private static (long, long) ReadTupleAtomic(ref long a, ref long b) =>
+        private static (long, long) ReadTuple(ref long a, ref long b) =>
             (Interlocked.Read(ref a), Interlocked.Read(ref b));
     }
 }
