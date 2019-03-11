@@ -46,14 +46,12 @@ namespace Vostok.Hercules.Client.Sink.Daemon
             daemonCancellation.Dispose();
 
             scheduler.Dispose();
-            ;
         }
 
         private async Task StartAsync()
         {
             try
             {
-                Console.WriteLine("start");
                 await scheduler.RunAsync(daemonCancellation.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException)

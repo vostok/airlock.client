@@ -117,8 +117,11 @@ namespace Vostok.Hercules.Client
                 .Where(x => x.Value.IsValueCreated)
                 .ToDictionary(x => x.Key, x => x.Value.Value.Statistics.Get());
 
-            var stats = perStreamStats.Aggregate(new HerculesSinkCounters(), (result, pair) => result + pair.Value);
+            var stats = new HerculesSinkCounters();
 
+            foreach (var value in perStreamStats.Values)
+                stats += value;
+            
             return new HerculesSinkStatistics
             {
                 Global = stats,

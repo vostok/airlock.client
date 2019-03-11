@@ -12,8 +12,8 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         private readonly BinaryBufferWriter writer;
         private readonly IMemoryManager memoryManager;
 
-        private BufferStateHolder committed;
-        private BufferStateHolder garbage;
+        private readonly BufferStateHolder committed = new BufferStateHolder();
+        private readonly BufferStateHolder garbage = new BufferStateHolder();
 
         public Buffer(int bufferSize, IMemoryManager memoryManager)
         {
