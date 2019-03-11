@@ -37,5 +37,24 @@ namespace Vostok.Hercules.Client
         /// How many records are lost due to memory limit violation.
         /// </summary>
         public long OverflowsCount { get; internal set; }
+
+        /// <summary>
+        /// Sums two <see cref="HerculesSinkCounters"/> field-by-field.
+        /// </summary>
+        public static HerculesSinkCounters operator+(HerculesSinkCounters a, HerculesSinkCounters b)
+        {
+            return new HerculesSinkCounters
+            {
+
+                LostRecords = Sum(a.LostRecords, b.LostRecords),
+                SentRecords = Sum(a.SentRecords, b.SentRecords),
+                StoredRecords = Sum(a.SentRecords, b.StoredRecords),
+                OverflowsCount = a.OverflowsCount + b.OverflowsCount,
+                WriteFailuresCount = a.WriteFailuresCount + b.WriteFailuresCount,
+                TooLargeRecordsCount = a.TooLargeRecordsCount + b.TooLargeRecordsCount
+            };
+            
+            (long, long) Sum((long, long) x, (long, long) y) => (x.Item1 + y.Item1, x.Item2 + y.Item2);
+        }
     }
 }

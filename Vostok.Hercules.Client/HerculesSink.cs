@@ -113,23 +113,11 @@ namespace Vostok.Hercules.Client
         /// </summary>
         public HerculesSinkStatistics GetStatistics()
         {
-            var stats = new HerculesSinkCounters();
-
             var perStreamStats = streamStates
                 .Where(x => x.Value.IsValueCreated)
                 .ToDictionary(x => x.Key, x => x.Value.Value.Statistics.Get());
 
-            foreach (var pair in perStreamStats)
-            {
-                var streamStats = pair.Value;
-
-                stats.LostRecords = Sum(stats.LostRecords, streamStats.LostRecords);
-                stats.SentRecords = Sum(stats.SentRecords, streamStats.SentRecords);
-                stats.StoredRecords = Sum(stats.SentRecords, streamStats.StoredRecords);
-                stats.OverflowsCount += streamStats.OverflowsCount;
-                stats.WriteFailuresCount += streamStats.WriteFailuresCount;
-                stats.TooLargeRecordsCount += streamStats.TooLargeRecordsCount;
-            }
+            var stats = perStreamStats.Aggregate(new HerculesSinkCounters(), (result, pair) => result + pair.Value);
 
             return new HerculesSinkStatistics
             {
@@ -151,8 +139,6 @@ namespace Vostok.Hercules.Client
             if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
                 recordsSendingDaemon.Dispose();
         }
-
-        private (long, long) Sum((long, long) a, (long, long) b) => (a.Item1 + b.Item1, a.Item2 + b.Item2);
 
         private void WriteRecord(Action<IHerculesEventBuilder> build, IStatisticsCollector statistics, IBuffer buffer, AsyncManualResetEvent sendSignal)
         {
