@@ -6,22 +6,22 @@ using Vostok.Hercules.Client.Abstractions.Events;
 
 namespace Vostok.Hercules.Client.Sink.Writing
 {
-    internal class HerculesRecordPayloadBuilderWithCounter : IHerculesTagsBuilder, IDisposable
+    internal class RecordPayloadBuilderWithCounter : IHerculesTagsBuilder, IDisposable
     {
         private readonly IBinaryWriter binaryWriter;
         private readonly long countPosition;
-        private readonly HerculesRecordPayloadBuilder builder;
+        private readonly RecordPayloadBuilder builder;
 
         private ushort counter;
 
-        public HerculesRecordPayloadBuilderWithCounter(IBinaryWriter binaryWriter)
+        public RecordPayloadBuilderWithCounter(IBinaryWriter binaryWriter)
         {
             this.binaryWriter = binaryWriter;
 
             countPosition = binaryWriter.Position;
             binaryWriter.Write((ushort)0);
 
-            builder = new HerculesRecordPayloadBuilder(binaryWriter);
+            builder = new RecordPayloadBuilder(binaryWriter);
         }
 
         public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)

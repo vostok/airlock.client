@@ -28,7 +28,7 @@ namespace Vostok.Hercules.Client
 
         private readonly ILog log;
 
-        private readonly IHerculesRecordWriter recordWriter;
+        private readonly IRecordWriter recordWriter;
 
         private readonly IRecordsSendingDaemon recordsSendingDaemon;
 
@@ -49,7 +49,7 @@ namespace Vostok.Hercules.Client
 
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
-            recordWriter = new HerculesRecordWriter(log, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion, settings.MaximumRecordSize);
+            recordWriter = new RecordWriter(log, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion, settings.MaximumRecordSize);
 
             streamStates = new ConcurrentDictionary<string, Lazy<IStreamState>>();
 

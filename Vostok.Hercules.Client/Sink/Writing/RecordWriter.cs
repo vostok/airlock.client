@@ -6,14 +6,14 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Sink.Writing
 {
-    internal class HerculesRecordWriter : IHerculesRecordWriter
+    internal class RecordWriter : IRecordWriter
     {
         private readonly ILog log;
         private readonly Func<DateTimeOffset> timeProvider;
         private readonly byte recordVersion;
         private readonly int maxRecordSize;
 
-        public HerculesRecordWriter(ILog log, Func<DateTimeOffset> timeProvider, byte recordVersion, int maxRecordSize)
+        public RecordWriter(ILog log, Func<DateTimeOffset> timeProvider, byte recordVersion, int maxRecordSize)
         {
             this.log = log;
             this.timeProvider = timeProvider;
@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
                 binaryWriter.IsOverflowed = false;
                 binaryWriter.Write(recordVersion);
 
-                using (var builder = new HerculesEventBuilder(binaryWriter, timeProvider))
+                using (var builder = new EventBuilder(binaryWriter, timeProvider))
                     build.Invoke(builder);
 
                 if (binaryWriter.IsOverflowed)

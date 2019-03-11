@@ -78,6 +78,6 @@ namespace Vostok.Hercules.Client.Tests.Sink
 
         private static BinaryBufferWriter CreateWriter() => new BinaryBufferWriter(0) {Endianness = Endianness.Big};
 
-        private static HerculesRecordPayloadBuilder CreateBuilder(IBinaryWriter writer) => new HerculesRecordPayloadBuilder(writer);
+        private static RecordPayloadBuilder CreateBuilder(IBinaryWriter writer) => new RecordPayloadBuilder(writer);
     }
 }

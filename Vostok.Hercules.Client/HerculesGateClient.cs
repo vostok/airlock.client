@@ -11,8 +11,8 @@ using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Gateway;
+using Vostok.Hercules.Client.Sink.Writing;
 using Vostok.Logging.Abstractions;
-using HerculesEventBuilder = Vostok.Hercules.Client.Sink.Writing.HerculesEventBuilder;
 
 namespace Vostok.Hercules.Client
 {
@@ -68,7 +68,7 @@ namespace Vostok.Hercules.Client
             body.Write(query.Events.Count);
             foreach (var @event in query.Events)
             {
-                var eventBuilder = new HerculesEventBuilder(body, () => PreciseDateTime.UtcNow);
+                var eventBuilder = new EventBuilder(body, () => PreciseDateTime.UtcNow);
                 eventBuilder
                     .SetTimestamp(@event.Timestamp)
                     .AddTags(@event.Tags);

@@ -6,16 +6,16 @@ using Vostok.Hercules.Client.Abstractions.Events;
 
 namespace Vostok.Hercules.Client.Sink.Writing
 {
-    internal class HerculesEventBuilder : IHerculesEventBuilder, IDisposable
+    internal class EventBuilder : IHerculesEventBuilder, IDisposable
     {
         private readonly IBinaryWriter binaryWriter;
         private readonly Func<DateTimeOffset> timeProvider;
         private readonly long timestampPosition;
-        private readonly HerculesRecordPayloadBuilderWithCounter builder;
+        private readonly RecordPayloadBuilderWithCounter builder;
 
         private DateTimeOffset timestampInternal;
 
-        public HerculesEventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
+        public EventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
         {
             this.binaryWriter = binaryWriter;
             this.timeProvider = timeProvider;
@@ -24,7 +24,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
             binaryWriter.Write(0L);
             binaryWriter.Write(Guid.NewGuid());
 
-            builder = new HerculesRecordPayloadBuilderWithCounter(binaryWriter);
+            builder = new RecordPayloadBuilderWithCounter(binaryWriter);
         }
 
         public IHerculesEventBuilder SetTimestamp(DateTimeOffset timestamp)
