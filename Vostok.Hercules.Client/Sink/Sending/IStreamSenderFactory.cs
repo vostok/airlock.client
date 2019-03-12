@@ -35,7 +35,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
         public (IStreamSender, IPlanner) Create(IStreamState state)
         {
             var sender = new StreamSender(state, batcher, contentFactory, requestSender, log);
-            var planner = new Planner(state.SendSignal, settings.RequestSendPeriod, settings.RequestSendPeriodCap);
+            var planner = new Planner(state.SendSignal, settings.SendPeriod, settings.SendPeriodCap);
 
             return (sender, planner);
         }

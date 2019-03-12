@@ -117,7 +117,7 @@ namespace Vostok.Hercules.Client.Sink.Daemon
                 tasks.AddRange(waitingJobs);
 
             if (tasks.Count == 0)
-                tasks.Add(Task.Delay(settings.RequestSendPeriod));
+                tasks.Add(Task.Delay(settings.SendPeriod));
 
             tasks.Add(cancellationTask);
 

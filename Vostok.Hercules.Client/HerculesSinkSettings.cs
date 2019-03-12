@@ -61,12 +61,12 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// <para>Base delay between attempts of sending records to Hercules gateway.</para>
         /// </summary>
-        public TimeSpan RequestSendPeriod { get; set; } = 2.Seconds();
+        public TimeSpan SendPeriod { get; set; } = 2.Seconds();
 
         /// <summary>
         /// <para>Maximum delay between attempts of sending records to Hercules gateway.</para>
         /// </summary>
-        public TimeSpan RequestSendPeriodCap { get; set; } = 5.Minutes();
+        public TimeSpan SendPeriodCap { get; set; } = 5.Minutes();
 
         /// <summary>
         /// <para>Timeout of requests to Hercules gateway.</para>
