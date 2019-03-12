@@ -62,10 +62,6 @@ namespace Vostok.Hercules.Client.Sink.Daemon
             {
                 log.Fatal(exception);
             }
-            finally
-            {
-                Console.WriteLine("end");
-            }
         }
     }
 }
