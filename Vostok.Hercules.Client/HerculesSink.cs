@@ -74,6 +74,17 @@ namespace Vostok.Hercules.Client
             recordsSendingDaemon = new RecordsSendingDaemon(log, scheduler);
         }
 
+        internal HerculesSink(
+            IRecordWriter recordWriter,
+            IRecordsSendingDaemon recordsSendingDaemon,
+            HerculesSinkSettings settings,
+            ILog log)
+        {
+            this.recordWriter = recordWriter;
+            this.recordsSendingDaemon = recordsSendingDaemon;
+            this.settings = settings;
+        }
+
         /// <inheritdoc />
         public void Put(string stream, Action<IHerculesEventBuilder> build)
         {
@@ -121,7 +132,7 @@ namespace Vostok.Hercules.Client
 
             foreach (var value in perStreamStats.Values)
                 stats += value;
-            
+
             return new HerculesSinkStatistics
             {
                 Global = stats,
