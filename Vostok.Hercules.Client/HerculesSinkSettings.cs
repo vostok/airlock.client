@@ -73,6 +73,10 @@ namespace Vostok.Hercules.Client
         /// </summary>
         public TimeSpan RequestTimeout { get; set; } = 30.Seconds();
 
+        /// <summary>
+        /// <para>Maximum number of streams from which records can be sent in parallel.</para>
+        /// </summary>
+        /// TODO: rename to StreamLevelParallelism?
         public int MaximumSendingParallelism { get; set; } = 2;
     }
 }
