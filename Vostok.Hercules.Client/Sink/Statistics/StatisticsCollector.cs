@@ -36,8 +36,8 @@ namespace Vostok.Hercules.Client.Sink.Statistics
             Interlocked.Add(ref lostRecordsCount, count);
             Interlocked.Add(ref lostRecordsSize, size);
 
-            Interlocked.Add(ref storedRecordsCount, count);
-            Interlocked.Add(ref sentRecordsSize, size);
+            Interlocked.Add(ref storedRecordsCount, -count);
+            Interlocked.Add(ref storedRecordsSize, -size);
         }
 
         public void ReportSuccessfulSending(long count, long size)
@@ -45,8 +45,8 @@ namespace Vostok.Hercules.Client.Sink.Statistics
             Interlocked.Add(ref sentRecordsCount, count);
             Interlocked.Add(ref sentRecordsSize, size);
 
-            Interlocked.Add(ref storedRecordsCount, count);
-            Interlocked.Add(ref sentRecordsSize, size);
+            Interlocked.Add(ref storedRecordsCount, -count);
+            Interlocked.Add(ref storedRecordsSize, -size);
         }
 
         public void ReportWrittenRecord(long size)
