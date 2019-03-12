@@ -301,7 +301,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 return false;
 
             if (currentLength + currentLength > maxSize)
-                return TryResize(maxSize) || TryResize((int) maxPositionAfterWrite);
+                return TryResize(maxSize);
 
             var reserveAmount = Math.Max(currentLength, maxPositionAfterWrite - currentLength);
 
