@@ -15,7 +15,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         [Test]
         public void Should_return_single_batch_for_single_snapshot()
         {
-            var snapshots = new[] {new BufferSnapshot(null, null, new BufferState(10, 4))};
+            var snapshots = new[] {new BufferSnapshot(null, new BufferState(10, 4), null)};
             var segments = batcher.Batch(snapshots).ToArray();
 
             segments.Should().HaveCount(1);
@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
                     new BufferState(10, 4),
                     new BufferState(14, 2),
                     new BufferState(20, 3)
-                }.Select(x => new BufferSnapshot(null, null, x))
+                }.Select(x => new BufferSnapshot(null, x, null))
                 .ToArray();
             var segments = batcher.Batch(snapshots).ToArray();
 
@@ -47,7 +47,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
                     new BufferState(14, 2),
                     new BufferState(1000, 2),
                     new BufferState(20, 3)
-                }.Select(x => new BufferSnapshot(null, null, x))
+                }.Select(x => new BufferSnapshot(null, x, null))
                 .ToArray();
             var segments = batcher.Batch(snapshots).ToArray();
 
@@ -62,7 +62,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
             var totalLength = snapshotLength * snapshotCount;
             var expectedBatchCount = Math.DivRem(totalLength, MaxBatchSize, out var rem) + (rem == 0 ? 0 : 1);
 
-            var snapshots = Enumerable.Repeat(new BufferState(snapshotLength, 4), snapshotCount).Select(x => new BufferSnapshot(null, null, x)).ToArray();
+            var snapshots = Enumerable.Repeat(new BufferState(snapshotLength, 4), snapshotCount).Select(x => new BufferSnapshot(null, x, null)).ToArray();
             var segments = batcher.Batch(snapshots).ToArray();
 
             segments.Should().HaveCount(expectedBatchCount);

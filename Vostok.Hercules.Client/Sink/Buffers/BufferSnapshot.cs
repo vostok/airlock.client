@@ -4,7 +4,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 {
     internal class BufferSnapshot
     {
-        public BufferSnapshot(IBuffer parent, byte[] buffer, BufferState state)
+        public BufferSnapshot(IBuffer parent, BufferState state, byte[] buffer)
         {
             Parent = parent;
             Buffer = buffer;

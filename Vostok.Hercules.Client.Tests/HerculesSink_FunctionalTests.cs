@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
+using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Topology;
+using Vostok.Clusterclient.Core.Transport;
 using Vostok.Clusterclient.Topology.CC;
 using Vostok.ClusterConfig.Client;
 using Vostok.Commons.Testing;
@@ -441,5 +444,33 @@ namespace Vostok.Hercules.Client.Tests
             Thread.Sleep(20.Seconds());
             // see for cpu usage
         }
+
+        [Test]
+        public void t()
+        {
+            var herculesSink = new HerculesSink(new HerculesSinkSettings(
+                new FixedClusterProvider(new Uri("http://localhost:10101")), () => "api"), new SilentLog());
+
+            var sw = Stopwatch.StartNew();
+            while (sw.Elapsed < TimeSpan.FromSeconds(1))
+                herculesSink.Put("some", builder => builder.AddValue("a", "ololololololo"));
+
+            
+            Thread.Sleep(5000);
+            var stats = herculesSink.GetStatistics().Global;
+            Console.WriteLine(stats.SentRecords);
+            Console.WriteLine(stats.LostRecords);
+        }
+    }
+    
+    internal class tr : ITransport
+    {
+        public async Task<Response> SendAsync(Request request, TimeSpan? connectionTimeout, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            await Task.Delay(1, cancellationToken);
+            return Responses.Ok;
+        }
+
+        public TransportCapabilities Capabilities { get; } = TransportCapabilities.RequestStreaming | TransportCapabilities.ResponseStreaming | TransportCapabilities.RequestCompositeBody;
     }
 }

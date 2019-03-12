@@ -56,8 +56,9 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public BufferSnapshot TryMakeSnapshot()
         {
+            // (epeshk): we should read committed.Value BEFORE acquiring a buffer because buffer may be changed on resizing.
             return TryCollectGarbage()
-                ? new BufferSnapshot(this, writer.Buffer, committed.Value)
+                ? new BufferSnapshot(this, committed.Value, writer.Buffer)
                 : null;
         }
 
@@ -85,9 +86,10 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 0,
                 (int)writer.Position - garbageState.Length);
 
-            garbage.Value = default;
             writer.Position -= garbageState.Length;
             committed.Value -= garbageState;
+            // (epeshk): reset garbage state at last for synchronization with MakeSnapshot
+            garbage.Value = default;
         }
 
         public void Write(int value)
