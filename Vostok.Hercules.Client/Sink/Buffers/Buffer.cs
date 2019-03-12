@@ -10,18 +10,20 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         private readonly AtomicBoolean isLockedForWrite = new AtomicBoolean(false);
 
         private readonly BinaryBufferWriter writer;
+        private readonly int maxSize;
         private readonly IMemoryManager memoryManager;
 
         private readonly BufferStateHolder committed = new BufferStateHolder();
         private readonly BufferStateHolder garbage = new BufferStateHolder();
 
-        public Buffer(int bufferSize, IMemoryManager memoryManager)
+        public Buffer(int bufferSize, int maxSize, IMemoryManager memoryManager)
         {
             writer = new BinaryBufferWriter(bufferSize)
             {
                 Endianness = Endianness.Big
             };
 
+            this.maxSize = maxSize;
             this.memoryManager = memoryManager;
 
             committed.Value = default;
@@ -90,7 +92,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(int value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(int)))
+            if (!EnsureAvailableBytes(sizeof(int)))
                 return;
 
             writer.Write(value);
@@ -98,7 +100,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(long value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(long)))
+            if (!EnsureAvailableBytes(sizeof(long)))
                 return;
 
             writer.Write(value);
@@ -106,7 +108,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(short value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(short)))
+            if (!EnsureAvailableBytes(sizeof(short)))
                 return;
 
             writer.Write(value);
@@ -114,7 +116,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(double value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(double)))
+            if (!EnsureAvailableBytes(sizeof(double)))
                 return;
 
             writer.Write(value);
@@ -122,7 +124,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(float value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(float)))
+            if (!EnsureAvailableBytes(sizeof(float)))
                 return;
 
             writer.Write(value);
@@ -130,7 +132,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(byte value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(byte)))
+            if (!EnsureAvailableBytes(sizeof(byte)))
                 return;
 
             writer.Write(value);
@@ -138,7 +140,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(bool value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(bool)))
+            if (!EnsureAvailableBytes(sizeof(bool)))
                 return;
 
             writer.Write(value);
@@ -146,7 +148,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(ushort value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(ushort)))
+            if (!EnsureAvailableBytes(sizeof(ushort)))
                 return;
 
             writer.Write(value);
@@ -156,7 +158,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         {
             const int size = 16;
 
-            if (!TryEnsureAvailableBytes(size))
+            if (!EnsureAvailableBytes(size))
                 return;
 
             writer.Write(value);
@@ -164,7 +166,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithoutLength(string value)
         {
-            if (!TryEnsureAvailableBytes(Encoding.UTF8.GetMaxByteCount(value.Length)))
+            if (!EnsureAvailableBytes(Encoding.UTF8.GetMaxByteCount(value.Length)))
                 return;
 
             writer.WriteWithoutLength(value);
@@ -172,7 +174,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithLength(string value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(int) + Encoding.UTF8.GetMaxByteCount(value.Length)))
+            if (!EnsureAvailableBytes(sizeof(int) + Encoding.UTF8.GetMaxByteCount(value.Length)))
                 return;
 
             writer.WriteWithLength(value);
@@ -180,7 +182,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithLength(byte[] value, int offset, int length)
         {
-            if (!TryEnsureAvailableBytes(sizeof(int) + length))
+            if (!EnsureAvailableBytes(sizeof(int) + length))
                 return;
 
             writer.WriteWithLength(value, offset, length);
@@ -188,7 +190,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithoutLength(byte[] value, int offset, int length)
         {
-            if (!TryEnsureAvailableBytes(length))
+            if (!EnsureAvailableBytes(length))
                 return;
 
             writer.WriteWithoutLength(value, offset, length);
@@ -197,7 +199,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         public int WriteVarlen(uint value)
         {
             // ReSharper disable once ConvertIfStatementToReturnStatement
-            if (!TryEnsureAvailableBytes(sizeof(uint) + 1))
+            if (!EnsureAvailableBytes(sizeof(uint) + 1))
                 return 0;
 
             return writer.WriteVarlen(value);
@@ -206,7 +208,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         public int WriteVarlen(ulong value)
         {
             // ReSharper disable once ConvertIfStatementToReturnStatement
-            if (!TryEnsureAvailableBytes(sizeof(ulong) + 1))
+            if (!EnsureAvailableBytes(sizeof(ulong) + 1))
                 return 0;
 
             return writer.WriteVarlen(value);
@@ -214,7 +216,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithLength(string value, Encoding encoding)
         {
-            if (!TryEnsureAvailableBytes(sizeof(int) + encoding.GetMaxByteCount(value.Length)))
+            if (!EnsureAvailableBytes(sizeof(int) + encoding.GetMaxByteCount(value.Length)))
                 return;
 
             writer.WriteWithLength(value);
@@ -222,7 +224,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithoutLength(string value, Encoding encoding)
         {
-            if (!TryEnsureAvailableBytes(encoding.GetMaxByteCount(value.Length)))
+            if (!EnsureAvailableBytes(encoding.GetMaxByteCount(value.Length)))
                 return;
 
             writer.WriteWithoutLength(value);
@@ -230,7 +232,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithLength(byte[] value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(int) + value.Length))
+            if (!EnsureAvailableBytes(sizeof(int) + value.Length))
                 return;
 
             writer.WriteWithLength(value);
@@ -238,7 +240,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(uint value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(uint)))
+            if (!EnsureAvailableBytes(sizeof(uint)))
                 return;
 
             writer.Write(value);
@@ -246,7 +248,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithoutLength(byte[] value)
         {
-            if (!TryEnsureAvailableBytes(value.Length))
+            if (!EnsureAvailableBytes(value.Length))
                 return;
 
             writer.WriteWithoutLength(value);
@@ -254,7 +256,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(ulong value)
         {
-            if (!TryEnsureAvailableBytes(sizeof(ulong)))
+            if (!EnsureAvailableBytes(sizeof(ulong)))
                 return;
 
             writer.Write(value);
@@ -275,26 +277,43 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             return false;
         }
 
+        private bool EnsureAvailableBytes(int amount)
+        {
+            if (TryEnsureAvailableBytes(amount))
+                return true;
+
+            IsOverflowed = true;
+            return false;
+        }
+
         private bool TryEnsureAvailableBytes(int amount)
         {
             if (IsOverflowed)
                 return false;
 
             var currentLength = writer.Buffer.Length;
-            var maxLengthAfterWrite = writer.Position + amount;
+            var maxPositionAfterWrite = writer.Position + amount;
 
-            if (currentLength >= maxLengthAfterWrite)
+            if (currentLength >= maxPositionAfterWrite)
                 return true;
 
-            var remainingBytes = currentLength - writer.Position;
-            var reserveAmount = Math.Max(currentLength, amount - remainingBytes);
-
-            if (!memoryManager.TryReserveBytes(reserveAmount))
-            {
-                IsOverflowed = true;
+            if (maxPositionAfterWrite > maxSize)
                 return false;
-            }
 
+            if (currentLength + currentLength > maxSize)
+                return TryResize(maxSize) || TryResize((int) maxPositionAfterWrite);
+
+            var reserveAmount = Math.Max(currentLength, maxPositionAfterWrite - currentLength);
+
+            return memoryManager.TryReserveBytes(reserveAmount);
+        }
+
+        private bool TryResize(int capacity)
+        {
+            if (!memoryManager.TryReserveBytes(capacity - writer.Buffer.Length))
+                return false;
+
+            writer.Resize(capacity);
             return true;
         }
     }

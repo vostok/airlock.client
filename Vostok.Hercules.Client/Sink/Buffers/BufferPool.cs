@@ -78,7 +78,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 return false;
             }
 
-            buffer = new Buffer(initialBufferSize, memoryManager);
+            buffer = new Buffer(initialBufferSize, maxBufferSize, memoryManager);
             TryLock(buffer);
 
             allBuffers.Enqueue(buffer);
