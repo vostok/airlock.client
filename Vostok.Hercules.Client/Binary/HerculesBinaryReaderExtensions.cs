@@ -5,7 +5,6 @@ using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Sink.Writing;
-using HerculesEventBuilder = Vostok.Hercules.Client.Abstractions.Events.HerculesEventBuilder;
 
 namespace Vostok.Hercules.Client.Binary
 {

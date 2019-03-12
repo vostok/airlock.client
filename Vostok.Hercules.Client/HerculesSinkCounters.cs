@@ -45,7 +45,6 @@ namespace Vostok.Hercules.Client
         {
             return new HerculesSinkCounters
             {
-
                 LostRecords = Sum(a.LostRecords, b.LostRecords),
                 SentRecords = Sum(a.SentRecords, b.SentRecords),
                 StoredRecords = Sum(a.SentRecords, b.StoredRecords),
@@ -53,7 +52,7 @@ namespace Vostok.Hercules.Client
                 WriteFailuresCount = a.WriteFailuresCount + b.WriteFailuresCount,
                 TooLargeRecordsCount = a.TooLargeRecordsCount + b.TooLargeRecordsCount
             };
-            
+
             (long, long) Sum((long, long) x, (long, long) y) => (x.Item1 + y.Item1, x.Item2 + y.Item2);
         }
     }

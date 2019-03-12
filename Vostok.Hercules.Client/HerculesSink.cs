@@ -63,7 +63,7 @@ namespace Vostok.Hercules.Client
             var contentFactory = new RequestContentFactory();
 
             var senderFactory = new StreamSenderFactory(batcher, contentFactory, requestSender, log);
-            
+
             var plannerFactory = new PlannerFactory(settings);
 
             streamStateFactory = new StreamStateFactory(settings, memoryManager);
