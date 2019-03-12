@@ -166,18 +166,26 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void WriteWithoutLength(string value)
         {
-            if (!EnsureAvailableBytes(Encoding.UTF8.GetMaxByteCount(value.Length)))
+            if (TryEnsureAvailableBytes(Encoding.UTF8.GetMaxByteCount(value.Length)))
+                writer.WriteWithoutLength(value);
+
+            if (!EnsureAvailableBytes(value.Length))
                 return;
 
-            writer.WriteWithoutLength(value);
+            var bytes = Encoding.UTF8.GetBytes(value);
+            WriteWithoutLength(bytes);
         }
 
         public void WriteWithLength(string value)
         {
-            if (!EnsureAvailableBytes(sizeof(int) + Encoding.UTF8.GetMaxByteCount(value.Length)))
+            if (TryEnsureAvailableBytes(sizeof(int) + Encoding.UTF8.GetMaxByteCount(value.Length)))
+                writer.WriteWithLength(value);
+
+            if (!EnsureAvailableBytes(sizeof(int) + value.Length))
                 return;
 
-            writer.WriteWithLength(value);
+            var bytes = Encoding.UTF8.GetBytes(value);
+            WriteWithLength(bytes);
         }
 
         public void WriteWithLength(byte[] value, int offset, int length)
