@@ -2,7 +2,7 @@
 using Vostok.Commons.Threading;
 using Vostok.Commons.Time;
 
-namespace Vostok.Hercules.Client.Sink.Sending
+namespace Vostok.Hercules.Client.Sink.Planner
 {
     internal static class Delays
     {

@@ -11,6 +11,7 @@ using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Gateway;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Daemon;
+using Vostok.Hercules.Client.Sink.Planner;
 using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.Sending;
 using Vostok.Hercules.Client.Sink.Statistics;
@@ -61,7 +62,9 @@ namespace Vostok.Hercules.Client
 
             var contentFactory = new RequestContentFactory();
 
-            var senderFactory = new StreamSenderFactory(settings, batcher, contentFactory, requestSender, log);
+            var senderFactory = new StreamSenderFactory(batcher, contentFactory, requestSender, log);
+            
+            var plannerFactory = new PlannerFactory(settings);
 
             streamStateFactory = new StreamStateFactory(settings, memoryManager);
 
@@ -69,7 +72,8 @@ namespace Vostok.Hercules.Client
                 this,
                 streamStates,
                 settings,
-                senderFactory);
+                senderFactory,
+                plannerFactory);
 
             recordsSendingDaemon = new RecordsSendingDaemon(log, scheduler);
         }

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Helpers.Extensions;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.Sink.Planner;
 using Vostok.Hercules.Client.Sink.Sending;
 using Vostok.Hercules.Client.Sink.StreamState;
 using Vostok.Hercules.Client.Utilities;
@@ -20,6 +21,7 @@ namespace Vostok.Hercules.Client.Sink.Daemon
         private readonly Dictionary<string, (IStreamSender sender, IPlanner planner)> senders = new Dictionary<string, (IStreamSender, IPlanner)>();
 
         private readonly IStreamSenderFactory senderFactory;
+        private readonly IPlannerFactory plannerFactory;
         private readonly WeakReference<IHerculesSink> sinkReference;
         private readonly ConcurrentDictionary<string, Lazy<IStreamState>> states;
         private readonly HerculesSinkSettings settings;
@@ -30,12 +32,14 @@ namespace Vostok.Hercules.Client.Sink.Daemon
             IHerculesSink sink,
             ConcurrentDictionary<string, Lazy<IStreamState>> states,
             HerculesSinkSettings settings,
-            IStreamSenderFactory senderFactory)
+            IStreamSenderFactory senderFactory,
+            IPlannerFactory plannerFactory)
         {
             sinkReference = new WeakReference<IHerculesSink>(sink);
             this.states = states;
             this.settings = settings;
             this.senderFactory = senderFactory;
+            this.plannerFactory = plannerFactory;
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
@@ -101,7 +105,9 @@ namespace Vostok.Hercules.Client.Sink.Daemon
 
                 var streamState = pair.Value.Value;
 
-                var (sender, planner) = senderFactory.Create(streamState);
+                var sender = senderFactory.Create(streamState);
+                var planner = plannerFactory.Create(streamState);
+
                 senders[pair.Key] = (sender, planner);
                 waitingJobs.Add(CreateWaiterAsync(stream, StreamSendResult.Success, cancellationToken));
             }
