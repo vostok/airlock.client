@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading;
 using JetBrains.Annotations;
 using Vostok.Commons.Threading;
 using Vostok.Commons.Time;
@@ -26,73 +25,53 @@ namespace Vostok.Hercules.Client
     public class HerculesSink : IHerculesSink, IDisposable
     {
         private readonly HerculesSinkSettings settings;
-
+        private readonly IRecordWriter recordWriter;
+        private readonly IRecordsSendingDaemon sendingDaemon;
+        private readonly IStreamStateFactory stateFactory;
         private readonly ILog log;
 
-        private readonly IRecordWriter recordWriter;
-
-        private readonly IRecordsSendingDaemon recordsSendingDaemon;
-
-        private readonly IStreamStateFactory streamStateFactory;
-
         private readonly ConcurrentDictionary<string, Lazy<IStreamState>> streamStates;
+        private readonly AtomicBoolean isDisposed;
 
-        private int isDisposed;
-
-        /// <summary>
-        /// Creates a new instance of <see cref="HerculesSink"/>.
-        /// </summary>
-        /// <param name="settings">Settings of this <see cref="HerculesSink"/></param>
-        /// <param name="log">An <see cref="ILog"/> instance.</param>
-        public HerculesSink(HerculesSinkSettings settings, ILog log)
+        public HerculesSink([NotNull] HerculesSinkSettings settings, [CanBeNull] ILog log)
+            : this(settings, null, null, null, log)
         {
-            this.settings = settings;
-
-            this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
-
-            recordWriter = new RecordWriter(log, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion, settings.MaximumRecordSize);
-
-            streamStates = new ConcurrentDictionary<string, Lazy<IStreamState>>();
+            recordWriter = new RecordWriter(this.log, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion, settings.MaximumRecordSize);
 
             var memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
-
-            var requestSender = new RequestSender(settings.Cluster, log, settings.ApiKeyProvider, settings.ClusterClientSetup);
-
             var batcher = new BufferSnapshotBatcher(settings.MaximumBatchSize);
-
             var contentFactory = new RequestContentFactory();
-
-            var senderFactory = new StreamSenderFactory(batcher, contentFactory, requestSender, log);
-
+            var requestSender = new RequestSender(settings.Cluster, this.log, settings.ApiKeyProvider, settings.ClusterClientSetup);
+            var senderFactory = new StreamSenderFactory(batcher, contentFactory, requestSender, this.log);
             var plannerFactory = new PlannerFactory(settings);
+            var scheduler = new Scheduler(this, streamStates, settings, senderFactory, plannerFactory);
 
-            streamStateFactory = new StreamStateFactory(settings, memoryManager);
-
-            var scheduler = new Scheduler(
-                this,
-                streamStates,
-                settings,
-                senderFactory,
-                plannerFactory);
-
-            recordsSendingDaemon = new RecordsSendingDaemon(log, scheduler);
+            stateFactory = new StreamStateFactory(settings, memoryManager);
+            sendingDaemon = new RecordsSendingDaemon(this.log, scheduler);
         }
 
         internal HerculesSink(
-            IRecordWriter recordWriter,
-            IRecordsSendingDaemon recordsSendingDaemon,
             HerculesSinkSettings settings,
+            IRecordWriter recordWriter,
+            IRecordsSendingDaemon sendingDaemon,
+            IStreamStateFactory stateFactory,
             ILog log)
         {
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
+
             this.recordWriter = recordWriter;
-            this.recordsSendingDaemon = recordsSendingDaemon;
-            this.settings = settings;
+            this.sendingDaemon = sendingDaemon;
+            this.stateFactory = stateFactory;
+
+            streamStates = new ConcurrentDictionary<string, Lazy<IStreamState>>();
+            isDisposed = new AtomicBoolean(false);
         }
 
         /// <inheritdoc />
         public void Put(string stream, Action<IHerculesEventBuilder> build)
         {
-            if (IsDisposed())
+            if (isDisposed)
             {
                 LogDisposed();
                 return;
@@ -101,7 +80,7 @@ namespace Vostok.Hercules.Client
             if (!ValidateParameters(stream, build))
                 return;
 
-            var streamState = GetOrCreate(stream);
+            var streamState = ObtainStreamState(stream);
             var statistics = streamState.Statistics;
             var bufferPool = streamState.BufferPool;
 
@@ -120,7 +99,7 @@ namespace Vostok.Hercules.Client
                 bufferPool.Release(buffer);
             }
 
-            recordsSendingDaemon.Initialize();
+            sendingDaemon.Initialize();
         }
 
         /// <summary>
@@ -141,17 +120,14 @@ namespace Vostok.Hercules.Client
         }
 
         /// <inheritdoc />
-        public void ConfigureStream(string stream, StreamSettings settings)
-        {
-            var streamState = GetOrCreate(stream);
-            streamState.Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        }
+        public void ConfigureStream(string stream, StreamSettings streamSettings)
+            => ObtainStreamState(stream).Settings = streamSettings ?? throw new ArgumentNullException(nameof(streamSettings));
 
         /// <inheritdoc />
         public void Dispose()
         {
-            if (Interlocked.CompareExchange(ref isDisposed, 1, 0) == 0)
-                recordsSendingDaemon.Dispose();
+            if (isDisposed.TrySetTrue())
+                sendingDaemon.Dispose();
         }
 
         private void WriteRecord(Action<IHerculesEventBuilder> build, IStatisticsCollector statistics, IBuffer buffer, AsyncManualResetEvent sendSignal)
@@ -203,15 +179,10 @@ namespace Vostok.Hercules.Client
             return true;
         }
 
-        private IStreamState GetOrCreate(string stream) =>
-            streamStates.GetOrAdd(
-                    stream,
-                    s => new Lazy<IStreamState>(() => streamStateFactory.Create(s)))
+        [NotNull]
+        private IStreamState ObtainStreamState([NotNull] string stream) =>
+            streamStates
+                .GetOrAdd(stream, s => new Lazy<IStreamState>(() => stateFactory.Create(s)))
                 .Value;
-
-        private bool IsDisposed()
-        {
-            return isDisposed == 1;
-        }
     }
 }
