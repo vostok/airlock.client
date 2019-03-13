@@ -17,8 +17,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Title>Vostok Hercules client library</Title>
-    <Description>An implementations of clients to Hercules services: Gateway, Stream API, Timeline API.</Description>
+    <Title>Vostok.Hercules.Client</Title>
+    <Description>Implementations of clients to following Hercules services: Gate, Stream, Timeline APIs. Also contains HerculesSink — a nonblocking gate client that sends the data in the background.</Description>
   </PropertyGroup>
 
   <PropertyGroup>

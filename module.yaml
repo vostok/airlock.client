@@ -11,7 +11,9 @@ notests *default:
     - module vostok.clusterclient.core
 
   deps:
+    - vostok.devtools
     - vostok.hercules.client.abstractions
+    - vostok.logging.abstractions
     - vostok.clusterclient.core
     - vostok.clusterclient.transport
     - vostok.commons.helpers/src
@@ -19,18 +21,17 @@ notests *default:
     - vostok.commons.threading/src
     - vostok.commons.binary/src
     - vostok.commons.primitives/src
-    - vostok.devtools
-    - vostok.logging.abstractions
 
 full-build > notests: 
   deps:
+    - vostok.logging.console
     - vostok.configuration.abstractions
     - vostok.clusterconfig.client.abstractions
-    - vostok.logging.console
-    - vostok.hercules.client.management
     - vostok.clusterconfig.client
     - vostok.clusterclient.topology.cc
+    - vostok.hercules.client.management
     - vostok.commons.testing/src
+
   build:
     target: Vostok.Hercules.Client.sln
     configuration: Release
