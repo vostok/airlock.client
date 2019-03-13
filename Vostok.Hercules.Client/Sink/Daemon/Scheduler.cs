@@ -119,7 +119,7 @@ namespace Vostok.Hercules.Client.Sink.Daemon
 
             tasks.AddRange(runningJobs);
 
-            if (runningJobs.Count < settings.MaximumSendingParallelism)
+            if (runningJobs.Count < settings.MaxParallelStreams)
                 tasks.AddRange(waitingJobs);
 
             if (tasks.Count == 0)
