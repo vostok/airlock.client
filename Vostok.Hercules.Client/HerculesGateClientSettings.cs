@@ -5,27 +5,27 @@ using Vostok.Clusterclient.Core.Topology;
 namespace Vostok.Hercules.Client
 {
     /// <summary>
-    /// Represents a settings of <see cref="HerculesGateClient"/>.
+    /// Represents configuration of <see cref="HerculesGateClient"/>.
     /// </summary>
     [PublicAPI]
     public class HerculesGateClientSettings
     {
-        /// <param name="cluster">An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules Gateway service.</param>
-        /// <param name="apiKeyProvider">Delegate that returns Hercules gateway API key with write access.</param>
-        public HerculesGateClientSettings(IClusterProvider cluster, Func<string> apiKeyProvider)
+        public HerculesGateClientSettings([NotNull] IClusterProvider cluster, [NotNull] Func<string> apiKeyProvider)
         {
-            Cluster = cluster;
-            ApiKeyProvider = apiKeyProvider;
+            Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
+            ApiKeyProvider = apiKeyProvider ?? throw new ArgumentNullException(nameof(apiKeyProvider));
         }
 
         /// <summary>
-        /// <para>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules Gateway service.</para>
+        /// <para>An <see cref="IClusterProvider"/> implementation that provides replicas of Hercules gate service.</para>
         /// </summary>
-        public IClusterProvider Cluster { get; set; }
+        [NotNull]
+        public IClusterProvider Cluster { get; }
 
         /// <summary>
-        /// <para>Delegate that returns Hercules gateway API key with write access.</para>
+        /// <para>Delegate that returns Hercules gate API key with write access.</para>
         /// </summary>
-        public Func<string> ApiKeyProvider { get; set; }
+        [NotNull]
+        public Func<string> ApiKeyProvider { get; }
     }
 }
