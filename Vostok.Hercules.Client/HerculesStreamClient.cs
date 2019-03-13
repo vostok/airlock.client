@@ -14,7 +14,7 @@ using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
-using Vostok.Hercules.Client.Binary;
+using Vostok.Hercules.Client.Serialization;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -125,7 +125,7 @@ namespace Vostok.Hercules.Client
 
             for (var i = 0; i < events.Length; i++)
             {
-                events[i] = reader.ReadEvent();
+                events[i] = HerculesEventReader.ReadEvent(reader);
             }
 
             return (events, positions);

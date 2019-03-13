@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Binary;
+using Vostok.Hercules.Client.Sink.Helpers;
 
 namespace Vostok.Hercules.Client.Sink.Writing
 {

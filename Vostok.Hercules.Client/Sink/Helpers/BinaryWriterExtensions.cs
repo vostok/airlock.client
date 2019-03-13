@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Sink.Writing;
 
-namespace Vostok.Hercules.Client.Binary
+namespace Vostok.Hercules.Client.Sink.Helpers
 {
     internal static class BinaryWriterExtensions
     {

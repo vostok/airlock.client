@@ -6,20 +6,22 @@ using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Sink.Writing;
 
-namespace Vostok.Hercules.Client.Binary
+namespace Vostok.Hercules.Client.Serialization
 {
-    internal static class HerculesBinaryReaderExtensions
+    internal static class HerculesEventReader
     {
-        public static HerculesEvent ReadEvent(this IBinaryReader reader)
+        public static HerculesEvent ReadEvent(IBinaryReader reader)
         {
             var builder = new HerculesEventBuilder();
             var version = reader.ReadByte();
             if (version != Constants.ProtocolVersion)
                 throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
+
             var timestamp = EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64());
             builder.SetTimestamp(timestamp);
             reader.ReadGuid();
             reader.ReadContainer(builder);
+
             return builder.BuildEvent();
         }
 
@@ -71,10 +73,7 @@ namespace Vostok.Hercules.Client.Binary
                         ReadVector(reader, builder, key);
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException(
-                            nameof(valueType),
-                            valueType,
-                            "Value type is not defined");
+                        throw new ArgumentOutOfRangeException(nameof(valueType), valueType, "Value type is not defined");
                 }
             }
         }
@@ -125,7 +124,7 @@ namespace Vostok.Hercules.Client.Binary
                     builder.AddNull(key);
                     break;
                 case TagType.Vector:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException("Nested vectors are not supported yet.");
                 default:
                     throw new ArgumentOutOfRangeException(
                         nameof(elementType),
