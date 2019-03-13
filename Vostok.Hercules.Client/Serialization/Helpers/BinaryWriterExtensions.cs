@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Vostok.Commons.Binary;
-using Vostok.Hercules.Client.Sink.Writing;
+using Vostok.Hercules.Client.Serialization.Writers;
 
-namespace Vostok.Hercules.Client.Sink.Helpers
+namespace Vostok.Hercules.Client.Serialization.Helpers
 {
     internal static class BinaryWriterExtensions
     {

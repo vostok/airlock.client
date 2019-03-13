@@ -1,4 +1,4 @@
-using Vostok.Hercules.Client.Gateway;
+using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.StreamState;
 using Vostok.Logging.Abstractions;

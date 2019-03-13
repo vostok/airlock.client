@@ -1,7 +1,7 @@
 ﻿using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Models;
 
-namespace Vostok.Hercules.Client.Serialization
+namespace Vostok.Hercules.Client.Serialization.Readers
 {
     internal static class StreamCoordinatesReader
     {

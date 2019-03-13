@@ -4,14 +4,14 @@ using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 
-namespace Vostok.Hercules.Client.Sink.Writing
+namespace Vostok.Hercules.Client.Serialization.Writers
 {
     internal class EventBuilder : IHerculesEventBuilder, IDisposable
     {
         private readonly IBinaryWriter binaryWriter;
         private readonly Func<DateTimeOffset> timeProvider;
         private readonly long timestampPosition;
-        private readonly RecordPayloadBuilderWithCounter builder;
+        private readonly TagsBuilderWithCounter builder;
 
         private DateTimeOffset timestampInternal;
 
@@ -24,7 +24,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
             binaryWriter.Write(0L);
             binaryWriter.Write(Guid.NewGuid());
 
-            builder = new RecordPayloadBuilderWithCounter(binaryWriter);
+            builder = new TagsBuilderWithCounter(binaryWriter);
         }
 
         public IHerculesEventBuilder SetTimestamp(DateTimeOffset timestamp)

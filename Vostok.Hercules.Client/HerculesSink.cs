@@ -7,7 +7,7 @@ using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
-using Vostok.Hercules.Client.Gateway;
+using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Daemon;
 using Vostok.Hercules.Client.Sink.Planner;
@@ -136,7 +136,7 @@ namespace Vostok.Hercules.Client
 
             switch (recordWriter.TryWrite(buffer, build, out var recordSize))
             {
-                case WriteResult.NoError:
+                case RecordWriteResult.Success:
                     buffer.Commit(recordSize);
                     statistics.ReportStoredRecord(recordSize);
                     var storedSizeAfter = statistics.EstimateStoredSize();
@@ -144,13 +144,13 @@ namespace Vostok.Hercules.Client
                     if (storedSizeBefore < threshold && threshold <= storedSizeAfter)
                         sendSignal.Set();
                     break;
-                case WriteResult.Exception:
+                case RecordWriteResult.Exception:
                     statistics.ReportRecordBuildFailure();
                     break;
-                case WriteResult.OutOfMemory:
+                case RecordWriteResult.OutOfMemory:
                     statistics.ReportOverflow();
                     break;
-                case WriteResult.RecordTooLarge:
+                case RecordWriteResult.RecordTooLarge:
                     statistics.ReportSizeLimitViolation();
                     break;
             }

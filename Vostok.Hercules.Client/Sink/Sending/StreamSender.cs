@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Primitives;
-using Vostok.Hercules.Client.Gateway;
+using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.StreamState;

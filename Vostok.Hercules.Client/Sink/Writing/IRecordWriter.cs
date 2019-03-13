@@ -6,6 +6,6 @@ namespace Vostok.Hercules.Client.Sink.Writing
 {
     internal interface IRecordWriter
     {
-        WriteResult TryWrite(IBuffer binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize);
+        RecordWriteResult TryWrite(IBuffer binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize);
     }
 }

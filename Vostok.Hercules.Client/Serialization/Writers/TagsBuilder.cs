@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Sink.Helpers;
+using Vostok.Hercules.Client.Serialization.Helpers;
 
-namespace Vostok.Hercules.Client.Sink.Writing
+namespace Vostok.Hercules.Client.Serialization.Writers
 {
-    internal class RecordPayloadBuilder : IHerculesTagsBuilder
+    internal class TagsBuilder : IHerculesTagsBuilder
     {
         private readonly IBinaryWriter writer;
 
-        public RecordPayloadBuilder(IBinaryWriter writer)
+        public TagsBuilder(IBinaryWriter writer)
         {
             this.writer = writer;
         }
@@ -20,7 +20,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
             writer.WriteWithByteLength(key);
             writer.Write(TagType.Container);
 
-            using (var builder = new RecordPayloadBuilderWithCounter(writer))
+            using (var builder = new TagsBuilderWithCounter(writer))
                 value.Invoke(builder);
 
             return this;
@@ -115,7 +115,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
             writer.Write(values.Count);
 
             foreach (var action in values)
-                using (var builder = new RecordPayloadBuilderWithCounter(writer))
+                using (var builder = new TagsBuilderWithCounter(writer))
                     action(builder);
 
             return this;

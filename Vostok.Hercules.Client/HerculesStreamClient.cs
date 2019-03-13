@@ -13,6 +13,7 @@ using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Serialization;
+using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client

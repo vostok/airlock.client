@@ -1,8 +1,8 @@
 namespace Vostok.Hercules.Client.Sink.Writing
 {
-    internal enum WriteResult
+    internal enum RecordWriteResult
     {
-        NoError,
+        Success,
         RecordTooLarge,
         OutOfMemory,
         Exception

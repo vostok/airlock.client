@@ -1,4 +1,4 @@
-﻿namespace Vostok.Hercules.Client.Sink.Writing
+﻿namespace Vostok.Hercules.Client.Serialization.Writers
 {
     internal enum TagType : byte
     {

@@ -4,24 +4,24 @@ using System.Runtime.CompilerServices;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 
-namespace Vostok.Hercules.Client.Sink.Writing
+namespace Vostok.Hercules.Client.Serialization.Writers
 {
-    internal class RecordPayloadBuilderWithCounter : IHerculesTagsBuilder, IDisposable
+    internal class TagsBuilderWithCounter : IHerculesTagsBuilder, IDisposable
     {
         private readonly IBinaryWriter binaryWriter;
         private readonly long countPosition;
-        private readonly RecordPayloadBuilder builder;
+        private readonly TagsBuilder builder;
 
         private ushort counter;
 
-        public RecordPayloadBuilderWithCounter(IBinaryWriter binaryWriter)
+        public TagsBuilderWithCounter(IBinaryWriter binaryWriter)
         {
             this.binaryWriter = binaryWriter;
 
             countPosition = binaryWriter.Position;
             binaryWriter.Write((ushort)0);
 
-            builder = new RecordPayloadBuilder(binaryWriter);
+            builder = new TagsBuilder(binaryWriter);
         }
 
         public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)

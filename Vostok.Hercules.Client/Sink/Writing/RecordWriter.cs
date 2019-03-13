@@ -1,6 +1,7 @@
 ﻿using System;
 using Vostok.Commons.Primitives;
 using Vostok.Hercules.Client.Abstractions.Events;
+using Vostok.Hercules.Client.Serialization.Writers;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Logging.Abstractions;
 
@@ -21,7 +22,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
             this.maxRecordSize = maxRecordSize;
         }
 
-        public WriteResult TryWrite(IBuffer binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize)
+        public RecordWriteResult TryWrite(IBuffer binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize)
         {
             var startingPosition = binaryWriter.Position;
 
@@ -37,7 +38,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
                 {
                     binaryWriter.Position = startingPosition;
                     recordSize = 0;
-                    return WriteResult.OutOfMemory;
+                    return RecordWriteResult.OutOfMemory;
                 }
             }
             catch (Exception exception)
@@ -45,17 +46,17 @@ namespace Vostok.Hercules.Client.Sink.Writing
                 binaryWriter.Position = startingPosition;
                 recordSize = 0;
                 log.Error(exception);
-                return WriteResult.Exception;
+                return RecordWriteResult.Exception;
             }
 
             recordSize = (int)(binaryWriter.Position - startingPosition);
 
             if (recordSize <= maxRecordSize)
-                return WriteResult.NoError;
+                return RecordWriteResult.Success;
 
             log.Warn("Discarded record with size {RecordSize} larger than maximum allowed size {MaximumRecordSize}", DataSize.FromBytes(recordSize), DataSize.FromBytes(maxRecordSize));
             binaryWriter.Position = startingPosition;
-            return WriteResult.RecordTooLarge;
+            return RecordWriteResult.RecordTooLarge;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Vostok.Clusterclient.Core.Model;
 
-namespace Vostok.Hercules.Client.Gateway
+namespace Vostok.Hercules.Client.Gate
 {
     internal struct RequestSendingResult
     {
