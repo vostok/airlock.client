@@ -21,7 +21,9 @@ namespace Vostok.Hercules.Client.Sink.Statistics
                 LostRecords = ReadTuple(ref lostRecordsCount, ref lostRecordsSize),
                 SentRecords = ReadTuple(ref sentRecordsCount, ref sentRecordsSize),
                 StoredRecords = ReadTuple(ref storedRecordsCount, ref storedRecordsSize),
-                WriteFailuresCount = Interlocked.Read(ref writeFailures)
+                WriteFailuresCount = Interlocked.Read(ref writeFailures),
+                OverflowsCount = Interlocked.Read(ref overflows),
+                TooLargeRecordsCount = Interlocked.Increment(ref tooLargeRecords)
             };
         }
 
