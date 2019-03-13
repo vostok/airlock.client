@@ -140,6 +140,7 @@ namespace Vostok.Hercules.Client.Sink.Daemon
         private async RunningJob RunJobAsync(string stream, CancellationToken cancellationToken)
         {
             var (sender, _) = senders[stream];
+            states[stream].Value.SendSignal.Reset();
             var result = await sender.SendAsync(settings.RequestTimeout, cancellationToken).ConfigureAwait(false);
             return (stream, result);
         }
