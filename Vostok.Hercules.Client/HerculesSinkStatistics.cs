@@ -1,17 +1,33 @@
+using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Vostok.Hercules.Client
 {
+    /// <summary>
+    /// Provides diagnostic information about an instance of <see cref="HerculesSink"/>.
+    /// </summary>
+    [PublicAPI]
     public class HerculesSinkStatistics
     {
-        /// <summary>
-        /// Provides diagnostics information about <see cref="HerculesSink"/> overall.
-        /// </summary>
-        public HerculesSinkCounters Global { get; internal set; }
+        public HerculesSinkStatistics(
+            [NotNull] HerculesSinkCounters total,
+            [NotNull] IReadOnlyDictionary<string, HerculesSinkCounters> perStream)
+        {
+            Total = total ?? throw new ArgumentNullException(nameof(total));
+            PerStream = perStream ?? throw new ArgumentNullException(nameof(perStream));
+        }
 
         /// <summary>
-        /// Provides per-stream diagnostics information.
+        /// Counters summed over all streams.
         /// </summary>
-        public IReadOnlyDictionary<string, HerculesSinkCounters> Stream { get; internal set; }
+        [NotNull]
+        public HerculesSinkCounters Total { get; }
+
+        /// <summary>
+        /// Per-stream counters.
+        /// </summary>
+        [NotNull]
+        public IReadOnlyDictionary<string, HerculesSinkCounters> PerStream { get; }
     }
 }

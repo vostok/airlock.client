@@ -128,20 +128,16 @@ namespace Vostok.Hercules.Client
         /// </summary>
         public HerculesSinkStatistics GetStatistics()
         {
-            var perStreamStats = streamStates
+            var perStreamCounters = streamStates
                 .Where(x => x.Value.IsValueCreated)
                 .ToDictionary(x => x.Key, x => x.Value.Value.Statistics.Get());
 
-            var stats = new HerculesSinkCounters();
+            var totalCounters = HerculesSinkCounters.Zero;
 
-            foreach (var value in perStreamStats.Values)
-                stats += value;
+            foreach (var value in perStreamCounters.Values)
+                totalCounters += value;
 
-            return new HerculesSinkStatistics
-            {
-                Global = stats,
-                Stream = perStreamStats
-            };
+            return new HerculesSinkStatistics(totalCounters, perStreamCounters);
         }
 
         /// <inheritdoc />
@@ -166,20 +162,20 @@ namespace Vostok.Hercules.Client
             {
                 case WriteResult.NoError:
                     buffer.Commit(recordSize);
-                    statistics.ReportWrittenRecord(recordSize);
+                    statistics.ReportStoredRecord(recordSize);
                     var storedSizeAfter = statistics.EstimateStoredSize();
                     var threshold = settings.MaximumPerStreamMemoryConsumption / 4;
                     if (storedSizeBefore < threshold && threshold <= storedSizeAfter)
                         sendSignal.Set();
                     break;
                 case WriteResult.Exception:
-                    statistics.ReportWriteFailure();
+                    statistics.ReportRecordBuildFailure();
                     break;
                 case WriteResult.OutOfMemory:
                     statistics.ReportOverflow();
                     break;
                 case WriteResult.RecordTooLarge:
-                    statistics.ReportTooLargeRecord();
+                    statistics.ReportSizeLimitViolation();
                     break;
             }
         }

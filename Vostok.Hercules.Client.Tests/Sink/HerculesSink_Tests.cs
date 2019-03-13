@@ -55,7 +55,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
 
             client.Put("stream", x => x.AddValue("key", true));
 
-            var action = new Action(() => client.GetStatistics().Global.LostRecords.Count.Should().Be(1));
+            var action = new Action(() => client.GetStatistics().Total.LostRecords.Count.Should().Be(1));
             action.ShouldPassIn(5.Seconds());
             action.ShouldNotFailIn(5.Seconds());
         }

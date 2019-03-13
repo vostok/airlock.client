@@ -4,9 +4,9 @@ namespace Vostok.Hercules.Client.Sink.Statistics
 {
     internal class StatisticsCollector : IStatisticsCollector
     {
-        private long writeFailures;
+        private long buildFailures;
         private long overflows;
-        private long tooLargeRecords;
+        private long sizeLimitViolations;
         private long lostRecordsCount;
         private long lostRecordsSize;
         private long sentRecordsCount;
@@ -16,20 +16,18 @@ namespace Vostok.Hercules.Client.Sink.Statistics
 
         public HerculesSinkCounters Get()
         {
-            return new HerculesSinkCounters
-            {
-                LostRecords = ReadTuple(ref lostRecordsCount, ref lostRecordsSize),
-                SentRecords = ReadTuple(ref sentRecordsCount, ref sentRecordsSize),
-                StoredRecords = ReadTuple(ref storedRecordsCount, ref storedRecordsSize),
-                WriteFailuresCount = Interlocked.Read(ref writeFailures),
-                OverflowsCount = Interlocked.Read(ref overflows),
-                TooLargeRecordsCount = Interlocked.Increment(ref tooLargeRecords)
-            };
+            return new HerculesSinkCounters(
+                ReadTuple(ref sentRecordsCount, ref sentRecordsSize),
+                ReadTuple(ref lostRecordsCount, ref lostRecordsSize),
+                ReadTuple(ref storedRecordsCount, ref storedRecordsSize),
+                Interlocked.Read(ref buildFailures),
+                Interlocked.Read(ref sizeLimitViolations),
+                Interlocked.Read(ref overflows));
         }
 
-        public void ReportTooLargeRecord() => Interlocked.Increment(ref tooLargeRecords);
+        public void ReportSizeLimitViolation() => Interlocked.Increment(ref sizeLimitViolations);
 
-        public void ReportWriteFailure() => Interlocked.Increment(ref writeFailures);
+        public void ReportRecordBuildFailure() => Interlocked.Increment(ref buildFailures);
 
         public void ReportOverflow() => Interlocked.Increment(ref overflows);
 
@@ -51,7 +49,7 @@ namespace Vostok.Hercules.Client.Sink.Statistics
             Interlocked.Add(ref storedRecordsSize, -size);
         }
 
-        public void ReportWrittenRecord(long size)
+        public void ReportStoredRecord(long size)
         {
             Interlocked.Increment(ref storedRecordsCount);
             Interlocked.Add(ref storedRecordsSize, size);

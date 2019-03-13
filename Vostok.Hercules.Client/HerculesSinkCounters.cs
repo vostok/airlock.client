@@ -3,55 +3,72 @@ using JetBrains.Annotations;
 namespace Vostok.Hercules.Client
 {
     /// <summary>
-    /// <para>Provides diagnostics information about <see cref="HerculesSink"/> overall or about one of the streams in it.</para>
+    /// <see cref="HerculesSinkCounters"/> contain a set of cumulative counters describing internal processes of a <see cref="HerculesSink"/>.
     /// </summary>
     [PublicAPI]
     public class HerculesSinkCounters
     {
-        /// <summary>
-        /// Statistics about records that already have been sent.
-        /// </summary>
-        public (long Count, long Size) SentRecords { get; internal set; }
+        public static readonly HerculesSinkCounters Zero
+            = new HerculesSinkCounters((0, 0), (0, 0), (0, 0), 0, 0, 0);
+
+        public HerculesSinkCounters(
+            (long Count, long Size) sentRecords,
+            (long Count, long Size) lostRecords,
+            (long Count, long Size) storedRecords,
+            long recordsLostDueToBuildFailures,
+            long recordsLostDueToSizeLimit,
+            long recordsLostDueToOverflows)
+        {
+            SentRecords = sentRecords;
+            LostRecords = lostRecords;
+            StoredRecords = storedRecords;
+            RecordsLostDueToBuildFailures = recordsLostDueToBuildFailures;
+            RecordsLostDueToSizeLimit = recordsLostDueToSizeLimit;
+            RecordsLostDueToOverflows = recordsLostDueToOverflows;
+        }
 
         /// <summary>
-        /// Statistics about records that lost due to non-retriable sending errors.
+        /// Records that have been successfully sent.
         /// </summary>
-        public (long Count, long Size) LostRecords { get; internal set; }
+        public (long Count, long Size) SentRecords { get; }
 
         /// <summary>
-        /// Statistics about records that stored inside internal buffers and waiting to be sent.
+        /// Records that have been lost due to non-retriable sending errors or internal buffer overflows.
         /// </summary>
-        public (long Count, long Size) StoredRecords { get; internal set; }
+        public (long Count, long Size) LostRecords { get; }
 
         /// <summary>
-        /// How many records are lost due to exception in record building delegate.
+        /// Records that are currently stored in internal buffers and waiting to be sent.
         /// </summary>
-        public long WriteFailuresCount { get; internal set; }
+        public (long Count, long Size) StoredRecords { get; }
 
         /// <summary>
-        /// How many records are lost because they are large than <see cref="HerculesSinkSettings.MaximumRecordSize"/>.
+        /// Returns how many records have been lost due to exceptions in user-provided record building delegates.
         /// </summary>
-        public long TooLargeRecordsCount { get; internal set; }
+        public long RecordsLostDueToBuildFailures { get; }
 
         /// <summary>
-        /// How many records are lost due to memory limit violation.
+        /// Returns how many records have been lost due to being larger than <see cref="HerculesSinkSettings.MaximumRecordSize"/>.
         /// </summary>
-        public long OverflowsCount { get; internal set; }
+        public long RecordsLostDueToSizeLimit { get; }
+
+        /// <summary>
+        /// Returns how many records have been lost due to memory limit violations.
+        /// </summary>
+        public long RecordsLostDueToOverflows { get; }
 
         /// <summary>
         /// Sums two <see cref="HerculesSinkCounters"/> field-by-field.
         /// </summary>
-        public static HerculesSinkCounters operator+(HerculesSinkCounters a, HerculesSinkCounters b)
+        public static HerculesSinkCounters operator+(HerculesSinkCounters left, HerculesSinkCounters right)
         {
-            return new HerculesSinkCounters
-            {
-                LostRecords = Sum(a.LostRecords, b.LostRecords),
-                SentRecords = Sum(a.SentRecords, b.SentRecords),
-                StoredRecords = Sum(a.SentRecords, b.StoredRecords),
-                OverflowsCount = a.OverflowsCount + b.OverflowsCount,
-                WriteFailuresCount = a.WriteFailuresCount + b.WriteFailuresCount,
-                TooLargeRecordsCount = a.TooLargeRecordsCount + b.TooLargeRecordsCount
-            };
+            return new HerculesSinkCounters(
+                Sum(left.SentRecords, right.SentRecords),
+                Sum(left.LostRecords, right.LostRecords),
+                Sum(left.StoredRecords, right.StoredRecords),
+                left.RecordsLostDueToBuildFailures + right.RecordsLostDueToBuildFailures,
+                left.RecordsLostDueToSizeLimit + right.RecordsLostDueToSizeLimit,
+                left.RecordsLostDueToOverflows + right.RecordsLostDueToOverflows);
 
             (long, long) Sum((long, long) x, (long, long) y) => (x.Item1 + y.Item1, x.Item2 + y.Item2);
         }
