@@ -61,7 +61,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
         private static void RequestGarbageCollection(ArraySegment<BufferSnapshot> snapshots)
         {
             foreach (var snapshot in snapshots)
-                snapshot.Source.RequestGarbageCollection(snapshot.State);
+                snapshot.Source.ReportGarbage(snapshot.State);
         }
 
         private async Task<bool> PushAsync(

@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         {
             var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer);
             if (result)
-                buffer.CollectGarbage();
+                buffer.TryCollectGarbage();
 
             return result;
         }

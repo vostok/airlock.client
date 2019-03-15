@@ -3,6 +3,12 @@ using Vostok.Commons.Binary;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
+    /// <summary>
+    /// <para><see cref="IBuffer"/> thread safety is based on usage assumptions listed below.</para>
+    /// <para>There is a single sender thread that periodically performs a following sequence of calls: <see cref="TryMakeSnapshot"/> --> <see cref="ReportGarbage"/>.</para>
+    /// <para>There can also be at most one writer thread at any given moment, operating concurrently with sender thread.</para>
+    /// <para>Writer thread may <see cref="TryCollectGarbage"/>, write data and issue <see cref="CommitRecord"/> calls.</para>
+    /// </summary>
     internal interface IBuffer : IBinaryWriter
     {
         /// <summary>
@@ -11,7 +17,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         bool IsOverflowed { get; set; }
 
         /// <summary>
-        /// Returns total current size of committed records excepts garbage reported with <see cref="RequestGarbageCollection"/>.
+        /// Returns total current size of committed records excepts garbage reported with <see cref="ReportGarbage"/>.
         /// </summary>
         long UsefulDataSize { get; }
 
@@ -20,10 +26,26 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         /// </summary>
         void CommitRecord(int size);
 
+        /// <summary>
+        /// <para>Marks given <paramref name="region"/> of committed records as garbage.</para>
+        /// <para>Consequent <see cref="TryCollectGarbage"/> and <see cref="TryMakeSnapshot"/> calls may collect this garbage.</para>
+        /// </summary>
+        void ReportGarbage(BufferState region);
+
+        /// <summary>
+        /// <para>Attempts to collect garbage records reported with <see cref="ReportGarbage"/> earlier.</para>
+        /// <para>May return <c>false</c> if buffer is currently being used to write records.</para>
+        /// <para>Returns <c>true</c> if buffer currently has no garbage.</para>
+        /// </summary>
+        bool TryCollectGarbage();
+
+        /// <summary>
+        /// <para>Attempts to collect garbage (if any) and return a snapshot pointing to the committed region of this buffer.</para>
+        /// <para>May return <c>null</c> if buffer contains garbage that could not be collected right away.</para>
+        /// <para>May return an empty snapshot if buffer currently contains no committed records.</para>
+        /// <para>If this method returns a non-null <see cref="BufferSnapshot"/>, it's guaranteed that data pointed by this snapshot does not contain garbage records.</para>
+        /// </summary>
         [CanBeNull]
         BufferSnapshot TryMakeSnapshot();
-
-        void CollectGarbage();
-        void RequestGarbageCollection(BufferState state);
     }
 }

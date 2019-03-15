@@ -34,8 +34,8 @@ namespace Vostok.Hercules.Client.Tests.Sink
 
             buffer.Write(0);
             buffer.CommitRecord(sizeof(int));
-            buffer.RequestGarbageCollection(buffer.Committed);
-            buffer.CollectGarbage();
+            buffer.ReportGarbage(buffer.Committed);
+            buffer.TryCollectGarbage();
 
             buffer.Position.Should().Be(0);
             buffer.Committed.Should().Be(new BufferState());
@@ -53,8 +53,8 @@ namespace Vostok.Hercules.Client.Tests.Sink
             buffer.CommitRecord(sizeof(int));
             buffer.CommitRecord(sizeof(int));
             buffer.CommitRecord(sizeof(int));
-            buffer.RequestGarbageCollection(new BufferState(sizeof(int), 1));
-            buffer.CollectGarbage();
+            buffer.ReportGarbage(new BufferState(sizeof(int), 1));
+            buffer.TryCollectGarbage();
 
             buffer.Position.Should().Be(2 * sizeof(int));
             buffer.Committed.Should().Be(new BufferState(2 * sizeof(int), 2));
