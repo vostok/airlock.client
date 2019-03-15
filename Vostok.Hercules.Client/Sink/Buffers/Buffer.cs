@@ -7,14 +7,13 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 {
     internal class Buffer : IBuffer
     {
-        private readonly AtomicBoolean isLockedForWrite = new AtomicBoolean(false);
-
         private readonly BinaryBufferWriter writer;
         private readonly IMemoryManager memoryManager;
         private readonly int maxSize;
 
         private readonly BufferStateHolder committed = new BufferStateHolder();
         private readonly BufferStateHolder garbage = new BufferStateHolder();
+        private readonly AtomicBoolean isLocked = new AtomicBoolean(false);
 
         public Buffer(int initialSize, int maxSize, IMemoryManager memoryManager)
         {
@@ -25,21 +24,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
             this.maxSize = maxSize;
             this.memoryManager = memoryManager;
-
-            committed.Value = default;
-            garbage.Value = default;
-        }
-
-        public long Position
-        {
-            get => writer.Position;
-            set => writer.Position = value;
-        }
-
-        public Endianness Endianness
-        {
-            get => Endianness.Big;
-            set => throw new NotSupportedException();
         }
 
         public bool IsOverflowed { get; set; }
@@ -48,14 +32,14 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public ArraySegment<byte> FilledSegment => writer.FilledSegment;
 
-        public void Commit(int recordSize)
-        {
-            var oldValue = committed.Value;
-            committed.Value = new BufferState(oldValue.Length + recordSize, oldValue.RecordsCount + 1);
-        }
+        public BufferState Committed => committed.Value;
 
-        public BufferState GetState() => committed.Value;
-        public long GetUsefulLength() => committed.Value.Length - garbage.Value.Length;
+        public BufferState Garbage => garbage.Value;
+
+        public long UsefulDataSize => Committed.Length - Garbage.Length;
+
+        public void CommitRecord(int size)
+            => committed.Value += new BufferState(size, 1);
 
         public BufferSnapshot TryMakeSnapshot()
         {
@@ -70,8 +54,8 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             garbage.Value = state;
         }
 
-        public bool TryLock() => isLockedForWrite.TrySetTrue();
-        public void Unlock() => isLockedForWrite.Value = false;
+        public bool TryLock() => isLocked.TrySetTrue();
+        public void Unlock() => isLocked.Value = false;
 
         /// <summary>
         /// <threadsafety>This method is NOT threadsafe and should be called only when buffer is not available for write.</threadsafety>
@@ -93,6 +77,35 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             committed.Value -= garbageState;
             // (epeshk): reset garbage state at last for synchronization with MakeSnapshot
             garbage.Value = default;
+        }
+
+        private bool TryCollectGarbage()
+        {
+            if (garbage.Value.Length == 0)
+                return true;
+
+            if (isLocked.TrySetTrue())
+            {
+                CollectGarbage();
+                isLocked.Value = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        #region IBinaryWriter implementation
+
+        public long Position
+        {
+            get => writer.Position;
+            set => writer.Position = value;
+        }
+
+        public Endianness Endianness
+        {
+            get => Endianness.Big;
+            set => throw new NotSupportedException();
         }
 
         public void Write(int value)
@@ -145,7 +158,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public void Write(bool value)
         {
-            if (!EnsureAvailableBytes(sizeof(bool)))
+            if (!EnsureAvailableBytes(sizeof(byte)))
                 return;
 
             writer.Write(value);
@@ -275,21 +288,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             writer.Write(value);
         }
 
-        private bool TryCollectGarbage()
-        {
-            if (garbage.Value.Length == 0)
-                return true;
-
-            if (isLockedForWrite.TrySetTrue())
-            {
-                CollectGarbage();
-                isLockedForWrite.Value = false;
-                return true;
-            }
-
-            return false;
-        }
-
         private bool EnsureAvailableBytes(int amount)
         {
             if (TryEnsureAvailableBytes(amount))
@@ -329,5 +327,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             writer.Resize(capacity);
             return true;
         }
+
+        #endregion
     }
 }

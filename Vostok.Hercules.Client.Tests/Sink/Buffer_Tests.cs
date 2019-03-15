@@ -33,12 +33,12 @@ namespace Vostok.Hercules.Client.Tests.Sink
             var buffer = new Buffer(16, 1000, memManager);
 
             buffer.Write(0);
-            buffer.Commit(sizeof(int));
-            buffer.RequestGarbageCollection(buffer.GetState());
+            buffer.CommitRecord(sizeof(int));
+            buffer.RequestGarbageCollection(buffer.Committed);
             buffer.CollectGarbage();
 
             buffer.Position.Should().Be(0);
-            buffer.GetState().Should().Be(new BufferState());
+            buffer.Committed.Should().Be(new BufferState());
         }
 
         [Test]
@@ -50,14 +50,14 @@ namespace Vostok.Hercules.Client.Tests.Sink
             buffer.Write(0);
             buffer.Write(0);
             buffer.Write(0);
-            buffer.Commit(sizeof(int));
-            buffer.Commit(sizeof(int));
-            buffer.Commit(sizeof(int));
+            buffer.CommitRecord(sizeof(int));
+            buffer.CommitRecord(sizeof(int));
+            buffer.CommitRecord(sizeof(int));
             buffer.RequestGarbageCollection(new BufferState(sizeof(int), 1));
             buffer.CollectGarbage();
 
             buffer.Position.Should().Be(2 * sizeof(int));
-            buffer.GetState().Should().Be(new BufferState(2 * sizeof(int), 2));
+            buffer.Committed.Should().Be(new BufferState(2 * sizeof(int), 2));
         }
 
         [Test]

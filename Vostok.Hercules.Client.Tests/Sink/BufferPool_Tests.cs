@@ -78,7 +78,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         {
             bufferPool.TryAcquire(out var buffer);
             buffer.Write(0);
-            buffer.Commit(sizeof(int));
+            buffer.CommitRecord(sizeof(int));
 
             var snapshot = bufferPool.ToArray();
 
@@ -90,7 +90,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         {
             bufferPool.TryAcquire(out var buffer);
             buffer.Write(0);
-            buffer.Commit(sizeof(int));
+            buffer.CommitRecord(sizeof(int));
             bufferPool.Release(buffer);
 
             var snapshot = bufferPool.ToArray();

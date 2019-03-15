@@ -56,7 +56,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 if (!availableBuffers.TryDequeue(out buffer))
                     return false;
 
-                if (buffer.GetUsefulLength() <= maxBufferSize - maxRecordSize && TryLock(buffer))
+                if (buffer.UsefulDataSize <= maxBufferSize - maxRecordSize && TryLock(buffer))
                     return true;
 
                 availableBuffers.Enqueue(buffer);

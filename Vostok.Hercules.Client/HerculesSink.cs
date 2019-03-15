@@ -137,7 +137,7 @@ namespace Vostok.Hercules.Client
             switch (recordWriter.TryWrite(buffer, build, out var recordSize))
             {
                 case RecordWriteResult.Success:
-                    buffer.Commit(recordSize);
+                    buffer.CommitRecord(recordSize);
                     statistics.ReportStoredRecord(recordSize);
                     var storedSizeAfter = statistics.EstimateStoredSize();
                     var threshold = settings.MaximumPerStreamMemoryConsumption / 4;
