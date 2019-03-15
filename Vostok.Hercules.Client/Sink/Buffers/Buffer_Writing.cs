@@ -163,7 +163,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             if (!EnsureAvailableBytes(sizeof(int) + encoding.GetMaxByteCount(value.Length)))
                 return;
 
-            writer.WriteWithLength(value);
+            writer.WriteWithLength(value, encoding);
         }
 
         public void WriteWithoutLength(string value, Encoding encoding)
@@ -171,7 +171,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             if (!EnsureAvailableBytes(encoding.GetMaxByteCount(value.Length)))
                 return;
 
-            writer.WriteWithoutLength(value);
+            writer.WriteWithoutLength(value, encoding);
         }
 
         public void WriteWithoutLength(string value)
