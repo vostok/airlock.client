@@ -2,7 +2,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Hercules.Client.Sink.Buffers;
 
-namespace Vostok.Hercules.Client.Tests.Sink
+namespace Vostok.Hercules.Client.Tests.Sink.Buffers
 {
     internal class Buffer_Tests
     {

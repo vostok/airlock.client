@@ -4,7 +4,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Hercules.Client.Sink.Buffers;
 
-namespace Vostok.Hercules.Client.Tests.Sink
+namespace Vostok.Hercules.Client.Tests.Sink.Buffers
 {
     internal class BufferPool_Tests
     {
