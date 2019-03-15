@@ -309,6 +309,60 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
             manager.Received().TryReserveBytes(51 - InitialSize);
         }
 
+        [Test]
+        public void Should_be_able_to_use_remaining_capacity_even_if_memory_manager_has_nothing_left()
+        {
+            manager.TryReserveBytes(default).ReturnsForAnyArgs(false);
+
+            for (var i = 0; i < 4; i++)
+            {
+                buffer.Write(Guid.NewGuid().GetHashCode());
+            }
+
+            buffer.IsOverflowed.Should().BeFalse();
+
+            buffer.Position.Should().Be(16);
+        }
+
+        [Test]
+        public void Should_become_overflowed_when_memory_manager_rejects_ordinary_expansion()
+        {
+            manager.TryReserveBytes(default).ReturnsForAnyArgs(false);
+
+            buffer.Write(Guid.NewGuid());
+
+            buffer.Write(true);
+
+            buffer.IsOverflowed.Should().BeTrue();
+            buffer.Capacity.Should().Be(16);
+        }
+
+        [Test]
+        public void Should_become_overflowed_when_memory_manager_rejects_expansion_to_input_size()
+        {
+            manager.TryReserveBytes(default).ReturnsForAnyArgs(false);
+
+            buffer.Write(Guid.NewGuid());
+
+            buffer.WriteWithoutLength(new byte[50]);
+
+            buffer.IsOverflowed.Should().BeTrue();
+            buffer.Capacity.Should().Be(16);
+        }
+
+        [Test]
+        public void Should_become_overflowed_when_memory_manager_rejects_expansion_up_to_max_size()
+        {
+            manager.TryReserveBytes(default).ReturnsForAnyArgs(false);
+
+            buffer.Write(Guid.NewGuid());
+
+            buffer.WriteWithoutLength(new byte[MaximumSize - 16]);
+
+            buffer.IsOverflowed.Should().BeTrue();
+            buffer.Capacity.Should().Be(16);
+        }
+
         private static void TestWriting(Action<IBinaryWriter> write)
         {
             var rawWriter = new BinaryBufferWriter(1) { Endianness = Endianness.Big };
@@ -317,7 +371,9 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
             write(rawWriter);
             write(buffer);
 
-            buffer.FilledSegment.Should().Equal(rawWriter.FilledSegment);
+            buffer.CommitRecord((int) buffer.Position);
+
+            buffer.CommittedSegment.Should().Equal(rawWriter.FilledSegment);
             buffer.Position.Should().Be(rawWriter.Position);
             buffer.Capacity.Should().Be(rawWriter.Buffer.Length);
 

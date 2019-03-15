@@ -32,10 +32,33 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         public long UsefulDataSize => Committed.Length - Garbage.Length;
 
         public void CommitRecord(int size)
-            => committed.Value += new BufferState(size, 1);
+        {
+            if (size <= 0)
+                throw new ArgumentOutOfRangeException(nameof(size), $"Attempt to commit a record of incorrect size {size}.");
+
+            var currentCommitted = committed.Value;
+            if (currentCommitted.Length + size > Position)
+                throw new InvalidOperationException($"Attempt to commit a record of size {size} on top of current commited length {currentCommitted.Length} past current physical length {Position}.");
+
+            committed.Value = currentCommitted + new BufferState(size, 1);
+        }
 
         public void ReportGarbage(BufferState region)
-            => garbage.Value = region;
+        {
+            var currentCommitted = committed.Value;
+            var currentGarbage = garbage.Value;
+
+            if (!currentGarbage.IsEmpty)
+                throw new InvalidOperationException($"Attempt to report a garbage region of size {region.Length} when there's already garbage of size {currentGarbage.Length}.");
+
+            if (region.Length > currentCommitted.Length)
+                throw new InvalidOperationException($"Attempt to report a garbage region of size {region.Length} that exceeds current committed region of size {currentCommitted.Length}.");
+
+            if (region.RecordsCount > currentCommitted.RecordsCount)
+                throw new InvalidOperationException($"Attempt to report a garbage region with {region.RecordsCount} records, which is more than current committed records count {currentCommitted.RecordsCount}.");
+
+            garbage.Value = region;
+        }
 
         public bool TryLock()
             => isLocked.TrySetTrue();
@@ -48,7 +71,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             if (!TryCollectGarbage())
                 return null;
 
-            // (epeshk): we should read committed.Value BEFORE acquiring a buffer because buffer may be changed on resizing.
+            // (epeshk): we should read committed.Value BEFORE acquiring a buffer because buffer may be changed due to resizing.
             var committedState = Committed;
             var internalBuffer = writer.Buffer;
 

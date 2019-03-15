@@ -7,7 +7,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
     /// <para><see cref="IBuffer"/> thread safety is based on usage assumptions listed below.</para>
     /// <para>There is a single sender thread that periodically performs a following sequence of calls: <see cref="TryMakeSnapshot"/> --> <see cref="ReportGarbage"/>.</para>
     /// <para>There can also be at most one writer thread at any given moment, operating concurrently with sender thread.</para>
-    /// <para>Writer thread may <see cref="TryCollectGarbage"/>, write data and issue <see cref="CommitRecord"/> calls.</para>
+    /// <para>Writer thread may call <see cref="TryCollectGarbage"/>, write data and issue <see cref="CommitRecord"/> calls.</para>
     /// </summary>
     internal interface IBuffer : IBinaryWriter
     {
@@ -24,12 +24,17 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         /// <summary>
         /// Commits a recently written record of given <paramref name="size"/>, so that it will be included in result of the next successful <see cref="TryMakeSnapshot"/> call.
         /// </summary>
+        /// <exception cref="System.ArgumentOutOfRangeException">Provided <paramref name="size"/> is zero or negative.</exception>
+        /// <exception cref="System.InvalidOperationException">Committed region would exceed current physical buffer size.</exception>
         void CommitRecord(int size);
 
         /// <summary>
         /// <para>Marks given <paramref name="region"/> of committed records as garbage.</para>
         /// <para>Consequent <see cref="TryCollectGarbage"/> and <see cref="TryMakeSnapshot"/> calls may collect this garbage.</para>
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">Buffer already has garbage.</exception>
+        /// <exception cref="System.InvalidOperationException">Given garbage <paramref name="region"/>'s length exceeds current committed length.</exception>
+        /// <exception cref="System.InvalidOperationException">Given garbage <paramref name="region"/>'s records count exceeds current committed records count.</exception>
         void ReportGarbage(BufferState region);
 
         /// <summary>

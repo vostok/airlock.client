@@ -10,7 +10,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public int Capacity => writer.Buffer.Length;
 
-        public ArraySegment<byte> FilledSegment => writer.FilledSegment;
+        public ArraySegment<byte> CommittedSegment => new ArraySegment<byte>(writer.Buffer, 0, Committed.Length);
 
         public long Position
         {
@@ -228,9 +228,14 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             if (currentCapacity + currentCapacity > maxSize)
                 return TryResize(maxSize, currentCapacity);
 
-            var reserveAmount = Math.Max(currentCapacity, maxPositionAfterWrite - currentCapacity);
+            var reserveAmount = Math.Max(currentCapacity, (int) (maxPositionAfterWrite - currentCapacity));
 
-            return memoryManager.TryReserveBytes(reserveAmount);
+            if (!memoryManager.TryReserveBytes(reserveAmount))
+                return false;
+
+            writer.Resize(currentCapacity + reserveAmount);
+
+            return true;
         }
 
         private bool TryResize(int newCapacity, int currentCapacity)
