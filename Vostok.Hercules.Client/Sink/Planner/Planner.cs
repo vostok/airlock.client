@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Commons.Helpers.Extensions;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Sink.Sending;
 
@@ -36,13 +37,12 @@ namespace Vostok.Hercules.Client.Sink.Planner
                     throw new ArgumentOutOfRangeException(nameof(result));
             }
 
-            return Task.WhenAny(GetDelayToNextOccurence(cancellationToken), sendImmediately);
+            return sendImmediately
+                .WaitAsync(cancellationToken)
+                .WaitAsync(GetDelayToNextOccurence());
         }
 
-        private Task GetDelayToNextOccurence(CancellationToken cancellationToken)
-        {
-            var delayToNextOccurence = Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, unsuccessfulAttempts);
-            return Task.Delay(delayToNextOccurence, cancellationToken);
-        }
+        private TimeSpan GetDelayToNextOccurence() =>
+            Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, unsuccessfulAttempts);
     }
 }
