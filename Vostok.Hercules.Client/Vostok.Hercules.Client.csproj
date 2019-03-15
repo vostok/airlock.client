@@ -25,6 +25,7 @@
     <PackageProjectUrl>https://github.com/vostok/hercules.client</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/vostok/hercules.client/blob/master/LICENSE</PackageLicenseUrl>
     <PackageTags>vostok vostok.hercules</PackageTags>
+    <PackageReleaseNotes>https://github.com/vostok/hercules.client/blob/master/CHANGELOG.md</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/vostok/hercules.client</RepositoryUrl>
   </PropertyGroup>
 
