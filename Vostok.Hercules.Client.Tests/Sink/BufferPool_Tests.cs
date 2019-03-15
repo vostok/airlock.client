@@ -8,9 +8,10 @@ namespace Vostok.Hercules.Client.Tests.Sink
 {
     internal class BufferPool_Tests
     {
-        private readonly int initialBufferSize = 100;
-        private readonly int maxRecordSize = 300;
-        private readonly int maxBufferSize = 1000;
+        private const int InitialBufferSize = 100;
+        private const int MaxRecordSize = 300;
+        private const int MaxBufferSize = 1000;
+
         private IMemoryManager memoryManager;
         private BufferPool bufferPool;
 
@@ -18,7 +19,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         public void Setup()
         {
             memoryManager = Substitute.For<IMemoryManager>();
-            bufferPool = new BufferPool(memoryManager, initialBufferSize, maxRecordSize, maxBufferSize);
+            bufferPool = new BufferPool(memoryManager, InitialBufferSize, MaxRecordSize, MaxBufferSize);
 
             memoryManager.TryReserveBytes(0).ReturnsForAnyArgs(true);
         }
@@ -27,7 +28,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         public void Should_respect_initialBufferSize_setting()
         {
             bufferPool.TryAcquire(out var buffer).Should().BeTrue();
-            buffer.TryMakeSnapshot().Data.Array.Length.Should().Be(initialBufferSize);
+            buffer.TryMakeSnapshot().Data.Array.Length.Should().Be(InitialBufferSize);
         }
 
         [TestCase(false)]
@@ -36,7 +37,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         {
             memoryManager.TryReserveBytes(0).ReturnsForAnyArgs(canAllocate);
             bufferPool.TryAcquire(out _).Should().Be(canAllocate);
-            memoryManager.Received(1).TryReserveBytes(initialBufferSize);
+            memoryManager.Received(1).TryReserveBytes(InitialBufferSize);
         }
 
         [Test]
@@ -46,11 +47,11 @@ namespace Vostok.Hercules.Client.Tests.Sink
             bufferPool.Release(first);
             bufferPool.TryAcquire(out var second);
 
-            second.Should().Be(first);
+            second.Should().BeSameAs(first);
         }
 
         [Test]
-        public void Should_reuse_released_buffer_in_FIFO_order()
+        public void Should_reuse_released_buffers_in_FIFO_order()
         {
             bufferPool.TryAcquire(out var first);
             bufferPool.TryAcquire(out var second);
@@ -59,8 +60,8 @@ namespace Vostok.Hercules.Client.Tests.Sink
             bufferPool.TryAcquire(out var third);
             bufferPool.TryAcquire(out var fourth);
 
-            third.Should().Be(first);
-            fourth.Should().Be(second);
+            third.Should().BeSameAs(first);
+            fourth.Should().BeSameAs(second);
         }
 
         [Test]
@@ -68,7 +69,8 @@ namespace Vostok.Hercules.Client.Tests.Sink
         {
             bufferPool.TryAcquire(out var first);
             bufferPool.TryAcquire(out var second);
-            second.Should().NotBe(first);
+
+            second.Should().NotBeSameAs(first);
         }
 
         [Test]
@@ -94,6 +96,33 @@ namespace Vostok.Hercules.Client.Tests.Sink
             var snapshot = bufferPool.ToArray();
 
             snapshot.Should().BeEquivalentTo(buffer);
+        }
+
+        [Test]
+        public void Should_lock_returned_cached_buffers_for_writes()
+        {
+            bufferPool.TryAcquire(out var buffer);
+
+            buffer.Should().BeOfType<Buffer>().Which.TryLock().Should().BeFalse();
+        }
+
+        [Test]
+        public void Should_lock_returned_allocated_buffers_for_writes()
+        {
+            bufferPool.TryAcquire(out var buffer);
+            bufferPool.TryAcquire(out buffer);
+
+            buffer.Should().BeOfType<Buffer>().Which.TryLock().Should().BeFalse();
+        }
+
+        [Test]
+        public void Should_unlock_released_buffers()
+        {
+            bufferPool.TryAcquire(out var buffer);
+
+            bufferPool.Release(buffer);
+
+            buffer.Should().BeOfType<Buffer>().Which.TryLock().Should().BeTrue();
         }
     }
 }
