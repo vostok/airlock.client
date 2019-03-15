@@ -27,7 +27,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         public void Should_respect_initialBufferSize_setting()
         {
             bufferPool.TryAcquire(out var buffer).Should().BeTrue();
-            buffer.TryMakeSnapshot().Buffer.Length.Should().Be(initialBufferSize);
+            buffer.TryMakeSnapshot().Data.Array.Length.Should().Be(initialBufferSize);
         }
 
         [TestCase(false)]
