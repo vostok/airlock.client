@@ -82,7 +82,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         }
 
         [Test]
-        public void Should_not_grow_large_than_maxSize()
+        public void Should_not_grow_larger_than_maxSize()
         {
             var maxSize = 20;
 
@@ -93,11 +93,11 @@ namespace Vostok.Hercules.Client.Tests.Sink
             buffer.Write(0L);
             buffer.Write((byte)0);
 
-            buffer.Array.Length.Should().Be(maxSize);
+            buffer.Capacity.Should().Be(maxSize);
         }
 
         [Test]
-        public void Should_grow_twice()
+        public void Should_grow_twice_as_large_by_default()
         {
             var initialSize = 16;
             
@@ -108,7 +108,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
             buffer.Write(0L);
             buffer.Write((byte)0);
 
-            buffer.Array.Length.Should().Be(2 * initialSize);
+            buffer.Capacity.Should().Be(2 * initialSize);
         }
     }
 }

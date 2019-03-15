@@ -10,15 +10,15 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         private readonly AtomicBoolean isLockedForWrite = new AtomicBoolean(false);
 
         private readonly BinaryBufferWriter writer;
-        private readonly int maxSize;
         private readonly IMemoryManager memoryManager;
+        private readonly int maxSize;
 
         private readonly BufferStateHolder committed = new BufferStateHolder();
         private readonly BufferStateHolder garbage = new BufferStateHolder();
 
-        public Buffer(int bufferSize, int maxSize, IMemoryManager memoryManager)
+        public Buffer(int initialSize, int maxSize, IMemoryManager memoryManager)
         {
-            writer = new BinaryBufferWriter(bufferSize)
+            writer = new BinaryBufferWriter(initialSize)
             {
                 Endianness = Endianness.Big
             };
@@ -27,6 +27,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             this.memoryManager = memoryManager;
 
             committed.Value = default;
+            garbage.Value = default;
         }
 
         public long Position
@@ -42,7 +43,9 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         }
 
         public bool IsOverflowed { get; set; }
-        public byte[] Array => writer.Buffer;
+
+        public int Capacity => writer.Buffer.Length;
+
         public ArraySegment<byte> FilledSegment => writer.FilledSegment;
 
         public void Commit(int recordSize)
