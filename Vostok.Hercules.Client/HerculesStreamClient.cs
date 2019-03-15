@@ -33,7 +33,7 @@ namespace Vostok.Hercules.Client
         /// <param name="log">An <see cref="ILog"/> instance.</param>
         public HerculesStreamClient(HerculesStreamClientSettings settings, ILog log)
         {
-            this.log = log?.ForContext<HerculesStreamClient>() ?? new SilentLog();
+            this.log = log?.ForContext<HerculesStreamClient>() ?? LogProvider.Get();
             apiKeyProvider = settings.ApiKeyProvider;
 
             client = new ClusterClient(

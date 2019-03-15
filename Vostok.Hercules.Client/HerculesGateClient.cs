@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client
         /// <inheritdoc />
         public HerculesGateClient(HerculesGateClientSettings settings, ILog log)
         {
-            this.log = log = log?.ForContext<HerculesGateClient>() ?? new SilentLog();
+            this.log = log = log?.ForContext<HerculesGateClient>() ?? LogProvider.Get();
             sender = new RequestSender(settings.Cluster, log, settings.ApiKeyProvider);
         }
 
