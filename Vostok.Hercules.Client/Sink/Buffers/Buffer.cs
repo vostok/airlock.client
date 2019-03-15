@@ -25,12 +25,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             this.memoryManager = memoryManager;
         }
 
-        public bool IsOverflowed { get; set; }
-
-        public int Capacity => writer.Buffer.Length;
-
-        public ArraySegment<byte> FilledSegment => writer.FilledSegment;
-
         public BufferState Committed => committed.Value;
 
         public BufferState Garbage => garbage.Value;

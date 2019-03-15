@@ -6,6 +6,12 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 {
     internal partial class Buffer
     {
+        public bool IsOverflowed { get; set; }
+
+        public int Capacity => writer.Buffer.Length;
+
+        public ArraySegment<byte> FilledSegment => writer.FilledSegment;
+
         public long Position
         {
             get => writer.Position;
