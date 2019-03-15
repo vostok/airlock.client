@@ -51,9 +51,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         private bool TryDequeueBuffer(out IBuffer buffer)
         {
-            const int maxDequeueAttempts = 10;
-
-            var dequeueAttempts = Math.Min(maxDequeueAttempts, buffers.Count);
+            const int dequeueAttempts = 3;
 
             for (var i = 0; i < dequeueAttempts; ++i)
             {
