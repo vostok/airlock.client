@@ -8,14 +8,14 @@ namespace Vostok.Hercules.Client.Gate
 {
     internal interface IGateRequestSender
     {
-        Task<RequestSendingResult> SendAsync(
+        Task<Response> SendAsync(
             [NotNull] string stream,
             [CanBeNull] string apiKey,
             [NotNull] Content content,
             TimeSpan timeout,
             CancellationToken cancellationToken);
 
-        Task<RequestSendingResult> FireAndForgetAsync(
+        Task<Response> FireAndForgetAsync(
             [NotNull] string stream,
             [CanBeNull] string apiKey,
             [NotNull] CompositeContent content,

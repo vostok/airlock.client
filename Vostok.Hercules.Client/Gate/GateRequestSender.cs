@@ -22,13 +22,13 @@ namespace Vostok.Hercules.Client.Gate
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
         }
 
-        public Task<RequestSendingResult> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) 
+        public Task<Response> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) 
             => SendAsync("stream/send", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
 
-        public Task<RequestSendingResult> FireAndForgetAsync(string stream, string apiKey, CompositeContent content, TimeSpan timeout, CancellationToken cancellationToken) =>
+        public Task<Response> FireAndForgetAsync(string stream, string apiKey, CompositeContent content, TimeSpan timeout, CancellationToken cancellationToken) =>
             SendAsync("stream/sendAsync", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
 
-        private async Task<RequestSendingResult> SendAsync(
+        private async Task<Response> SendAsync(
             [NotNull] string path,
             [NotNull] string stream,
             [CanBeNull] string apiKey,
@@ -49,14 +49,7 @@ namespace Vostok.Hercules.Client.Gate
                 .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
                 .ConfigureAwait(false);
 
-            return GetSendingResult(result);
+            return result.Response;
         }
-
-        private static RequestSendingResult GetSendingResult(ClusterResult clusterResult) =>
-            new RequestSendingResult
-            {
-                Status = clusterResult.Status,
-                Code = clusterResult.Response.Code
-            };
     }
 }
