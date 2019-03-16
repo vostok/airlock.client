@@ -66,12 +66,15 @@ namespace Vostok.Hercules.Client
             var body = new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big};
 
             body.Write(query.Events.Count);
+
             foreach (var @event in query.Events)
             {
-                var eventBuilder = new BinaryEventBuilder(body, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion);
-                eventBuilder
-                    .SetTimestamp(@event.Timestamp)
-                    .AddTags(@event.Tags);
+                using (var eventBuilder = new BinaryEventBuilder(body, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion))
+                {
+                    eventBuilder
+                        .SetTimestamp(@event.Timestamp)
+                        .AddTags(@event.Tags);
+                }
             }
 
             return new Content(body.FilledSegment);
