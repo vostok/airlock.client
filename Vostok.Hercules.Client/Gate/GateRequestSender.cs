@@ -4,11 +4,8 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
-using Vostok.Clusterclient.Core.Ordering.Weighed;
-using Vostok.Clusterclient.Core.Strategies;
 using Vostok.Clusterclient.Core.Topology;
-using Vostok.Clusterclient.Transport;
-using Vostok.Commons.Time;
+using Vostok.Hercules.Client.Client;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Gate
@@ -20,24 +17,9 @@ namespace Vostok.Hercules.Client.Gate
         public GateRequestSender(
             [NotNull] IClusterProvider clusterProvider, 
             [NotNull] ILog log, 
-            [CanBeNull] ClusterClientSetup additionalSetup = null)
+            [CanBeNull] ClusterClientSetup additionalSetup)
         {
-            client = new ClusterClient(
-                log,
-                configuration =>
-                {
-                    configuration.TargetServiceName = Constants.ServiceNames.Gate;
-                    configuration.ClusterProvider = clusterProvider;
-                    configuration.Transport = new UniversalTransport(log);
-                    configuration.DefaultTimeout = 30.Seconds();
-                    configuration.DefaultRequestStrategy = Strategy.Forking2;
-
-                    configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
-                    configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
-                    configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
-
-                    additionalSetup?.Invoke(configuration);
-                });
+            client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
         }
 
         public Task<RequestSendingResult> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) 

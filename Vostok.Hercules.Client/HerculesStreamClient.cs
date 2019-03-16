@@ -4,14 +4,11 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
-using Vostok.Clusterclient.Core.Ordering.Weighed;
-using Vostok.Clusterclient.Core.Strategies;
-using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Binary;
-using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
+using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Logging.Abstractions;
 
@@ -29,23 +26,11 @@ namespace Vostok.Hercules.Client
         /// <param name="log">An <see cref="ILog"/> instance.</param>
         public HerculesStreamClient(HerculesStreamClientSettings settings, ILog log)
         {
-            this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesStreamClient>();
+            this.log = (log ?? LogProvider.Get()).ForContext<HerculesStreamClient>();
+
             apiKeyProvider = settings.ApiKeyProvider;
 
-            client = new ClusterClient(
-                log,
-                configuration =>
-                {
-                    configuration.TargetServiceName = Constants.ServiceNames.StreamApi;
-                    configuration.ClusterProvider = settings.Cluster;
-                    configuration.Transport = new UniversalTransport(this.log);
-                    configuration.DefaultTimeout = 30.Seconds();
-                    configuration.DefaultRequestStrategy = Strategy.Forking2;
-
-                    configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
-                    configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
-                    configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
-                });
+            client = ClusterClientFactory.Create(settings.Cluster, this.log, Constants.ServiceNames.StreamApi, null);
         }
 
         /// <inheritdoc />
