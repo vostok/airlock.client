@@ -10,14 +10,14 @@ namespace Vostok.Hercules.Client.Sink.Writing
     {
         private readonly ILog log;
         private readonly Func<DateTimeOffset> timeProvider;
-        private readonly byte recordVersion;
+        private readonly byte protocolVersion;
         private readonly int maxRecordSize;
 
-        public RecordWriter(ILog log, Func<DateTimeOffset> timeProvider, byte recordVersion, int maxRecordSize)
+        public RecordWriter(ILog log, Func<DateTimeOffset> timeProvider, byte protocolVersion, int maxRecordSize)
         {
             this.log = log;
             this.timeProvider = timeProvider;
-            this.recordVersion = recordVersion;
+            this.protocolVersion = protocolVersion;
             this.maxRecordSize = maxRecordSize;
         }
 
@@ -36,9 +36,8 @@ namespace Vostok.Hercules.Client.Sink.Writing
             try
             {
                 buffer.IsOverflowed = false;
-                buffer.Write(recordVersion);
 
-                using (var builder = new BinaryEventBuilder(buffer, timeProvider))
+                using (var builder = new BinaryEventBuilder(buffer, timeProvider, protocolVersion))
                     build(builder);
 
                 if (buffer.IsOverflowed)

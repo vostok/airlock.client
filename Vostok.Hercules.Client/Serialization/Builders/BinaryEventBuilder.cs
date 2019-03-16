@@ -10,15 +10,19 @@ namespace Vostok.Hercules.Client.Serialization.Builders
     {
         private readonly IBinaryWriter binaryWriter;
         private readonly Func<DateTimeOffset> timeProvider;
+        private readonly byte protocolVersion;
+
         private readonly long timestampPosition;
         private readonly BinaryCountingTagsBuilder tagsBuilder;
 
         private DateTimeOffset timestampInternal;
 
-        public BinaryEventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
+        public BinaryEventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider, byte protocolVersion)
         {
             this.binaryWriter = binaryWriter;
             this.timeProvider = timeProvider;
+
+            binaryWriter.Write(protocolVersion);
 
             timestampPosition = binaryWriter.Position;
             binaryWriter.Write(0L);

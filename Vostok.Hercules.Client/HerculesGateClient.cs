@@ -68,7 +68,7 @@ namespace Vostok.Hercules.Client
             body.Write(query.Events.Count);
             foreach (var @event in query.Events)
             {
-                var eventBuilder = new BinaryEventBuilder(body, () => PreciseDateTime.UtcNow);
+                var eventBuilder = new BinaryEventBuilder(body, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion);
                 eventBuilder
                     .SetTimestamp(@event.Timestamp)
                     .AddTags(@event.Tags);

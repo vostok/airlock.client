@@ -28,7 +28,7 @@ namespace Vostok.Hercules.Client.Tests.Serialization
         private HerculesEvent TestSerialization(Action<IHerculesEventBuilder> build)
         {
             var binaryWriter = new BinaryBufferWriter(16) { Endianness = Endianness.Big };
-            var binaryBuilder = new BinaryEventBuilder(binaryWriter, () => defaultTimestamp);
+            var binaryBuilder = new BinaryEventBuilder(binaryWriter, () => defaultTimestamp, Constants.ProtocolVersion);
             var memoryBuilder = new HerculesEventBuilder();
 
             build(binaryBuilder);
