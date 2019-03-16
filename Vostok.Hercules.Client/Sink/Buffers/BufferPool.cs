@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         {
             var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer);
             if (result)
-                buffer.TryCollectGarbage();
+                (buffer as Buffer)?.CollectGarbage();
 
             return result;
         }
@@ -75,6 +75,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             }
 
             buffer = new Buffer(initialBufferSize, maxBufferSize, memoryManager);
+
             TryLock(buffer);
 
             allBuffers.Enqueue(buffer);

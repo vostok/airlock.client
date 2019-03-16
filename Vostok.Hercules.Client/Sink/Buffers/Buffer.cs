@@ -88,28 +88,33 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
             try
             {
-                var garbageState = Garbage;
-                if (garbageState.Length == 0)
-                    return true;
-
-                System.Buffer.BlockCopy(
-                    writer.Buffer,
-                    garbageState.Length,
-                    writer.Buffer,
-                    0,
-                    (int)writer.Position - garbageState.Length);
-
-                writer.Position -= garbageState.Length;
-                committed.Value -= garbageState;
-
-                // (epeshk): reset garbage state last for synchronization with TryMakeSnapshot:
-                garbage.Value = default;
+                CollectGarbage();
                 return true;
             }
             finally
             {
                 isLocked.Value = false;
             }
+        }
+
+        public void CollectGarbage()
+        {
+            var garbageState = Garbage;
+            if (garbageState.Length == 0)
+                return;
+
+            System.Buffer.BlockCopy(
+                writer.Buffer,
+                garbageState.Length,
+                writer.Buffer,
+                0,
+                (int)writer.Position - garbageState.Length);
+
+            writer.Position -= garbageState.Length;
+            committed.Value -= garbageState;
+
+            // (epeshk): reset garbage state last for synchronization with TryMakeSnapshot:
+            garbage.Value = default;
         }
     }
 }

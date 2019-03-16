@@ -1,8 +1,9 @@
-using System.Linq;
+using System;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Hercules.Client.Sink.Buffers;
+using Buffer = Vostok.Hercules.Client.Sink.Buffers.Buffer;
 
 namespace Vostok.Hercules.Client.Tests.Sink.Buffers
 {
@@ -28,7 +29,8 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
         public void Should_respect_initialBufferSize_setting()
         {
             bufferPool.TryAcquire(out var buffer).Should().BeTrue();
-            buffer.TryMakeSnapshot().Data.Array.Length.Should().Be(InitialBufferSize);
+
+            buffer.TryMakeSnapshot()?.Data.Array.Length.Should().Be(InitialBufferSize);
         }
 
         [TestCase(false)]
@@ -80,9 +82,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
             buffer.Write(0);
             buffer.CommitRecord(sizeof(int));
 
-            var snapshot = bufferPool.ToArray();
-
-            snapshot.Should().BeEquivalentTo(buffer);
+            bufferPool.Should().Equal(buffer);
         }
 
         [Test]
@@ -93,9 +93,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
             buffer.CommitRecord(sizeof(int));
             bufferPool.Release(buffer);
 
-            var snapshot = bufferPool.ToArray();
-
-            snapshot.Should().BeEquivalentTo(buffer);
+            bufferPool.Should().Equal(buffer);
         }
 
         [Test]
@@ -123,6 +121,53 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
             bufferPool.Release(buffer);
 
             buffer.Should().BeOfType<Buffer>().Which.TryLock().Should().BeTrue();
+        }
+
+        [Test]
+        public void Acquire_should_collect_garbage()
+        {
+            bufferPool.TryAcquire(out var buffer);
+
+            buffer.Write(Guid.Empty);
+            buffer.CommitRecord(16);
+            buffer.ReportGarbage(new BufferState(16, 1));
+
+            bufferPool.Release(buffer);
+
+            bufferPool.TryAcquire(out var secondBuffer).Should().BeTrue();
+
+            secondBuffer.Should().BeSameAs(buffer);
+
+            ((Buffer)buffer).Garbage.IsEmpty.Should().BeTrue();
+        }
+
+        [Test]
+        public void Acquire_should_not_return_locked_buffers()
+        {
+            bufferPool.TryAcquire(out var buffer);
+
+            bufferPool.Release(buffer);
+
+            ((Buffer)buffer).TryLock();
+
+            bufferPool.TryAcquire(out var secondBuffer).Should().BeTrue();
+
+            secondBuffer.Should().NotBeSameAs(buffer);
+        }
+
+        [Test]
+        public void Acquire_should_not_return_buffers_with_not_enough_space_for_max_record_size()
+        {
+            bufferPool.TryAcquire(out var buffer);
+
+            buffer.WriteWithoutLength(new byte[MaxBufferSize - 1]);
+            buffer.CommitRecord(MaxBufferSize - 1);
+
+            bufferPool.Release(buffer);
+
+            bufferPool.TryAcquire(out var secondBuffer).Should().BeTrue();
+
+            secondBuffer.Should().NotBeSameAs(buffer);
         }
     }
 }
