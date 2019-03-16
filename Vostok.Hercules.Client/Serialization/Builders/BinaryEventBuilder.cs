@@ -10,7 +10,6 @@ namespace Vostok.Hercules.Client.Serialization.Builders
     {
         private readonly IBinaryWriter binaryWriter;
         private readonly Func<DateTimeOffset> timeProvider;
-        private readonly byte protocolVersion;
 
         private readonly long timestampPosition;
         private readonly BinaryCountingTagsBuilder tagsBuilder;
