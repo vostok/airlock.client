@@ -26,18 +26,10 @@ namespace Vostok.Hercules.Client.Sink.Planner
 
         public Task WaitForNextSendAsync(StreamSendResult result, CancellationToken cancellationToken)
         {
-            switch (result)
-            {
-                case StreamSendResult.Success:
-                case StreamSendResult.NothingToSend:
-                    successiveFailures = 0;
-                    break;
-                case StreamSendResult.Failure:
-                    successiveFailures++;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
+            if (result.HasTransientFailures)
+                successiveFailures++;
+            else
+                successiveFailures = 0;
 
             return signal
                 .WaitAsync(cancellationToken)

@@ -67,21 +67,21 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         }
 
         [Test]
-        public void Should_return_nothing_to_send_result_when_all_collected_snapshots_are_null()
+        public void Should_return_empty_result_when_all_collected_snapshots_are_null()
         {
             SetupBuffers(null, null, null);
 
-            Send().Should().Be(StreamSendResult.NothingToSend);
+            Send().BatchResults.Should().BeEmpty();
 
             requestSender.ReceivedCalls().Should().BeEmpty();
         }
 
         [Test]
-        public void Should_return_nothing_to_send_result_when_all_collected_snapshots_are_empty()
+        public void Should_return_empty_result_when_all_collected_snapshots_are_empty()
         {
             SetupBuffers(0, 0, 0);
 
-            Send().Should().Be(StreamSendResult.NothingToSend);
+            Send().BatchResults.Should().BeEmpty();
 
             requestSender.ReceivedCalls().Should().BeEmpty();
         }
@@ -99,7 +99,11 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_return_successful_result_when_all_batches_are_successfully_sent()
         {
-            Send().Should().Be(StreamSendResult.Success);
+            var result = Send();
+
+            result.IsSuccessful.Should().BeTrue();
+            result.BatchResults.Should().OnlyContain(r => r == GateResponseClass.Success);
+            result.BatchResults.Should().HaveCount(pool.Count());
         }
 
         [Test]
@@ -107,7 +111,11 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             SetupResponses(ResponseCode.InternalServerError, ResponseCode.Ok);
 
-            Send().Should().Be(StreamSendResult.Failure);
+            var result = Send();
+
+            result.HasTransientFailures.Should().BeTrue();
+            result.BatchResults.Should().OnlyContain(r => r == GateResponseClass.TransientFailure);
+            result.BatchResults.Should().HaveCount(1);
 
             requestSender.ReceivedCalls().Should().HaveCount(1);
         }
@@ -117,7 +125,10 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             SetupResponses(ResponseCode.NotFound, ResponseCode.NotFound, ResponseCode.Ok);
 
-            Send().Should().Be(StreamSendResult.Failure);
+            var result = Send();
+
+            result.BatchResults.Should().Equal(GateResponseClass.DefinitiveFailure, GateResponseClass.DefinitiveFailure, GateResponseClass.Success);
+            result.BatchResults.Should().HaveCount(3);
 
             requestSender.ReceivedCalls().Should().HaveCount(3);
         }

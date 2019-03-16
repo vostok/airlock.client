@@ -49,31 +49,21 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
             var batches = snapshotBatcher.Batch(snapshots);
 
-            var result = StreamSendResult.NothingToSend;
+            var batchResults = new List<GateResponseClass>();
 
             foreach (var batch in batches)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var responseClass = await SendBatchAsync(batch, perRequestTimeout, cancellationToken).ConfigureAwait(false);
+                var batchResult = await SendBatchAsync(batch, perRequestTimeout, cancellationToken).ConfigureAwait(false);
 
-                switch (responseClass)
-                {
-                    case GateResponseClass.Success:
-                        if (result == StreamSendResult.NothingToSend)
-                            result = StreamSendResult.Success;
-                        break;
+                batchResults.Add(batchResult);
 
-                    case GateResponseClass.DefinitiveFailure:
-                        result = StreamSendResult.Failure;
-                        break;
-
-                    case GateResponseClass.TransientFailure:
-                        return StreamSendResult.Failure;
-                }
+                if (batchResult == GateResponseClass.TransientFailure)
+                    break;
             }
 
-            return result;
+            return new StreamSendResult(batchResults);
         }
 
         [NotNull]
