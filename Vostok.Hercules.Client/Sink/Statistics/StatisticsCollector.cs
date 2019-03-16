@@ -7,43 +7,47 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         private long buildFailures;
         private long overflows;
         private long sizeLimitViolations;
-        private long lostRecordsCount;
-        private long lostRecordsSize;
+        private long rejectedRecordsCount;
+        private long rejectedRecordsSize;
         private long sentRecordsCount;
         private long sentRecordsSize;
         private long storedRecordsCount;
         private long storedRecordsSize;
 
-        public HerculesSinkCounters Get()
-        {
-            return new HerculesSinkCounters(
+        public HerculesSinkCounters GetCounters()
+            => new HerculesSinkCounters(
                 ReadTuple(ref sentRecordsCount, ref sentRecordsSize),
-                ReadTuple(ref lostRecordsCount, ref lostRecordsSize),
+                ReadTuple(ref rejectedRecordsCount, ref rejectedRecordsSize),
                 ReadTuple(ref storedRecordsCount, ref storedRecordsSize),
                 Interlocked.Read(ref buildFailures),
                 Interlocked.Read(ref sizeLimitViolations),
                 Interlocked.Read(ref overflows));
-        }
 
-        public void ReportSizeLimitViolation() => Interlocked.Increment(ref sizeLimitViolations);
+        public long EstimateStoredSize()
+            => Interlocked.Read(ref storedRecordsSize);
 
-        public void ReportRecordBuildFailure() => Interlocked.Increment(ref buildFailures);
+        public void ReportSizeLimitViolation() 
+            => Interlocked.Increment(ref sizeLimitViolations);
 
-        public void ReportOverflow() => Interlocked.Increment(ref overflows);
+        public void ReportRecordBuildFailure() 
+            => Interlocked.Increment(ref buildFailures);
 
-        public void ReportSendingFailure(long count, long size)
-        {
-            Interlocked.Add(ref lostRecordsCount, count);
-            Interlocked.Add(ref lostRecordsSize, size);
-
-            Interlocked.Add(ref storedRecordsCount, -count);
-            Interlocked.Add(ref storedRecordsSize, -size);
-        }
+        public void ReportOverflow() 
+            => Interlocked.Increment(ref overflows);
 
         public void ReportSuccessfulSending(long count, long size)
         {
             Interlocked.Add(ref sentRecordsCount, count);
             Interlocked.Add(ref sentRecordsSize, size);
+
+            Interlocked.Add(ref storedRecordsCount, -count);
+            Interlocked.Add(ref storedRecordsSize, -size);
+        }
+
+        public void ReportSendingFailure(long count, long size)
+        {
+            Interlocked.Add(ref rejectedRecordsCount, count);
+            Interlocked.Add(ref rejectedRecordsSize, size);
 
             Interlocked.Add(ref storedRecordsCount, -count);
             Interlocked.Add(ref storedRecordsSize, -size);
@@ -55,9 +59,7 @@ namespace Vostok.Hercules.Client.Sink.Statistics
             Interlocked.Add(ref storedRecordsSize, size);
         }
 
-        public long EstimateStoredSize() => Interlocked.Read(ref storedRecordsSize);
-
-        private static (long, long) ReadTuple(ref long a, ref long b) =>
-            (Interlocked.Read(ref a), Interlocked.Read(ref b));
+        private static (long, long) ReadTuple(ref long first, ref long second) =>
+            (Interlocked.Read(ref first), Interlocked.Read(ref second));
     }
 }

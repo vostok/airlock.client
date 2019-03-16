@@ -109,7 +109,7 @@ namespace Vostok.Hercules.Client
         {
             var perStreamCounters = streamStates
                 .Where(x => x.Value.IsValueCreated)
-                .ToDictionary(x => x.Key, x => x.Value.Value.Statistics.Get());
+                .ToDictionary(x => x.Key, x => x.Value.Value.Statistics.GetCounters());
 
             var totalCounters = HerculesSinkCounters.Zero;
 
