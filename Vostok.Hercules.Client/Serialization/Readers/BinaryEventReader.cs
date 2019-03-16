@@ -73,14 +73,14 @@ namespace Vostok.Hercules.Client.Serialization.Readers
                         ReadVector(reader, builder, key);
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(valueType), valueType, "Value type is not defined");
+                        throw new ArgumentOutOfRangeException(nameof(valueType), valueType, "Unexpected tag value type.");
                 }
             }
         }
 
         private static void ReadVector(IBinaryReader reader, IHerculesTagsBuilder builder, string key)
         {
-            var elementType = (TagType)reader.ReadByte();
+            var elementType = (TagType) reader.ReadByte();
 
             switch (elementType)
             {
@@ -93,8 +93,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
                             .ToList());
                     break;
                 case TagType.Byte:
-                    var length = reader.ReadInt32();
-                    builder.AddVector(key, reader.ReadByteArray(length));
+                    builder.AddVector(key, reader.ReadByteArray());
                     break;
                 case TagType.Short:
                     builder.AddVector(key, reader.ReadArray(r => r.ReadInt16()));
@@ -126,16 +125,23 @@ namespace Vostok.Hercules.Client.Serialization.Readers
                 case TagType.Vector:
                     throw new NotSupportedException("Nested vectors are not supported yet.");
                 default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(elementType),
-                        elementType,
-                        "Element value type is not defined.");
+                    throw new ArgumentOutOfRangeException(nameof(elementType), elementType, "Unexpected vector element type.");
             }
         }
 
         private static string ReadShortString(this IBinaryReader reader)
         {
             var length = reader.ReadByte();
+
+            if (reader is BinaryBufferReader bufferReader)
+            {
+                var result = Encoding.UTF8.GetString(bufferReader.Buffer, (int) bufferReader.Position, length);
+
+                bufferReader.Position += length;
+
+                return result;
+            }
+
             return Encoding.UTF8.GetString(reader.ReadByteArray(length));
         }
     }
