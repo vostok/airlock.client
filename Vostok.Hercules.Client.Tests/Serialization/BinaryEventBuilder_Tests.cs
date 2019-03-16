@@ -137,7 +137,7 @@ namespace Vostok.Hercules.Client.Tests.Serialization
 
             for (var i = 0; i < 3; i++)
             {
-                using (var binaryBuilder = new BinaryEventBuilder(binaryWriter, () => defaultTimestamp, Constants.ProtocolVersion))
+                using (var binaryBuilder = new BinaryEventBuilder(binaryWriter, () => defaultTimestamp, Constants.EventProtocolVersion))
                 {
                     build(binaryBuilder);
                 }

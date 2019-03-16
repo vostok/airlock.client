@@ -36,7 +36,7 @@ namespace Vostok.Hercules.Client
         public HerculesSink([NotNull] HerculesSinkSettings settings, [CanBeNull] ILog log)
             : this(settings, null, null, null, log)
         {
-            recordWriter = new RecordWriter(this.log, () => PreciseDateTime.UtcNow, Constants.ProtocolVersion, settings.MaximumRecordSize);
+            recordWriter = new RecordWriter(this.log, () => PreciseDateTime.UtcNow, Constants.EventProtocolVersion, settings.MaximumRecordSize);
 
             var memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
             var batcher = new BufferSnapshotBatcher(settings.MaximumBatchSize);

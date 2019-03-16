@@ -112,7 +112,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
                 () =>
                 {
                     var query = lastRequest?.Url.Query;
-                    query.Should().Be($"?{Constants.StreamQueryParameter}={streamName}");
+                    query.Should().Be($"?{Constants.QueryParameters.Stream}={streamName}");
                 }).ShouldPassIn(5.Seconds());
         }
 
@@ -149,7 +149,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
                 + sizeof(long); // timestamp
 
             var writer = new BinaryBufferWriter(size) {Endianness = Endianness.Big};
-            writer.Write(Constants.ProtocolVersion);
+            writer.Write(Constants.EventProtocolVersion);
             writer.Write(unixTimestamp);
             writer.Write(Guid.Empty);
 

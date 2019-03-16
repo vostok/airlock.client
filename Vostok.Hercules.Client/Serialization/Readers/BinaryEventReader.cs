@@ -17,7 +17,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             var builder = new HerculesEventBuilder();
 
             var version = reader.ReadByte();
-            if (version != Constants.ProtocolVersion)
+            if (version != Constants.EventProtocolVersion)
                 throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
 
             var utcTimestamp = EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64());

@@ -15,8 +15,6 @@ namespace Vostok.Hercules.Client.Gate
 {
     internal class GateRequestSender : IGateRequestSender
     {
-        private const string ServiceName = "HerculesGateway";
-
         private readonly IClusterClient client;
 
         public GateRequestSender(
@@ -28,7 +26,7 @@ namespace Vostok.Hercules.Client.Gate
                 log,
                 configuration =>
                 {
-                    configuration.TargetServiceName = ServiceName;
+                    configuration.TargetServiceName = Constants.ServiceNames.Gate;
                     configuration.ClusterProvider = clusterProvider;
                     configuration.Transport = new UniversalTransport(log);
                     configuration.DefaultTimeout = 30.Seconds();
@@ -57,11 +55,11 @@ namespace Vostok.Hercules.Client.Gate
             CancellationToken cancellationToken)
         {
             var request = Request.Post(path)
-                .WithAdditionalQueryParameter(Constants.StreamQueryParameter, stream)
-                .WithContentTypeHeader(Constants.OctetStreamContentType);
+                .WithAdditionalQueryParameter(Constants.QueryParameters.Stream, stream)
+                .WithContentTypeHeader(Constants.ContentTypes.OctetStream);
 
             if (!string.IsNullOrEmpty(apiKey))
-                request = request.WithHeader(Constants.ApiKeyHeaderName, apiKey);
+                request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
 
             request = addBody(request);
 

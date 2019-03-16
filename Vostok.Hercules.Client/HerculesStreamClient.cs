@@ -12,7 +12,6 @@ using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
-using Vostok.Hercules.Client.Serialization;
 using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Logging.Abstractions;
 
@@ -22,9 +21,6 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesStreamClient : IHerculesStreamClient
     {
-        private const string ServiceName = "HerculesStreamApi";
-        private const string ReadPath = "stream/read";
-
         private readonly ILog log;
         private readonly IClusterClient client;
         private readonly Func<string> apiKeyProvider;
@@ -40,7 +36,7 @@ namespace Vostok.Hercules.Client
                 log,
                 configuration =>
                 {
-                    configuration.TargetServiceName = ServiceName;
+                    configuration.TargetServiceName = Constants.ServiceNames.StreamApi;
                     configuration.ClusterProvider = settings.Cluster;
                     configuration.Transport = new UniversalTransport(this.log);
                     configuration.DefaultTimeout = 30.Seconds();
@@ -64,8 +60,8 @@ namespace Vostok.Hercules.Client
                     return new ReadStreamResult(HerculesStatus.Unauthorized, null);
                 }
 
-                var url = new RequestUrlBuilder(ReadPath)
-                    .AppendToQuery(Constants.StreamQueryParameter, query.Name)
+                var url = new RequestUrlBuilder("stream/read")
+                    .AppendToQuery(Constants.QueryParameters.Stream, query.Name)
                     .AppendToQuery("take", query.Limit)
                     .AppendToQuery("shardIndex", query.ClientShard)
                     .AppendToQuery("shardCount", query.ClientShardCount)
@@ -75,8 +71,8 @@ namespace Vostok.Hercules.Client
 
                 var request = Request
                     .Post(url)
-                    .WithHeader(HeaderNames.ContentType, Constants.OctetStreamContentType)
-                    .WithHeader(Constants.ApiKeyHeaderName, apiKey)
+                    .WithHeader(HeaderNames.ContentType, Constants.ContentTypes.OctetStream)
+                    .WithHeader(Constants.HeaderNames.ApiKey, apiKey)
                     .WithContent(body);
 
                 var result = await client
