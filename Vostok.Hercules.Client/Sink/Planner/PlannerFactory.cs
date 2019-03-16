@@ -4,12 +4,14 @@ namespace Vostok.Hercules.Client.Sink.Planner
 {
     internal class PlannerFactory : IPlannerFactory
     {
+        private const double MaxJitterFraction = 0.2;
+
         private readonly HerculesSinkSettings settings;
 
         public PlannerFactory(HerculesSinkSettings settings) =>
             this.settings = settings;
 
         public IPlanner Create(IStreamState state) =>
-            new Planner(state.SendSignal, settings.SendPeriod, settings.SendPeriodCap);
+            new Planner(state.SendSignal, settings.SendPeriod, settings.SendPeriodCap, MaxJitterFraction);
     }
 }

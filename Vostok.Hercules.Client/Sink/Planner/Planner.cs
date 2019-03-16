@@ -9,17 +9,19 @@ namespace Vostok.Hercules.Client.Sink.Planner
 {
     internal class Planner : IPlanner
     {
-        private readonly AsyncManualResetEvent sendImmediately;
+        private readonly AsyncManualResetEvent signal;
         private readonly TimeSpan sendPeriod;
         private readonly TimeSpan sendPeriodCap;
+        private readonly double maxJitterFraction;
 
-        private int unsuccessfulAttempts;
+        private volatile int successiveFailures;
 
-        public Planner(AsyncManualResetEvent sendImmediately, TimeSpan sendPeriod, TimeSpan sendPeriodCap)
+        public Planner(AsyncManualResetEvent signal, TimeSpan sendPeriod, TimeSpan sendPeriodCap, double maxJitterFraction)
         {
-            this.sendImmediately = sendImmediately;
+            this.signal = signal;
             this.sendPeriod = sendPeriod;
             this.sendPeriodCap = sendPeriodCap;
+            this.maxJitterFraction = maxJitterFraction;
         }
 
         public Task WaitForNextSendAsync(StreamSendResult result, CancellationToken cancellationToken)
@@ -28,21 +30,21 @@ namespace Vostok.Hercules.Client.Sink.Planner
             {
                 case StreamSendResult.Success:
                 case StreamSendResult.NothingToSend:
-                    unsuccessfulAttempts = 0;
+                    successiveFailures = 0;
                     break;
                 case StreamSendResult.Failure:
-                    unsuccessfulAttempts++;
+                    successiveFailures++;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result));
             }
 
-            return sendImmediately
+            return signal
                 .WaitAsync(cancellationToken)
                 .WaitAsync(GetDelayToNextOccurence());
         }
 
         private TimeSpan GetDelayToNextOccurence() =>
-            Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, unsuccessfulAttempts);
+            Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, successiveFailures, maxJitterFraction);
     }
 }

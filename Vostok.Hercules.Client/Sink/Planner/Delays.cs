@@ -6,10 +6,12 @@ namespace Vostok.Hercules.Client.Sink.Planner
 {
     internal static class Delays
     {
-        public static TimeSpan ExponentialWithJitter(TimeSpan sendPeriodCap, TimeSpan sendPeriod, int attempt)
+        public static TimeSpan ExponentialWithJitter(
+            TimeSpan sendPeriodCap, 
+            TimeSpan sendPeriod, 
+            int attempt,
+            double maxJitterFraction)
         {
-            const double maxJitterFraction = 0.2;
-
             var baseDelayMs = Math.Min(sendPeriodCap.TotalMilliseconds, sendPeriod.TotalMilliseconds * Math.Pow(2, attempt));
 
             var delay = TimeSpan.FromMilliseconds(baseDelayMs);
