@@ -3,17 +3,13 @@ using System.Collections.Concurrent;
 using System.Linq;
 using JetBrains.Annotations;
 using Vostok.Commons.Threading;
-using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
-using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Daemon;
 using Vostok.Hercules.Client.Sink.Planner;
 using Vostok.Hercules.Client.Sink.Sending;
-using Vostok.Hercules.Client.Sink.Statistics;
 using Vostok.Hercules.Client.Sink.StreamState;
-using Vostok.Hercules.Client.Sink.Writing;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -23,7 +19,6 @@ namespace Vostok.Hercules.Client
     public class HerculesSink : IHerculesSink, IDisposable
     {
         private readonly HerculesSinkSettings settings;
-        private readonly IRecordWriter recordWriter;
         private readonly IRecordsSendingDaemon sendingDaemon;
         private readonly IStreamStateFactory stateFactory;
         private readonly ILog log;
@@ -32,22 +27,18 @@ namespace Vostok.Hercules.Client
         private readonly AtomicBoolean isDisposed;
 
         public HerculesSink([NotNull] HerculesSinkSettings settings, [CanBeNull] ILog log)
-            : this(settings, null, null, null, log)
+            : this(settings, null, null, log)
         {
-            recordWriter = new RecordWriter(this.log, () => PreciseDateTime.UtcNow, Constants.EventProtocolVersion, settings.MaximumRecordSize);
-
-            var memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
             var senderFactory = new StreamSenderFactory(settings, this.log);
             var plannerFactory = new PlannerFactory(settings);
             var scheduler = new Scheduler(this, streamStates, settings, senderFactory, plannerFactory);
 
-            stateFactory = new StreamStateFactory(settings, memoryManager);
+            stateFactory = new StreamStateFactory(settings, this.log);
             sendingDaemon = new RecordsSendingDaemon(this.log, scheduler);
         }
 
         internal HerculesSink(
             HerculesSinkSettings settings,
-            IRecordWriter recordWriter,
             IRecordsSendingDaemon sendingDaemon,
             IStreamStateFactory stateFactory,
             ILog log)
@@ -55,7 +46,6 @@ namespace Vostok.Hercules.Client
             this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
             this.log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
-            this.recordWriter = recordWriter;
             this.sendingDaemon = sendingDaemon;
             this.stateFactory = stateFactory;
 
@@ -87,7 +77,7 @@ namespace Vostok.Hercules.Client
 
             try
             {
-                WriteRecord(build, statistics, buffer, streamState.SendSignal);
+                streamState.RecordWriter.TryWrite(buffer, build, out _);
             }
             finally
             {
@@ -123,31 +113,6 @@ namespace Vostok.Hercules.Client
         {
             if (isDisposed.TrySetTrue())
                 sendingDaemon.Dispose();
-        }
-
-        private void WriteRecord(Action<IHerculesEventBuilder> build, IStatisticsCollector statistics, IBuffer buffer, AsyncManualResetEvent sendSignal)
-        {
-            var storedSizeBefore = statistics.EstimateStoredSize();
-
-            switch (recordWriter.TryWrite(buffer, build, out var recordSize))
-            {
-                case RecordWriteResult.Success:
-                    statistics.ReportStoredRecord(recordSize);
-                    var storedSizeAfter = statistics.EstimateStoredSize();
-                    var threshold = settings.MaximumPerStreamMemoryConsumption / 4;
-                    if (storedSizeBefore < threshold && threshold <= storedSizeAfter)
-                        sendSignal.Set();
-                    break;
-                case RecordWriteResult.Exception:
-                    statistics.ReportRecordBuildFailure();
-                    break;
-                case RecordWriteResult.OutOfMemory:
-                    statistics.ReportOverflow();
-                    break;
-                case RecordWriteResult.RecordTooLarge:
-                    statistics.ReportSizeLimitViolation();
-                    break;
-            }
         }
 
         private void LogDisposed()

@@ -1,8 +1,11 @@
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Statistics;
+using Vostok.Hercules.Client.Sink.StreamState;
+using Vostok.Hercules.Client.Sink.Writing;
 
 namespace Vostok.Hercules.Client.Tests.Sink.StreamState
 {
@@ -14,7 +17,12 @@ namespace Vostok.Hercules.Client.Tests.Sink.StreamState
         [SetUp]
         public void TestSetup()
         {
-            state = new Hercules.Client.Sink.StreamState.StreamState("stream", Substitute.For<IBufferPool>(), Substitute.For<IStatisticsCollector>());
+            state = new Hercules.Client.Sink.StreamState.StreamState(
+                "stream", 
+                Substitute.For<IBufferPool>(),
+                Substitute.For<IRecordWriter>(),
+                Substitute.For<IStatisticsCollector>(),
+                new AsyncManualResetEvent(false));
         }
 
         [Test]

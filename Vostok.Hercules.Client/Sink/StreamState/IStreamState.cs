@@ -3,6 +3,7 @@ using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Statistics;
+using Vostok.Hercules.Client.Sink.Writing;
 
 namespace Vostok.Hercules.Client.Sink.StreamState
 {
@@ -13,6 +14,9 @@ namespace Vostok.Hercules.Client.Sink.StreamState
 
         [NotNull]
         IBufferPool BufferPool { get; }
+
+        [NotNull]
+        IRecordWriter RecordWriter { get; }
 
         [NotNull]
         IStatisticsCollector Statistics { get; }
