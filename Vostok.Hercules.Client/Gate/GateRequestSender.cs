@@ -12,7 +12,7 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Gate
 {
-    internal class RequestSender : IRequestSender
+    internal class GateRequestSender : IGateRequestSender
     {
         private const string ServiceName = "HerculesGateway";
         private const string SynchronousPath = "stream/send";
@@ -22,7 +22,7 @@ namespace Vostok.Hercules.Client.Gate
         private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 
-        public RequestSender(
+        public GateRequestSender(
             IClusterProvider clusterProvider,
             ILog log,
             Func<string> getGateApiKey,

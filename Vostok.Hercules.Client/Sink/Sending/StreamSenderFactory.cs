@@ -9,13 +9,13 @@ namespace Vostok.Hercules.Client.Sink.Sending
     {
         private readonly IBufferSnapshotBatcher batcher;
         private readonly IRequestContentFactory contentFactory;
-        private readonly IRequestSender requestSender;
+        private readonly IGateRequestSender requestSender;
         private readonly ILog log;
 
         public StreamSenderFactory(
             IBufferSnapshotBatcher batcher,
             IRequestContentFactory contentFactory,
-            IRequestSender requestSender,
+            IGateRequestSender requestSender,
             ILog log)
         {
             this.batcher = batcher;

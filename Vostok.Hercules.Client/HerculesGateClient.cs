@@ -24,13 +24,13 @@ namespace Vostok.Hercules.Client
         private const int InitialBodyBufferSize = 4096;
 
         private readonly ILog log;
-        private readonly IRequestSender sender;
+        private readonly IGateRequestSender sender;
 
         /// <inheritdoc />
         public HerculesGateClient(HerculesGateClientSettings settings, ILog log)
         {
             this.log = log = (log?? LogProvider.Get()).ForContext<HerculesGateClient>();
-            sender = new RequestSender(settings.Cluster, log, settings.ApiKeyProvider);
+            sender = new GateRequestSender(settings.Cluster, log, settings.ApiKeyProvider);
         }
 
         /// <inheritdoc />

@@ -16,14 +16,14 @@ namespace Vostok.Hercules.Client.Sink.Sending
         private readonly IStreamState state;
         private readonly IBufferSnapshotBatcher batcher;
         private readonly IRequestContentFactory contentFactory;
-        private readonly IRequestSender sender;
+        private readonly IGateRequestSender sender;
         private readonly ILog log;
 
         public StreamSender(
             IStreamState state,
             IBufferSnapshotBatcher batcher,
             IRequestContentFactory contentFactory,
-            IRequestSender sender,
+            IGateRequestSender sender,
             ILog log)
         {
             this.state = state;

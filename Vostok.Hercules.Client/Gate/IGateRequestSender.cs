@@ -5,7 +5,7 @@ using Vostok.Clusterclient.Core.Model;
 
 namespace Vostok.Hercules.Client.Gate
 {
-    internal interface IRequestSender
+    internal interface IGateRequestSender
     {
         Task<RequestSendingResult> SendAsync(
             string stream,
