@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -7,11 +8,13 @@ namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal class StreamSendResult
     {
-        public static readonly StreamSendResult Empty = new StreamSendResult(new GateResponseClass[] {});
+        public static readonly StreamSendResult Empty
+            = new StreamSendResult(new GateResponseClass[] {}, TimeSpan.Zero);
 
-        public StreamSendResult([NotNull] IReadOnlyList<GateResponseClass> batchResults)
+        public StreamSendResult([NotNull] IReadOnlyList<GateResponseClass> batchResults, TimeSpan elapsed)
         {
             BatchResults = batchResults;
+            Elapsed = elapsed;
         }
 
         /// <summary>
@@ -19,6 +22,11 @@ namespace Vostok.Hercules.Client.Sink.Sender
         /// </summary>
         [NotNull]
         public IReadOnlyList<GateResponseClass> BatchResults { get; }
+
+        /// <summary>
+        /// Returns the time it took to send stream data;
+        /// </summary>
+        public TimeSpan Elapsed { get; }
 
         /// <summary>
         /// Returns <c>true</c> if any of <see cref="BatchResults"/> is <see cref="GateResponseClass.TransientFailure"/>.

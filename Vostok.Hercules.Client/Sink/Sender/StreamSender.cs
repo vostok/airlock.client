@@ -45,10 +45,9 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
         public async Task<StreamSendResult> SendAsync(TimeSpan perRequestTimeout, CancellationToken cancellationToken)
         {
+            var watch = Stopwatch.StartNew();
             var snapshots = CollectSnapshots();
-
             var batches = snapshotBatcher.Batch(snapshots);
-
             var batchResults = new List<GateResponseClass>();
 
             foreach (var batch in batches)
@@ -63,7 +62,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
                     break;
             }
 
-            return new StreamSendResult(batchResults);
+            return new StreamSendResult(batchResults, watch.Elapsed);
         }
 
         [NotNull]
