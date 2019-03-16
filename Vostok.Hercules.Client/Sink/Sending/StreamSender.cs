@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Clusterclient.Core.Model;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
@@ -18,6 +19,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
         private readonly IBufferSnapshotBatcher batcher;
         private readonly IRequestContentFactory contentFactory;
         private readonly IGateRequestSender sender;
+        private readonly IGateResponseClassifier classifier;
         private readonly ILog log;
 
         public StreamSender(
@@ -26,6 +28,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
             IBufferSnapshotBatcher batcher,
             IRequestContentFactory contentFactory,
             IGateRequestSender sender,
+            IGateResponseClassifier classifier,
             ILog log)
         {
             this.apiKeyProvider = apiKeyProvider;
@@ -33,6 +36,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
             this.batcher = batcher;
             this.contentFactory = contentFactory;
             this.sender = sender;
+            this.classifier = classifier;
             this.log = log;
         }
 
@@ -75,22 +79,23 @@ namespace Vostok.Hercules.Client.Sink.Sending
             var apiKey = state?.Settings?.ApiKeyProvider?.Invoke() ?? apiKeyProvider();
 
             var body = contentFactory.CreateContent(snapshots, out var recordsCount);
-
-            var sendingResult = await sender.FireAndForgetAsync(stream, apiKey, body, timeout, cancellationToken)
-                .ConfigureAwait(false);
-
             var recordsLength = body.Length - sizeof(int);
 
-            LogSendingResult(sendingResult, recordsCount, recordsLength, stream, sw.Elapsed);
+            var response = await sender.FireAndForgetAsync(stream, apiKey, body, timeout, cancellationToken)
+                .ConfigureAwait(false);
 
-            if (sendingResult.IsSuccessful)
+            var responseClass = classifier.Classify(response);
+
+            LogSendingResult(response, responseClass, recordsCount, recordsLength, stream, sw.Elapsed);
+
+            if (responseClass == GateResponseClass.Success)
             {
                 state.Statistics.ReportSuccessfulSending(recordsCount, recordsLength);
                 RequestGarbageCollection(snapshots);
                 return true;
             }
 
-            if (sendingResult.IsDefinitiveFailure)
+            if (responseClass == GateResponseClass.DefinitiveFailure)
             {
                 state.Statistics.ReportSendingFailure(recordsCount, recordsLength);
                 RequestGarbageCollection(snapshots);
@@ -99,9 +104,15 @@ namespace Vostok.Hercules.Client.Sink.Sending
             return false;
         }
 
-        private void LogSendingResult(RequestSendingResult result, int recordsCount, long bytesCount, string stream, TimeSpan elapsed)
+        private void LogSendingResult(
+            Response response, 
+            GateResponseClass responseClass, 
+            int recordsCount, 
+            long bytesCount, 
+            string stream, 
+            TimeSpan elapsed)
         {
-            if (result.IsSuccessful)
+            if (responseClass == GateResponseClass.Success)
             {
                 log.Info(
                     "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} succeeded in {ElapsedTime}",
@@ -113,13 +124,12 @@ namespace Vostok.Hercules.Client.Sink.Sending
             else
             {
                 log.Warn(
-                    "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} failed after {ElapsedTime} with status {Status} and code {Code}",
+                    "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} failed after {ElapsedTime} with code {Code}",
                     recordsCount,
                     bytesCount,
                     stream,
                     elapsed,
-                    result.Status,
-                    result.Code);
+                    response.Code);
             }
         }
     }

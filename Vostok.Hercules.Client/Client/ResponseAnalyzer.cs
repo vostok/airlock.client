@@ -3,7 +3,7 @@ using Vostok.Hercules.Client.Abstractions.Results;
 
 namespace Vostok.Hercules.Client.Client
 {
-    internal class ResponseAnalyzer
+    internal class ResponseAnalyzer : IResponseAnalyzer
     {
         private const int MaximumErrorMessageLength = 250;
 
