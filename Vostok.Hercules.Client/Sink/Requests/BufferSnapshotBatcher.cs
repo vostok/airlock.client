@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vostok.Hercules.Client.Sink.Buffers;
 
 namespace Vostok.Hercules.Client.Sink.Requests
@@ -11,22 +12,25 @@ namespace Vostok.Hercules.Client.Sink.Requests
         public BufferSnapshotBatcher(int maximumBatchSize) =>
             this.maximumBatchSize = maximumBatchSize;
 
-        public IEnumerable<ArraySegment<BufferSnapshot>> Batch(BufferSnapshot[] snapshots)
+        public IEnumerable<IReadOnlyList<BufferSnapshot>> Batch(IEnumerable<BufferSnapshot> snapshots)
         {
-            Array.Sort(snapshots, (a, b) => b.State.Length.CompareTo(a.State.Length));
+            var sortedSnapshots = snapshots
+                .OrderByDescending(sn => sn.State.Length)
+                .ToArray();
 
             var firstSnapshot = 0;
             var currentSnapshot = 0;
             var batchSize = 0;
 
-            for (; currentSnapshot < snapshots.Length; currentSnapshot++)
+            for (; currentSnapshot < sortedSnapshots.Length; currentSnapshot++)
             {
-                var recordsLength = snapshots[currentSnapshot].State.Length;
+                var recordsLength = sortedSnapshots[currentSnapshot].State.Length;
 
                 if (batchSize + recordsLength > maximumBatchSize)
                 {
                     if (batchSize > 0)
                         yield return CreateSegment();
+
                     firstSnapshot = currentSnapshot;
                     batchSize = 0;
                 }
@@ -37,8 +41,8 @@ namespace Vostok.Hercules.Client.Sink.Requests
             if (batchSize > 0)
                 yield return CreateSegment();
 
-            ArraySegment<BufferSnapshot> CreateSegment() =>
-                new ArraySegment<BufferSnapshot>(snapshots, firstSnapshot, currentSnapshot - firstSnapshot);
+            IReadOnlyList<BufferSnapshot> CreateSegment() =>
+                new ArraySegment<BufferSnapshot>(sortedSnapshots, firstSnapshot, currentSnapshot - firstSnapshot);
         }
     }
 }

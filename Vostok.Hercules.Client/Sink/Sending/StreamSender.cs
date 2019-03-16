@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -62,7 +63,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
             return StreamSendResult.Success;
         }
 
-        private static void RequestGarbageCollection(ArraySegment<BufferSnapshot> snapshots)
+        private static void RequestGarbageCollection(IReadOnlyList<BufferSnapshot> snapshots)
         {
             foreach (var snapshot in snapshots)
                 snapshot.Source.ReportGarbage(snapshot.State);
@@ -70,7 +71,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
 
         private async Task<bool> PushAsync(
             string stream,
-            ArraySegment<BufferSnapshot> snapshots,
+            IReadOnlyList<BufferSnapshot> snapshots,
             TimeSpan timeout,
             CancellationToken cancellationToken)
         {
