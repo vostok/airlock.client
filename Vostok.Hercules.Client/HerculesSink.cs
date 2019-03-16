@@ -41,8 +41,8 @@ namespace Vostok.Hercules.Client
             var memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
             var batcher = new BufferSnapshotBatcher(settings.MaximumBatchSize);
             var contentFactory = new RequestContentFactory();
-            var requestSender = new GateRequestSender(settings.Cluster, this.log, settings.ApiKeyProvider, settings.ClusterClientSetup);
-            var senderFactory = new StreamSenderFactory(batcher, contentFactory, requestSender, this.log);
+            var requestSender = new GateRequestSender(settings.Cluster, this.log, settings.ClusterClientSetup);
+            var senderFactory = new StreamSenderFactory(settings.ApiKeyProvider, batcher, contentFactory, requestSender, this.log);
             var plannerFactory = new PlannerFactory(settings);
             var scheduler = new Scheduler(this, streamStates, settings, senderFactory, plannerFactory);
 

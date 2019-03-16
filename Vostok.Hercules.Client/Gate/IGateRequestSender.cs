@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
 
 namespace Vostok.Hercules.Client.Gate
@@ -8,17 +9,17 @@ namespace Vostok.Hercules.Client.Gate
     internal interface IGateRequestSender
     {
         Task<RequestSendingResult> SendAsync(
-            string stream,
-            Content content,
+            [NotNull] string stream,
+            [CanBeNull] string apiKey,
+            [NotNull] Content content,
             TimeSpan timeout,
-            Func<string> apiKeyProvider = null,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken);
 
         Task<RequestSendingResult> FireAndForgetAsync(
-            string stream,
-            CompositeContent content,
+            [NotNull] string stream,
+            [CanBeNull] string apiKey,
+            [NotNull] CompositeContent content,
             TimeSpan timeout,
-            Func<string> apiKeyProvider = null,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken);
     }
 }

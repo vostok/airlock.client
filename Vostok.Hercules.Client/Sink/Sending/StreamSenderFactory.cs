@@ -1,3 +1,4 @@
+using System;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.StreamState;
@@ -7,17 +8,20 @@ namespace Vostok.Hercules.Client.Sink.Sending
 {
     internal class StreamSenderFactory : IStreamSenderFactory
     {
+        private readonly Func<string> apiKeyProvider;
         private readonly IBufferSnapshotBatcher batcher;
         private readonly IRequestContentFactory contentFactory;
         private readonly IGateRequestSender requestSender;
         private readonly ILog log;
 
         public StreamSenderFactory(
+            Func<string> apiKeyProvider,
             IBufferSnapshotBatcher batcher,
             IRequestContentFactory contentFactory,
             IGateRequestSender requestSender,
             ILog log)
         {
+            this.apiKeyProvider = apiKeyProvider;
             this.batcher = batcher;
             this.contentFactory = contentFactory;
             this.requestSender = requestSender;
@@ -25,6 +29,6 @@ namespace Vostok.Hercules.Client.Sink.Sending
         }
 
         public IStreamSender Create(IStreamState state) =>
-            new StreamSender(state, batcher, contentFactory, requestSender, log);
+            new StreamSender(apiKeyProvider, state, batcher, contentFactory, requestSender, log);
     }
 }

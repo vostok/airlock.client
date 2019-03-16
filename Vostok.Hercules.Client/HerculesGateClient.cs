@@ -11,7 +11,6 @@ using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Serialization.Builders;
-using Vostok.Hercules.Client.Sink.Writing;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -23,14 +22,17 @@ namespace Vostok.Hercules.Client
         private const string ServiceName = "HerculesGateway";
         private const int InitialBodyBufferSize = 4096;
 
-        private readonly ILog log;
+        private readonly HerculesGateClientSettings settings;
         private readonly IGateRequestSender sender;
+        private readonly ILog log;
 
         /// <inheritdoc />
         public HerculesGateClient(HerculesGateClientSettings settings, ILog log)
         {
+            this.settings = settings;
             this.log = log = (log?? LogProvider.Get()).ForContext<HerculesGateClient>();
-            sender = new GateRequestSender(settings.Cluster, log, settings.ApiKeyProvider);
+
+            sender = new GateRequestSender(settings.Cluster, log);
         }
 
         /// <inheritdoc />
@@ -44,7 +46,7 @@ namespace Vostok.Hercules.Client
                 var content = CreateContent(query);
 
                 var result = await sender
-                    .SendAsync(query.Stream, content, timeout, cancellationToken: cancellationToken)
+                    .SendAsync(query.Stream, settings.ApiKeyProvider(), content, timeout, cancellationToken)
                     .ConfigureAwait(false);
 
                 if (result.Status != ClusterResultStatus.Success)

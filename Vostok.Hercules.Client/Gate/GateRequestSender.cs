@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Ordering.Weighed;
@@ -15,22 +16,14 @@ namespace Vostok.Hercules.Client.Gate
     internal class GateRequestSender : IGateRequestSender
     {
         private const string ServiceName = "HerculesGateway";
-        private const string SynchronousPath = "stream/send";
-        private const string FireAndForgetPath = "stream/sendAsync";
 
-        private readonly ILog log;
-        private readonly Func<string> getGateApiKey;
         private readonly IClusterClient client;
 
         public GateRequestSender(
-            IClusterProvider clusterProvider,
-            ILog log,
-            Func<string> getGateApiKey,
-            ClusterClientSetup clusterClientSetup = null)
+            [NotNull] IClusterProvider clusterProvider, 
+            [NotNull] ILog log, 
+            [CanBeNull] ClusterClientSetup additionalSetup = null)
         {
-            this.log = log;
-            this.getGateApiKey = getGateApiKey;
-
             client = new ClusterClient(
                 log,
                 configuration =>
@@ -45,15 +38,39 @@ namespace Vostok.Hercules.Client.Gate
                     configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
                     configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
 
-                    clusterClientSetup?.Invoke(configuration);
+                    additionalSetup?.Invoke(configuration);
                 });
         }
 
-        public Task<RequestSendingResult> SendAsync(string stream, Content content, TimeSpan timeout, Func<string> apiKeyProvider = null, CancellationToken cancellationToken = default) =>
-            SendAsync(SynchronousPath, stream, timeout, apiKeyProvider, cancellationToken, content: content);
+        public Task<RequestSendingResult> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) 
+            => SendAsync("stream/send", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
 
-        public Task<RequestSendingResult> FireAndForgetAsync(string stream, CompositeContent content, TimeSpan timeout, Func<string> apiKeyProvider = null, CancellationToken cancellationToken = default) =>
-            SendAsync(FireAndForgetPath, stream, timeout, apiKeyProvider, cancellationToken, content);
+        public Task<RequestSendingResult> FireAndForgetAsync(string stream, string apiKey, CompositeContent content, TimeSpan timeout, CancellationToken cancellationToken) =>
+            SendAsync("stream/sendAsync", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
+
+        private async Task<RequestSendingResult> SendAsync(
+            [NotNull] string path,
+            [NotNull] string stream,
+            [CanBeNull] string apiKey,
+            [NotNull] Func<Request, Request> addBody,
+            TimeSpan timeout,
+            CancellationToken cancellationToken)
+        {
+            var request = Request.Post(path)
+                .WithAdditionalQueryParameter(Constants.StreamQueryParameter, stream)
+                .WithContentTypeHeader(Constants.OctetStreamContentType);
+
+            if (!string.IsNullOrEmpty(apiKey))
+                request = request.WithHeader(Constants.ApiKeyHeaderName, apiKey);
+
+            request = addBody(request);
+
+            var result = await client
+                .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
+                .ConfigureAwait(false);
+
+            return GetSendingResult(result);
+        }
 
         private static RequestSendingResult GetSendingResult(ClusterResult clusterResult) =>
             new RequestSendingResult
@@ -61,38 +78,5 @@ namespace Vostok.Hercules.Client.Gate
                 Status = clusterResult.Status,
                 Code = clusterResult.Response.Code
             };
-
-        private async Task<RequestSendingResult> SendAsync(
-            string path,
-            string stream,
-            TimeSpan timeout,
-            Func<string> apiKeyProvider,
-            CancellationToken cancellationToken,
-            CompositeContent compositeContent = null,
-            Content content = null)
-        {
-            var apiKey = getGateApiKey();
-            if (apiKey == null)
-            {
-                log.Warn("Hercules API key is null.");
-                return new RequestSendingResult {Status = ClusterResultStatus.IncorrectArguments, Code = ResponseCode.Unauthorized};
-            }
-
-            var request = Request.Post(path)
-                .WithAdditionalQueryParameter(Constants.StreamQueryParameter, stream)
-                .WithContentTypeHeader(Constants.OctetStreamContentType)
-                .WithHeader(Constants.ApiKeyHeaderName, apiKeyProvider?.Invoke() ?? getGateApiKey());
-
-            if (compositeContent != null)
-                request = request.WithContent(compositeContent);
-            else if (content != null)
-                request = request.WithContent(content);
-
-            var clusterResult = await client
-                .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
-                .ConfigureAwait(false);
-
-            return GetSendingResult(clusterResult);
-        }
     }
 }

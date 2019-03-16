@@ -13,6 +13,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
 {
     internal class StreamSender : IStreamSender
     {
+        private readonly Func<string> apiKeyProvider;
         private readonly IStreamState state;
         private readonly IBufferSnapshotBatcher batcher;
         private readonly IRequestContentFactory contentFactory;
@@ -20,12 +21,14 @@ namespace Vostok.Hercules.Client.Sink.Sending
         private readonly ILog log;
 
         public StreamSender(
+            Func<string> apiKeyProvider,
             IStreamState state,
             IBufferSnapshotBatcher batcher,
             IRequestContentFactory contentFactory,
             IGateRequestSender sender,
             ILog log)
         {
+            this.apiKeyProvider = apiKeyProvider;
             this.state = state;
             this.batcher = batcher;
             this.contentFactory = contentFactory;
@@ -48,9 +51,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var apiKeyProvider = state.Settings.ApiKeyProvider;
-
-                if (!await PushAsync(state.StreamName, snapshot, apiKeyProvider, timeout, cancellationToken).ConfigureAwait(false))
+                if (!await PushAsync(state.StreamName, snapshot, timeout, cancellationToken).ConfigureAwait(false))
                     return StreamSendResult.Failure;
             }
 
@@ -66,15 +67,16 @@ namespace Vostok.Hercules.Client.Sink.Sending
         private async Task<bool> PushAsync(
             string stream,
             ArraySegment<BufferSnapshot> snapshots,
-            Func<string> apiKeyProvider,
             TimeSpan timeout,
             CancellationToken cancellationToken)
         {
             var sw = Stopwatch.StartNew();
 
+            var apiKey = state?.Settings?.ApiKeyProvider?.Invoke() ?? apiKeyProvider();
+
             var body = contentFactory.CreateContent(snapshots, out var recordsCount);
 
-            var sendingResult = await sender.FireAndForgetAsync(stream, body, timeout, apiKeyProvider, cancellationToken)
+            var sendingResult = await sender.FireAndForgetAsync(stream, apiKey, body, timeout, cancellationToken)
                 .ConfigureAwait(false);
 
             var recordsLength = body.Length - sizeof(int);
