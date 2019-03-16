@@ -20,7 +20,9 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             if (version != Constants.ProtocolVersion)
                 throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
 
-            builder.SetTimestamp(EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64()));
+            var utcTimestamp = EpochHelper.FromUnixTimeUtcTicks(reader.ReadInt64());
+
+            builder.SetTimestamp(new DateTimeOffset(utcTimestamp, TimeSpan.Zero));
 
             reader.Position += 16;
             reader.ReadContainer(builder);
