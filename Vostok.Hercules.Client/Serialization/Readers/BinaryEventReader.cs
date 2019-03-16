@@ -12,7 +12,11 @@ namespace Vostok.Hercules.Client.Serialization.Readers
     {
         public static HerculesEvent ReadEvent(IBinaryReader reader)
         {
+            if (reader.Endianness != Endianness.Big)
+                throw new ArgumentException("Provided binary reader is little endian.", nameof(reader));
+
             var builder = new HerculesEventBuilder();
+
             var version = reader.ReadByte();
             if (version != Constants.ProtocolVersion)
                 throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
