@@ -19,6 +19,9 @@ namespace Vostok.Hercules.Client.Serialization.Builders
 
         public BinaryEventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider, byte protocolVersion)
         {
+            if (binaryWriter.Endianness != Endianness.Big)
+                throw new ArgumentException("Provided binary writer is little endian.", nameof(binaryWriter));
+
             this.binaryWriter = binaryWriter;
             this.timeProvider = timeProvider;
 
