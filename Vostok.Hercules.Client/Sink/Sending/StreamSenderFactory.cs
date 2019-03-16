@@ -10,30 +10,24 @@ namespace Vostok.Hercules.Client.Sink.Sending
     internal class StreamSenderFactory : IStreamSenderFactory
     {
         private readonly Func<string> apiKeyProvider;
-        private readonly IBufferSnapshotBatcher batcher;
+        private readonly IBufferSnapshotBatcher snapshotBatcher;
         private readonly IRequestContentFactory contentFactory;
         private readonly IGateRequestSender requestSender;
         private readonly IGateResponseClassifier responseClassifier;
         private readonly ILog log;
 
-
-        public StreamSenderFactory(
-            Func<string> apiKeyProvider,
-            IBufferSnapshotBatcher batcher,
-            IRequestContentFactory contentFactory,
-            IGateRequestSender requestSender,
-            ILog log)
+        public StreamSenderFactory(HerculesSinkSettings settings, ILog log)
         {
-            this.apiKeyProvider = apiKeyProvider;
-            this.batcher = batcher;
-            this.contentFactory = contentFactory;
-            this.requestSender = requestSender;
             this.log = log;
 
+            apiKeyProvider = settings.ApiKeyProvider;
+            contentFactory = new RequestContentFactory();
+            snapshotBatcher = new BufferSnapshotBatcher(settings.MaximumBatchSize);
+            requestSender = new GateRequestSender(settings.Cluster, log, settings.ClusterClientSetup);
             responseClassifier = new GateResponseClassifier(new ResponseAnalyzer(ResponseAnalysisContext.Stream));
         }
 
         public IStreamSender Create(IStreamState state) =>
-            new StreamSender(apiKeyProvider, state, batcher, contentFactory, requestSender, responseClassifier, log);
+            new StreamSender(apiKeyProvider, state, snapshotBatcher, contentFactory, requestSender, responseClassifier, log);
     }
 }

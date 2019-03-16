@@ -7,11 +7,9 @@ using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
-using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Daemon;
 using Vostok.Hercules.Client.Sink.Planner;
-using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.Sending;
 using Vostok.Hercules.Client.Sink.Statistics;
 using Vostok.Hercules.Client.Sink.StreamState;
@@ -39,10 +37,7 @@ namespace Vostok.Hercules.Client
             recordWriter = new RecordWriter(this.log, () => PreciseDateTime.UtcNow, Constants.EventProtocolVersion, settings.MaximumRecordSize);
 
             var memoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
-            var batcher = new BufferSnapshotBatcher(settings.MaximumBatchSize);
-            var contentFactory = new RequestContentFactory();
-            var requestSender = new GateRequestSender(settings.Cluster, this.log, settings.ClusterClientSetup);
-            var senderFactory = new StreamSenderFactory(settings.ApiKeyProvider, batcher, contentFactory, requestSender, this.log);
+            var senderFactory = new StreamSenderFactory(settings, this.log);
             var plannerFactory = new PlannerFactory(settings);
             var scheduler = new Scheduler(this, streamStates, settings, senderFactory, plannerFactory);
 
