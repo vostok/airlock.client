@@ -8,7 +8,7 @@ using Vostok.Hercules.Client.Serialization.Writers;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
-    internal static class HerculesEventReader
+    internal static class EventReader
     {
         public static HerculesEvent ReadEvent(IBinaryReader reader)
         {
