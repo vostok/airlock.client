@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.Commons.Primitives;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
@@ -105,7 +104,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
                 log.Info(
                     "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} succeeded in {ElapsedTime}",
                     recordsCount,
-                    DataSize.FromBytes(bytesCount).ToString(),
+                    bytesCount,
                     stream,
                     elapsed);
             }
@@ -114,7 +113,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
                 log.Warn(
                     "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} failed after {ElapsedTime} with status {Status} and code {Code}",
                     recordsCount,
-                    DataSize.FromBytes(bytesCount).ToString(),
+                    bytesCount,
                     stream,
                     elapsed,
                     result.Status,

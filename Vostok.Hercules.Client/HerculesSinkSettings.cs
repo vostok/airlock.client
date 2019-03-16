@@ -2,7 +2,6 @@
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
-using Vostok.Commons.Primitives;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 
@@ -42,23 +41,23 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// <para>A total upper limit (in bytes) on the size of all <see cref="HerculesSink"/> internal buffers.</para>
         /// </summary>
-        public long MaximumMemoryConsumption { get; set; } = 128 * DataSizeConstants.Megabyte;
+        public long MaximumMemoryConsumption { get; set; } = 128 * 1024 * 1024;
 
         /// <summary>
         /// <para>A total upper limit (in bytes) on the size of <see cref="HerculesSink"/>'s internal buffers devoted to any single stream.</para>
         /// </summary>
-        public long MaximumPerStreamMemoryConsumption { get; set; } = 96 * DataSizeConstants.Megabyte;
+        public long MaximumPerStreamMemoryConsumption { get; set; } = 96 * 1024 * 1024;
 
         /// <summary>
         /// <para>Maximum size (in bytes) of a single record.</para>
         /// </summary>
-        public int MaximumRecordSize { get; set; } = 128 * (int)DataSizeConstants.Kilobyte;
+        public int MaximumRecordSize { get; set; } = 128 * 1024;
 
         /// <summary>
         /// <para>Maximum size (in bytes) of a single request body sent to Hercules gate service.</para>
         /// <para>Incidentally, this limit also denotes the maximum size for all internal buffers.</para>
         /// </summary>
-        public int MaximumBatchSize { get; set; } = 4 * (int)DataSizeConstants.Megabyte;
+        public int MaximumBatchSize { get; set; } = 4 * 1024 * 1024;
 
         /// <summary>
         /// <para>Base delay between attempts of sending records to Hercules gate.</para>

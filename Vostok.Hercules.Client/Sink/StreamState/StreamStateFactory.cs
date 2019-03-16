@@ -1,4 +1,3 @@
-using Vostok.Commons.Primitives;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Statistics;
 
@@ -6,7 +5,7 @@ namespace Vostok.Hercules.Client.Sink.StreamState
 {
     internal class StreamStateFactory : IStreamStateFactory
     {
-        private const int InitialPooledBufferSize = 4 * (int)DataSizeConstants.Kilobyte;
+        private const int InitialPooledBufferSize = 4096;
 
         private readonly HerculesSinkSettings settings;
         private readonly IMemoryManager memoryManager;

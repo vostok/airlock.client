@@ -38,8 +38,6 @@
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\ThreadSafeRandom.cs" Link="Commons\ThreadSafeRandom.cs" />
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AsyncManualResetEvent.cs" Link="Commons\AsyncManualResetEvent.cs" />
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AtomicBoolean.cs" Link="Commons\AtomicBoolean.cs" />
-    <Compile Include="..\..\vostok.commons.primitives\Vostok.Commons.Primitives\DataSize.cs" Link="Commons\DataSize.cs" />
-    <Compile Include="..\..\vostok.commons.primitives\Vostok.Commons.Primitives\DataSizeConstants.cs" Link="Commons\DataSizeConstants.cs" />
   </ItemGroup>
 
   <ItemGroup>

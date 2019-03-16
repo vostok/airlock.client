@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Binary;
-using Vostok.Commons.Primitives;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
@@ -22,7 +21,7 @@ namespace Vostok.Hercules.Client
     public class HerculesGateClient : IHerculesGateClient
     {
         private const string ServiceName = "HerculesGateway";
-        private const int InitialBodyBufferSize = 4 * (int)DataSizeConstants.Kilobyte;
+        private const int InitialBodyBufferSize = 4096;
 
         private readonly ILog log;
         private readonly IRequestSender sender;
