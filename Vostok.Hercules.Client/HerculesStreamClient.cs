@@ -21,6 +21,7 @@ namespace Vostok.Hercules.Client
         private readonly ILog log;
         private readonly IClusterClient client;
         private readonly Func<string> apiKeyProvider;
+        private readonly ResponseAnalyzer responseAnalyzer;
 
         /// <param name="settings">Settings of this <see cref="HerculesStreamClient"/></param>
         /// <param name="log">An <see cref="ILog"/> instance.</param>
@@ -31,6 +32,8 @@ namespace Vostok.Hercules.Client
             apiKeyProvider = settings.ApiKeyProvider;
 
             client = ClusterClientFactory.Create(settings.Cluster, this.log, Constants.ServiceNames.StreamApi, null);
+
+            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
         }
 
         /// <inheritdoc />
@@ -64,15 +67,11 @@ namespace Vostok.Hercules.Client
                     .SendAsync(request, timeout, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                if (result.Status != ClusterResultStatus.Success)
-                    return new ReadStreamResult(ConvertFailureToHerculesStatus(result.Status), null);
+                var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
+                if (operationStatus != HerculesStatus.Success)
+                    return new ReadStreamResult(operationStatus, null, errorMessage);
 
-                var response = result.Response;
-
-                if (response.Code != ResponseCode.Ok)
-                    return new ReadStreamResult(ConvertResponseCodeToHerculesStatus(response.Code), null);
-
-                return new ReadStreamResult(HerculesStatus.Success, ReadResponseBody(response));
+                return new ReadStreamResult(HerculesStatus.Success, ReadResponseBody(result.Response));
             }
             catch (Exception e)
             {
@@ -112,42 +111,6 @@ namespace Vostok.Hercules.Client
             }
 
             return body.FilledSegment;
-        }
-
-        private static HerculesStatus ConvertFailureToHerculesStatus(ClusterResultStatus status)
-        {
-            // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (status)
-            {
-                case ClusterResultStatus.TimeExpired:
-                    return HerculesStatus.Timeout;
-                case ClusterResultStatus.Canceled:
-                    return HerculesStatus.Canceled;
-                case ClusterResultStatus.Throttled:
-                    return HerculesStatus.Throttled;
-                default:
-                    return HerculesStatus.UnknownError;
-            }
-        }
-
-        private static HerculesStatus ConvertResponseCodeToHerculesStatus(ResponseCode code)
-        {
-            // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (code)
-            {
-                case ResponseCode.RequestTimeout:
-                    return HerculesStatus.Timeout;
-                case ResponseCode.BadRequest:
-                    return HerculesStatus.IncorrectRequest;
-                case ResponseCode.NotFound:
-                    return HerculesStatus.StreamNotFound;
-                case ResponseCode.Unauthorized:
-                    return HerculesStatus.Unauthorized;
-                case ResponseCode.Forbidden:
-                    return HerculesStatus.InsufficientPermissions;
-                default:
-                    return HerculesStatus.UnknownError;
-            }
         }
     }
 }
