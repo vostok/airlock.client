@@ -15,7 +15,7 @@ using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Logging.Console;
 
-namespace Vostok.Hercules.Client.Tests.Sink
+namespace Vostok.Hercules.Client.Tests
 {
     internal class HerculesSink_Tests
     {

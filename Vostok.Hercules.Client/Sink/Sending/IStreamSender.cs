@@ -6,6 +6,6 @@ namespace Vostok.Hercules.Client.Sink.Sending
 {
     internal interface IStreamSender
     {
-        Task<StreamSendResult> SendAsync(TimeSpan timeout, CancellationToken cancellationToken);
+        Task<StreamSendResult> SendAsync(TimeSpan perRequestTimeout, CancellationToken cancellationToken);
     }
 }
