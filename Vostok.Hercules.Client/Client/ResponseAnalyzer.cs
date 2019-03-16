@@ -3,7 +3,7 @@ using Vostok.Hercules.Client.Abstractions.Results;
 
 namespace Vostok.Hercules.Client.Client
 {
-    internal class ResponseAnalyzer : IResponseAnalyzer
+    internal class ResponseAnalyzer
     {
         private const int MaximumErrorMessageLength = 250;
 
@@ -40,14 +40,26 @@ namespace Vostok.Hercules.Client.Client
                     return HerculesStatus.InsufficientPermissions;
 
                 case ResponseCode.NotFound:
-                    return context == ResponseAnalysisContext.Stream 
-                        ? HerculesStatus.StreamNotFound
-                        : HerculesStatus.TimelineNotFound;
+                    switch (context)
+                    {
+                        case ResponseAnalysisContext.Stream:
+                            return HerculesStatus.StreamNotFound;
+
+                        case ResponseAnalysisContext.Timeline:
+                            return HerculesStatus.TimelineNotFound;
+                    }
+                    break;
 
                 case ResponseCode.Conflict:
-                    return context == ResponseAnalysisContext.Stream
-                        ? HerculesStatus.StreamAlreadyExists
-                        : HerculesStatus.TimelineAlreadyExists;
+                    switch (context)
+                    {
+                        case ResponseAnalysisContext.Stream:
+                            return HerculesStatus.StreamAlreadyExists;
+
+                        case ResponseAnalysisContext.Timeline:
+                            return HerculesStatus.TimelineAlreadyExists;
+                    }
+                    break;
 
                 case ResponseCode.RequestEntityTooLarge:
                     return HerculesStatus.RequestTooLarge;
@@ -64,6 +76,8 @@ namespace Vostok.Hercules.Client.Client
                 case ResponseCode.ConnectFailure:
                 case ResponseCode.SendFailure:
                 case ResponseCode.ReceiveFailure:
+                case ResponseCode.BadGateway:
+                case ResponseCode.ProxyTimeout:
                 case ResponseCode.StreamInputFailure:
                 case ResponseCode.StreamReuseFailure:
                 case ResponseCode.InsufficientStorage:
@@ -71,8 +85,6 @@ namespace Vostok.Hercules.Client.Client
 
                 case ResponseCode.InternalServerError:
                 case ResponseCode.ServiceUnavailable:
-                case ResponseCode.BadGateway:
-                case ResponseCode.ProxyTimeout:
                     return HerculesStatus.ServerError;
             }
 
