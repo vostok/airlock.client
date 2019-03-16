@@ -1,7 +1,10 @@
+using JetBrains.Annotations;
+
 namespace Vostok.Hercules.Client.Sink.StreamState
 {
     internal interface IStreamStateFactory
     {
-        IStreamState Create(string streamName);
+        [NotNull]
+        IStreamState Create([NotNull] string name);
     }
 }

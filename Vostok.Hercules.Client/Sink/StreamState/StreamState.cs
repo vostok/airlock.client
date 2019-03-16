@@ -1,3 +1,5 @@
+using System;
+using JetBrains.Annotations;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Sink.Buffers;
@@ -7,17 +9,21 @@ namespace Vostok.Hercules.Client.Sink.StreamState
 {
     internal class StreamState : IStreamState
     {
-        public StreamState(string streamName, IBufferPool bufferPool, IStatisticsCollector statistics)
+        public StreamState([NotNull] string name, [NotNull] IBufferPool bufferPool, [NotNull] IStatisticsCollector statistics)
         {
-            StreamName = streamName;
-            BufferPool = bufferPool;
-            Statistics = statistics;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            BufferPool = bufferPool ?? throw new ArgumentNullException(nameof(bufferPool));
+            Statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
         }
 
-        public string StreamName { get; }
+        public string Name { get; }
+
         public IBufferPool BufferPool { get; }
+
         public IStatisticsCollector Statistics { get; }
+
         public StreamSettings Settings { get; set; } = new StreamSettings();
+
         public AsyncManualResetEvent SendSignal { get; set; } = new AsyncManualResetEvent(false);
     }
 }

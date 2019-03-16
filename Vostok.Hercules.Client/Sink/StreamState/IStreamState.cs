@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Sink.Buffers;
@@ -7,10 +8,19 @@ namespace Vostok.Hercules.Client.Sink.StreamState
 {
     internal interface IStreamState
     {
-        string StreamName { get; }
+        [NotNull]
+        string Name { get; }
+
+        [NotNull]
         IBufferPool BufferPool { get; }
+
+        [NotNull]
         IStatisticsCollector Statistics { get; }
+
+        [NotNull]
         StreamSettings Settings { get; set; }
+
+        [NotNull]
         AsyncManualResetEvent SendSignal { get; set; }
     }
 }

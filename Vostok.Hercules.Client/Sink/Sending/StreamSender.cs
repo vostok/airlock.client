@@ -55,7 +55,7 @@ namespace Vostok.Hercules.Client.Sink.Sending
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!await PushAsync(state.StreamName, snapshot, timeout, cancellationToken).ConfigureAwait(false))
+                if (!await PushAsync(state.Name, snapshot, timeout, cancellationToken).ConfigureAwait(false))
                     return StreamSendResult.Failure;
             }
 
