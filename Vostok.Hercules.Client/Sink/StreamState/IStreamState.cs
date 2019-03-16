@@ -21,6 +21,6 @@ namespace Vostok.Hercules.Client.Sink.StreamState
         StreamSettings Settings { get; set; }
 
         [NotNull]
-        AsyncManualResetEvent SendSignal { get; set; }
+        AsyncManualResetEvent SendSignal { get; }
     }
 }

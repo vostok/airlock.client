@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
+using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
@@ -15,123 +17,118 @@ namespace Vostok.Hercules.Client.Sink.Sending
 {
     internal class StreamSender : IStreamSender
     {
-        private readonly Func<string> apiKeyProvider;
-        private readonly IStreamState state;
-        private readonly IBufferSnapshotBatcher batcher;
+        private readonly Func<string> globalApiKeyProvider;
+        private readonly IStreamState streamState;
+        private readonly IBufferSnapshotBatcher snapshotBatcher;
         private readonly IRequestContentFactory contentFactory;
-        private readonly IGateRequestSender sender;
-        private readonly IGateResponseClassifier classifier;
+        private readonly IGateRequestSender gateRequestSender;
+        private readonly IGateResponseClassifier gateResponseClassifier;
         private readonly ILog log;
 
         public StreamSender(
-            Func<string> apiKeyProvider,
-            IStreamState state,
-            IBufferSnapshotBatcher batcher,
-            IRequestContentFactory contentFactory,
-            IGateRequestSender sender,
-            IGateResponseClassifier classifier,
-            ILog log)
+            [NotNull] Func<string> globalApiKeyProvider,
+            [NotNull] IStreamState streamState,
+            [NotNull] IBufferSnapshotBatcher snapshotBatcher,
+            [NotNull] IRequestContentFactory contentFactory,
+            [NotNull] IGateRequestSender gateRequestSender,
+            [NotNull] IGateResponseClassifier gateResponseClassifier,
+            [NotNull] ILog log)
         {
-            this.apiKeyProvider = apiKeyProvider;
-            this.state = state;
-            this.batcher = batcher;
+            this.globalApiKeyProvider = globalApiKeyProvider;
+            this.streamState = streamState;
+            this.snapshotBatcher = snapshotBatcher;
             this.contentFactory = contentFactory;
-            this.sender = sender;
-            this.classifier = classifier;
+            this.gateRequestSender = gateRequestSender;
+            this.gateResponseClassifier = gateResponseClassifier;
             this.log = log;
         }
 
         public async Task<StreamSendResult> SendAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            var snapshots = state
-                .BufferPool
-                .Select(x => x.TryMakeSnapshot())
-                .Where(x => x != null && x.State.RecordsCount > 0)
-                .ToArray();
+            var snapshots = CollectSnapshots();
 
-            if (snapshots.Length == 0)
-                return StreamSendResult.NothingToSend;
+            var batches = snapshotBatcher.Batch(snapshots);
 
-            foreach (var snapshot in batcher.Batch(snapshots))
+            var result = StreamSendResult.NothingToSend;
+
+            foreach (var batch in batches)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!await PushAsync(state.Name, snapshot, timeout, cancellationToken).ConfigureAwait(false))
-                    return StreamSendResult.Failure;
+                result = await SendBatchAsync(batch, timeout, cancellationToken).ConfigureAwait(false);
+
+                if (result == StreamSendResult.Failure)
+                    return result;
             }
 
-            return StreamSendResult.Success;
+            return result;
         }
 
-        private static void RequestGarbageCollection(IReadOnlyList<BufferSnapshot> snapshots)
+        [NotNull]
+        private IEnumerable<BufferSnapshot> CollectSnapshots()
+            => streamState.BufferPool
+                .Select(buffer => buffer.TryMakeSnapshot())
+                .Where(snapshot => snapshot != null)
+                .Where(snapshot => snapshot.State.RecordsCount > 0);
+
+        [CanBeNull]
+        private string ObtainApiKey()
+            => streamState.Settings.ApiKeyProvider?.Invoke() ?? globalApiKeyProvider();
+
+        private async Task<StreamSendResult> SendBatchAsync([NotNull] IReadOnlyList<BufferSnapshot> batch, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            var watch = Stopwatch.StartNew();
+
+            var body = contentFactory.CreateContent(batch, out var recordsCount, out var recordsSize);
+
+            var response = await gateRequestSender
+                .FireAndForgetAsync(streamState.Name, ObtainApiKey(), body, timeout, cancellationToken)
+                .ConfigureAwait(false);
+
+            var responseClass = gateResponseClassifier.Classify(response);
+
+            if (responseClass != GateResponseClass.TransientFailure)
+            {
+                RequestGarbageCollection(batch);
+
+                if (responseClass == GateResponseClass.Success)
+                    streamState.Statistics.ReportSuccessfulSending(recordsCount, recordsSize);
+
+                if (responseClass == GateResponseClass.DefinitiveFailure)
+                    streamState.Statistics.ReportSendingFailure(recordsCount, recordsSize);
+            }
+
+            var result = responseClass == GateResponseClass.Success 
+                ? StreamSendResult.Success 
+                : StreamSendResult.Failure;
+
+            if (result == StreamSendResult.Success)
+                LogBatchSendSuccess(recordsCount, recordsSize, watch.Elapsed);
+            else
+                LogBatchSendFailure(recordsCount, recordsSize, response.Code, responseClass);
+
+            return result;
+        }
+
+        private static void RequestGarbageCollection([NotNull] IEnumerable<BufferSnapshot> snapshots)
         {
             foreach (var snapshot in snapshots)
                 snapshot.Source.ReportGarbage(snapshot.State);
         }
 
-        private async Task<bool> PushAsync(
-            string stream,
-            IReadOnlyList<BufferSnapshot> snapshots,
-            TimeSpan timeout,
-            CancellationToken cancellationToken)
+        private void LogBatchSendSuccess(int recordsCount, long recordsSize, TimeSpan elapsed)
+            => log.Info("Successfully sent {RecordsCount} records of size {RecordsSize} to stream '{StreamName}' in {ElapsedTime}.",
+                recordsCount, recordsSize, streamState.Name, elapsed.ToPrettyString());
+
+        private void LogBatchSendFailure(int recordsCount, long recordsSize, ResponseCode code, GateResponseClass responseClass)
         {
-            var sw = Stopwatch.StartNew();
-
-            var apiKey = state?.Settings?.ApiKeyProvider?.Invoke() ?? apiKeyProvider();
-
-            var body = contentFactory.CreateContent(snapshots, out var recordsCount);
-            var recordsLength = body.Length - sizeof(int);
-
-            var response = await sender.FireAndForgetAsync(stream, apiKey, body, timeout, cancellationToken)
-                .ConfigureAwait(false);
-
-            var responseClass = classifier.Classify(response);
-
-            LogSendingResult(response, responseClass, recordsCount, recordsLength, stream, sw.Elapsed);
-
-            if (responseClass == GateResponseClass.Success)
-            {
-                state.Statistics.ReportSuccessfulSending(recordsCount, recordsLength);
-                RequestGarbageCollection(snapshots);
-                return true;
-            }
+            log.Warn(
+                "Failed to send {RecordsCount} records of size {RecordsSize} to stream '{StreamName}'. " +
+                "Response code = {NumericResponseCode} ({ResponseCode}). Response class = {ResponseClass}",
+                recordsCount, recordsSize, streamState.Name, (int) code, code, responseClass);
 
             if (responseClass == GateResponseClass.DefinitiveFailure)
-            {
-                state.Statistics.ReportSendingFailure(recordsCount, recordsLength);
-                RequestGarbageCollection(snapshots);
-            }
-
-            return false;
-        }
-
-        private void LogSendingResult(
-            Response response, 
-            GateResponseClass responseClass, 
-            int recordsCount, 
-            long bytesCount, 
-            string stream, 
-            TimeSpan elapsed)
-        {
-            if (responseClass == GateResponseClass.Success)
-            {
-                log.Info(
-                    "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} succeeded in {ElapsedTime}",
-                    recordsCount,
-                    bytesCount,
-                    stream,
-                    elapsed);
-            }
-            else
-            {
-                log.Warn(
-                    "Sending {RecordsCount} records of size {RecordsSize} to stream {StreamName} failed after {ElapsedTime} with code {Code}",
-                    recordsCount,
-                    bytesCount,
-                    stream,
-                    elapsed,
-                    response.Code);
-            }
+                log.Warn("Dropped {RecordsCount} records as a result of non-retriable failure.", recordsCount);
         }
     }
 }

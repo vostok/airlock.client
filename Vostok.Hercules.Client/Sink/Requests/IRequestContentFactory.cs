@@ -8,6 +8,6 @@ namespace Vostok.Hercules.Client.Sink.Requests
     internal interface IRequestContentFactory
     {
         [NotNull]
-        CompositeContent CreateContent([NotNull] IReadOnlyList<BufferSnapshot> snapshots, out int recordsCount);
+        CompositeContent CreateContent([NotNull] IReadOnlyList<BufferSnapshot> snapshots, out int recordsCount, out int recordsSize);
     }
 }

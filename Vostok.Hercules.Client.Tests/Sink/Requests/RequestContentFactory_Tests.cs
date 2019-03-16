@@ -31,9 +31,10 @@ namespace Vostok.Hercules.Client.Tests.Sink.Requests
             var snapshot2 = Snapshot(data2, 5);
             var snapshot3 = Snapshot(data3, 1);
 
-            var body = factory.CreateContent(new[] {snapshot1, snapshot2, snapshot3}, out var recordsCount);
+            var body = factory.CreateContent(new[] {snapshot1, snapshot2, snapshot3}, out var recordsCount, out var recordsSize);
 
             recordsCount.Should().Be(8);
+            recordsSize.Should().Be(48);
 
             body.Parts.Should().HaveCount(4);
 
