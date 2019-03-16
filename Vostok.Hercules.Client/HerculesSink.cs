@@ -8,6 +8,7 @@ using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Sink.Daemon;
 using Vostok.Hercules.Client.Sink.Planner;
+using Vostok.Hercules.Client.Sink.Scheduler;
 using Vostok.Hercules.Client.Sink.Sending;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Logging.Abstractions;
@@ -19,7 +20,7 @@ namespace Vostok.Hercules.Client
     public class HerculesSink : IHerculesSink, IDisposable
     {
         private readonly HerculesSinkSettings settings;
-        private readonly IRecordsSendingDaemon sendingDaemon;
+        private readonly IDaemon sendingDaemon;
         private readonly IStreamStateFactory stateFactory;
         private readonly ILog log;
 
@@ -34,12 +35,12 @@ namespace Vostok.Hercules.Client
             var scheduler = new Scheduler(this, streamStates, settings, senderFactory, plannerFactory);
 
             stateFactory = new StreamStateFactory(settings, this.log);
-            sendingDaemon = new RecordsSendingDaemon(this.log, scheduler);
+            sendingDaemon = new Daemon(this.log, scheduler);
         }
 
         internal HerculesSink(
             HerculesSinkSettings settings,
-            IRecordsSendingDaemon sendingDaemon,
+            IDaemon sendingDaemon,
             IStreamStateFactory stateFactory,
             ILog log)
         {

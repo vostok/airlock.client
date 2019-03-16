@@ -14,7 +14,7 @@ using Vostok.Hercules.Client.Utilities;
 using WaitingJob = System.Threading.Tasks.Task<string>;
 using RunningJob = System.Threading.Tasks.Task<(string stream, Vostok.Hercules.Client.Sink.Sending.StreamSendResult result)>;
 
-namespace Vostok.Hercules.Client.Sink.Daemon
+namespace Vostok.Hercules.Client.Sink.Scheduler
 {
     internal class Scheduler : IScheduler
     {

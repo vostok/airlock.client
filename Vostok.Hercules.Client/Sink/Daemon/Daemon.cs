@@ -2,11 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Helpers.Extensions;
+using Vostok.Hercules.Client.Sink.Scheduler;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Sink.Daemon
 {
-    internal class RecordsSendingDaemon : IRecordsSendingDaemon
+    internal class Daemon : IDaemon
     {
         private readonly object startLock = new object();
 
@@ -16,7 +17,7 @@ namespace Vostok.Hercules.Client.Sink.Daemon
         private readonly CancellationTokenSource daemonCancellation;
         private Task daemonTask;
 
-        public RecordsSendingDaemon(ILog log, IScheduler scheduler)
+        public Daemon(ILog log, IScheduler scheduler)
         {
             this.log = log;
             this.scheduler = scheduler;
