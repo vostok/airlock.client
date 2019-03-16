@@ -31,10 +31,14 @@ namespace Vostok.Hercules.Client.Tests.Serialization
             var binaryBuilder = new BinaryEventBuilder(binaryWriter, () => defaultTimestamp, Constants.ProtocolVersion);
             var memoryBuilder = new HerculesEventBuilder();
 
+            memoryBuilder.SetTimestamp(defaultTimestamp);
+
             build(binaryBuilder);
             build(memoryBuilder);
 
-            var binaryReader = new BinaryBufferReader(binaryWriter.Buffer, 0);
+            binaryBuilder.Dispose();
+
+            var binaryReader = new BinaryBufferReader(binaryWriter.Buffer, 0) {Endianness = Endianness.Big};
 
             var memoryEvent = memoryBuilder.BuildEvent();
             var binaryEvent = BinaryEventReader.ReadEvent(binaryReader);
