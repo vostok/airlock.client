@@ -31,6 +31,7 @@ namespace Vostok.Hercules.Client.Client
                     configuration.SetupWeighedReplicaOrdering(builder => builder.AddAdaptiveHealthModifierWithLinearDecay(10.Minutes()));
                     configuration.SetupReplicaBudgeting(configuration.TargetServiceName);
                     configuration.SetupAdaptiveThrottling(configuration.TargetServiceName);
+                    configuration.SetupThreadPoolLimitsTuning();
 
                     additionalSetup?.Invoke(configuration);
                 });
