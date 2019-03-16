@@ -9,7 +9,7 @@ using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Sink.Daemon;
 using Vostok.Hercules.Client.Sink.Planner;
 using Vostok.Hercules.Client.Sink.Scheduler;
-using Vostok.Hercules.Client.Sink.Sending;
+using Vostok.Hercules.Client.Sink.Sender;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Logging.Abstractions;
 

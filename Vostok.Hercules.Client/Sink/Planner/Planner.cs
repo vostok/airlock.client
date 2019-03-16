@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Helpers.Extensions;
 using Vostok.Commons.Threading;
-using Vostok.Hercules.Client.Sink.Sending;
+using Vostok.Hercules.Client.Sink.Sender;
 
 namespace Vostok.Hercules.Client.Sink.Planner
 {

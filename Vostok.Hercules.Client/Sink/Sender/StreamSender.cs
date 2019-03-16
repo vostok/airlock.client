@@ -13,7 +13,7 @@ using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Logging.Abstractions;
 
-namespace Vostok.Hercules.Client.Sink.Sending
+namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal class StreamSender : IStreamSender
     {

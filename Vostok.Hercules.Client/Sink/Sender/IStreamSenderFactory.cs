@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using Vostok.Hercules.Client.Sink.State;
 
-namespace Vostok.Hercules.Client.Sink.Sending
+namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal interface IStreamSenderFactory
     {

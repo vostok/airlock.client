@@ -1,4 +1,4 @@
-namespace Vostok.Hercules.Client.Sink.Sending
+namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal enum StreamSendResult
     {

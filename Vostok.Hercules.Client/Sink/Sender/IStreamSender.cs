@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Vostok.Hercules.Client.Sink.Sending
+namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal interface IStreamSender
     {

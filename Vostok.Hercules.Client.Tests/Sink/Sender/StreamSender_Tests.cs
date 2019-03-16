@@ -13,12 +13,12 @@ using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
-using Vostok.Hercules.Client.Sink.Sending;
+using Vostok.Hercules.Client.Sink.Sender;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Sink.Statistics;
 using Vostok.Logging.Console;
 
-namespace Vostok.Hercules.Client.Tests.Sink.Sending
+namespace Vostok.Hercules.Client.Tests.Sink.Sender
 {
     [TestFixture]
     internal class StreamSender_Tests
