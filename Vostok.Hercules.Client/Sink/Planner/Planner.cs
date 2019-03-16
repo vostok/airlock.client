@@ -9,6 +9,9 @@ namespace Vostok.Hercules.Client.Sink.Planner
 {
     internal class Planner : IPlanner
     {
+        private static readonly AsyncManualResetEvent NeverSignaled
+            = new AsyncManualResetEvent(false);
+
         private readonly AsyncManualResetEvent signal;
         private readonly TimeSpan sendPeriod;
         private readonly TimeSpan sendPeriodCap;
@@ -24,19 +27,26 @@ namespace Vostok.Hercules.Client.Sink.Planner
             this.maxJitterFraction = maxJitterFraction;
         }
 
-        public Task WaitForNextSendAsync(StreamSendResult result, CancellationToken cancellationToken)
+        public Task WaitForNextSendAsync(StreamSendResult lastResult, CancellationToken cancellationToken)
         {
-            if (result.HasTransientFailures)
-                successiveFailures++;
+            if (lastResult.HasTransientFailures)
+            {
+                Interlocked.Increment(ref successiveFailures);
+            }
             else
-                successiveFailures = 0;
+            {
+                Interlocked.Exchange(ref successiveFailures, 0);
+            }
 
-            return signal
+            var periodicDelay = Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, successiveFailures, maxJitterFraction) - lastResult.Elapsed;
+            if (periodicDelay <= TimeSpan.Zero)
+                return Task.CompletedTask;
+
+            var signalToUse = successiveFailures == 0 ? signal : NeverSignaled;
+
+            return signalToUse
                 .WaitAsync(cancellationToken)
-                .WaitAsync(GetDelayToNextOccurence());
+                .WaitAsync(periodicDelay);
         }
-
-        private TimeSpan GetDelayToNextOccurence() =>
-            Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, successiveFailures, maxJitterFraction);
     }
 }
