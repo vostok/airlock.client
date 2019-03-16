@@ -5,13 +5,12 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Serialization.Writers;
-using Vostok.Hercules.Client.Sink.Writing;
+using Vostok.Hercules.Client.Serialization.Builders;
 
-namespace Vostok.Hercules.Client.Tests.Sink
+namespace Vostok.Hercules.Client.Tests.Serialization
 {
     [TestFixture]
-    internal class HerculesRecordPayloadBuilder_Tests
+    internal class BinaryTagsBuilder_Tests
     {
         [TestCaseSource(nameof(TestCases))]
         public TagType Should_write_correct_tag_type(Action<IHerculesTagsBuilder> action)
@@ -77,8 +76,10 @@ namespace Vostok.Hercules.Client.Tests.Sink
             return cases.Select(x => new TestCaseData(x.testCase).SetName(x.type + "Vector").Returns(x.type));
         }
 
-        private static BinaryBufferWriter CreateWriter() => new BinaryBufferWriter(0) {Endianness = Endianness.Big};
+        private static BinaryBufferWriter CreateWriter() 
+            => new BinaryBufferWriter(0) {Endianness = Endianness.Big};
 
-        private static TagsBuilder CreateBuilder(IBinaryWriter writer) => new TagsBuilder(writer);
+        private static BinaryTagsBuilder CreateBuilder(IBinaryWriter writer) 
+            => new BinaryTagsBuilder(writer);
     }
 }

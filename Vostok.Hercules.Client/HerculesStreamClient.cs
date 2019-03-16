@@ -109,7 +109,7 @@ namespace Vostok.Hercules.Client
 
             var coordinates = StreamCoordinatesReader.Read(reader);
 
-            var events = reader.ReadArray(EventReader.ReadEvent);
+            var events = reader.ReadArray(BinaryEventReader.ReadEvent);
 
             return new ReadStreamPayload(events, coordinates);
         }

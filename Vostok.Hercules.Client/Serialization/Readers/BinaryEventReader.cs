@@ -4,11 +4,11 @@ using System.Text;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Serialization.Writers;
+using Vostok.Hercules.Client.Serialization.Builders;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
-    internal static class EventReader
+    internal static class BinaryEventReader
     {
         public static HerculesEvent ReadEvent(IBinaryReader reader)
         {

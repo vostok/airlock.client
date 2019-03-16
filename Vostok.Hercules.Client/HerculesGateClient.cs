@@ -10,7 +10,7 @@ using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Gate;
-using Vostok.Hercules.Client.Serialization.Writers;
+using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Hercules.Client.Sink.Writing;
 using Vostok.Logging.Abstractions;
 
@@ -68,7 +68,7 @@ namespace Vostok.Hercules.Client
             body.Write(query.Events.Count);
             foreach (var @event in query.Events)
             {
-                var eventBuilder = new EventBuilder(body, () => PreciseDateTime.UtcNow);
+                var eventBuilder = new BinaryEventBuilder(body, () => PreciseDateTime.UtcNow);
                 eventBuilder
                     .SetTimestamp(@event.Timestamp)
                     .AddTags(@event.Tags);

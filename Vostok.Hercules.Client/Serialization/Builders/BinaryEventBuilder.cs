@@ -4,18 +4,18 @@ using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 
-namespace Vostok.Hercules.Client.Serialization.Writers
+namespace Vostok.Hercules.Client.Serialization.Builders
 {
-    internal class EventBuilder : IHerculesEventBuilder, IDisposable
+    internal class BinaryEventBuilder : IHerculesEventBuilder, IDisposable
     {
         private readonly IBinaryWriter binaryWriter;
         private readonly Func<DateTimeOffset> timeProvider;
         private readonly long timestampPosition;
-        private readonly TagsBuilderWithCounter builder;
+        private readonly BinaryCountingTagsBuilder tagsBuilder;
 
         private DateTimeOffset timestampInternal;
 
-        public EventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
+        public BinaryEventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider)
         {
             this.binaryWriter = binaryWriter;
             this.timeProvider = timeProvider;
@@ -24,7 +24,7 @@ namespace Vostok.Hercules.Client.Serialization.Writers
             binaryWriter.Write(0L);
             binaryWriter.Write(Guid.NewGuid());
 
-            builder = new TagsBuilderWithCounter(binaryWriter);
+            tagsBuilder = new BinaryCountingTagsBuilder(binaryWriter);
         }
 
         public IHerculesEventBuilder SetTimestamp(DateTimeOffset timestamp)
@@ -34,71 +34,71 @@ namespace Vostok.Hercules.Client.Serialization.Writers
         }
 
         public IHerculesTagsBuilder AddContainer(string key, Action<IHerculesTagsBuilder> value)
-            => builder.AddContainer(key, value);
+            => tagsBuilder.AddContainer(key, value);
 
         public IHerculesTagsBuilder AddVectorOfContainers(string key, IReadOnlyList<Action<IHerculesTagsBuilder>> valueBuilders)
-            => builder.AddVectorOfContainers(key, valueBuilders);
+            => tagsBuilder.AddVectorOfContainers(key, valueBuilders);
 
         public IHerculesTagsBuilder AddNull(string key)
-            => builder.AddNull(key);
+            => tagsBuilder.AddNull(key);
 
         public IHerculesTagsBuilder AddValue(string key, byte value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, short value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, int value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, long value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, bool value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, float value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, double value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, Guid value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddValue(string key, string value)
-            => builder.AddValue(key, value);
+            => tagsBuilder.AddValue(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<byte> value)
-            => builder.AddVector(key, value);
+            => tagsBuilder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<short> value)
-            => builder.AddVector(key, value);
+            => tagsBuilder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<int> value)
-            => builder.AddVector(key, value);
+            => tagsBuilder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<long> value)
-            => builder.AddVector(key, value);
+            => tagsBuilder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<bool> value)
-            => builder.AddVector(key, value);
+            => tagsBuilder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<float> value)
-            => builder.AddVector(key, value);
+            => tagsBuilder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<double> value)
-            => builder.AddVector(key, value);
+            => tagsBuilder.AddVector(key, value);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<Guid> values)
-            => builder.AddVector(key, values);
+            => tagsBuilder.AddVector(key, values);
 
         public IHerculesTagsBuilder AddVector(string key, IReadOnlyList<string> value)
-            => builder.AddVector(key, value);
+            => tagsBuilder.AddVector(key, value);
 
         public void Dispose()
         {
-            builder.Dispose();
+            tagsBuilder.Dispose();
 
             var timestamp = timestampInternal != default
                 ? timestampInternal

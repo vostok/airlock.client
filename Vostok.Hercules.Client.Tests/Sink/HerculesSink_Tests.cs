@@ -12,7 +12,7 @@ using Vostok.Commons.Binary;
 using Vostok.Commons.Testing;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Models;
-using Vostok.Hercules.Client.Serialization.Writers;
+using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests.Sink

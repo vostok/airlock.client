@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Vostok.Commons.Binary;
-using Vostok.Hercules.Client.Serialization.Writers;
+using Vostok.Hercules.Client.Serialization.Builders;
 
 namespace Vostok.Hercules.Client.Serialization.Helpers
 {

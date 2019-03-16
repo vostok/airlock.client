@@ -5,13 +5,12 @@ using FluentAssertions;
 using NUnit.Framework;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Serialization.Writers;
-using Vostok.Hercules.Client.Sink.Writing;
+using Vostok.Hercules.Client.Serialization.Builders;
 
-namespace Vostok.Hercules.Client.Tests.Sink
+namespace Vostok.Hercules.Client.Tests.Serialization
 {
     [TestFixture]
-    internal class HerculesRecordPayloadBuilderWithCounter_Tests
+    internal class BinaryCountingTagsBuilder_Tests
     {
         private const int MaxNumberOfTags = ushort.MaxValue;
 
@@ -109,7 +108,7 @@ namespace Vostok.Hercules.Client.Tests.Sink
         private static BinaryBufferWriter CreateWriter()
             => new BinaryBufferWriter(0) {Endianness = Endianness.Big};
 
-        private static TagsBuilderWithCounter CreateBuilder(IBinaryWriter writer)
-            => new TagsBuilderWithCounter(writer);
+        private static BinaryCountingTagsBuilder CreateBuilder(IBinaryWriter writer)
+            => new BinaryCountingTagsBuilder(writer);
     }
 }

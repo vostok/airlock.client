@@ -4,13 +4,13 @@ using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Helpers;
 
-namespace Vostok.Hercules.Client.Serialization.Writers
+namespace Vostok.Hercules.Client.Serialization.Builders
 {
-    internal class TagsBuilder : IHerculesTagsBuilder
+    internal class BinaryTagsBuilder : IHerculesTagsBuilder
     {
         private readonly IBinaryWriter writer;
 
-        public TagsBuilder(IBinaryWriter writer)
+        public BinaryTagsBuilder(IBinaryWriter writer)
         {
             this.writer = writer;
         }
@@ -20,7 +20,7 @@ namespace Vostok.Hercules.Client.Serialization.Writers
             writer.WriteWithByteLength(key);
             writer.Write(TagType.Container);
 
-            using (var builder = new TagsBuilderWithCounter(writer))
+            using (var builder = new BinaryCountingTagsBuilder(writer))
                 value.Invoke(builder);
 
             return this;
@@ -115,7 +115,7 @@ namespace Vostok.Hercules.Client.Serialization.Writers
             writer.Write(values.Count);
 
             foreach (var action in values)
-                using (var builder = new TagsBuilderWithCounter(writer))
+                using (var builder = new BinaryCountingTagsBuilder(writer))
                     action(builder);
 
             return this;

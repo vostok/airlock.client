@@ -1,6 +1,6 @@
 ﻿using System;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Serialization.Writers;
+using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Logging.Abstractions;
 
@@ -38,7 +38,7 @@ namespace Vostok.Hercules.Client.Sink.Writing
                 buffer.IsOverflowed = false;
                 buffer.Write(recordVersion);
 
-                using (var builder = new EventBuilder(buffer, timeProvider))
+                using (var builder = new BinaryEventBuilder(buffer, timeProvider))
                     build(builder);
 
                 if (buffer.IsOverflowed)
