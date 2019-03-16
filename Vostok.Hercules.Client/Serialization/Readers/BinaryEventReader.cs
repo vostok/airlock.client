@@ -120,8 +120,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
                     builder.AddVector(key, reader.ReadArray(r => r.ReadGuid()));
                     break;
                 case TagType.Null:
-                    builder.AddNull(key);
-                    break;
+                    throw new NotSupportedException("Vectors of nulls are not supported yet.");
                 case TagType.Vector:
                     throw new NotSupportedException("Nested vectors are not supported yet.");
                 default:
