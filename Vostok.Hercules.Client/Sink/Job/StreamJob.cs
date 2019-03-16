@@ -12,6 +12,8 @@ namespace Vostok.Hercules.Client.Sink.Job
         private readonly IPlanner planner;
         private readonly TimeSpan requestTimeout;
 
+        private volatile StreamSendResult lastSendResult = StreamSendResult.Empty;
+
         public StreamJob(IStreamSender sender, IPlanner planner, TimeSpan requestTimeout)
         {
             this.sender = sender;
@@ -19,10 +21,10 @@ namespace Vostok.Hercules.Client.Sink.Job
             this.requestTimeout = requestTimeout;
         }
 
-        public Task SendAsync(CancellationToken token) =>
-            throw new System.NotImplementedException();
+        public async Task SendAsync(CancellationToken cancellationToken) 
+            => lastSendResult = await sender.SendAsync(requestTimeout, cancellationToken).ConfigureAwait(false);
 
-        public Task WaitForNextSendAsync(CancellationToken token) =>
-            throw new System.NotImplementedException();
+        public Task WaitForNextSendAsync(CancellationToken cancellationToken) 
+            => planner.WaitForNextSendAsync(lastSendResult, cancellationToken);
     }
 }

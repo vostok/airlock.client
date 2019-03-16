@@ -5,8 +5,8 @@ namespace Vostok.Hercules.Client.Sink.Job
 {
     internal interface IStreamJob
     {
-        Task SendAsync(CancellationToken token);
+        Task SendAsync(CancellationToken cancellationToken);
 
-        Task WaitForNextSendAsync(CancellationToken token);
+        Task WaitForNextSendAsync(CancellationToken cancellationToken);
     }
 }
