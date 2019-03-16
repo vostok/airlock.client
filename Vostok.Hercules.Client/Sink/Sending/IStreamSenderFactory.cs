@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using Vostok.Hercules.Client.Sink.StreamState;
+using Vostok.Hercules.Client.Sink.State;
 
 namespace Vostok.Hercules.Client.Sink.Sending
 {

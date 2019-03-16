@@ -7,7 +7,7 @@ using Vostok.Hercules.Client.Sink.Statistics;
 using Vostok.Hercules.Client.Sink.Writing;
 using Vostok.Logging.Abstractions;
 
-namespace Vostok.Hercules.Client.Sink.StreamState
+namespace Vostok.Hercules.Client.Sink.State
 {
     internal class StreamStateFactory : IStreamStateFactory
     {

@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace Vostok.Hercules.Client.Sink.StreamState
+namespace Vostok.Hercules.Client.Sink.State
 {
     internal interface IStreamStateFactory
     {

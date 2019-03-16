@@ -9,7 +9,7 @@ using Vostok.Commons.Helpers.Extensions;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Sink.Planner;
 using Vostok.Hercules.Client.Sink.Sending;
-using Vostok.Hercules.Client.Sink.StreamState;
+using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Utilities;
 using WaitingJob = System.Threading.Tasks.Task<string>;
 using RunningJob = System.Threading.Tasks.Task<(string stream, Vostok.Hercules.Client.Sink.Sending.StreamSendResult result)>;

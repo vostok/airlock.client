@@ -3,21 +3,21 @@ using NSubstitute;
 using NUnit.Framework;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Sink.Buffers;
+using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Sink.Statistics;
-using Vostok.Hercules.Client.Sink.StreamState;
 using Vostok.Hercules.Client.Sink.Writing;
 
-namespace Vostok.Hercules.Client.Tests.Sink.StreamState
+namespace Vostok.Hercules.Client.Tests.Sink.State
 {
     [TestFixture]
     internal class StreamState_Tests
     {
-        private Hercules.Client.Sink.StreamState.StreamState state;
+        private StreamState state;
 
         [SetUp]
         public void TestSetup()
         {
-            state = new Hercules.Client.Sink.StreamState.StreamState(
+            state = new StreamState(
                 "stream", 
                 Substitute.For<IBufferPool>(),
                 Substitute.For<IRecordWriter>(),

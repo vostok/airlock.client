@@ -2,7 +2,7 @@ using System;
 using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Requests;
-using Vostok.Hercules.Client.Sink.StreamState;
+using Vostok.Hercules.Client.Sink.State;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Sink.Sending

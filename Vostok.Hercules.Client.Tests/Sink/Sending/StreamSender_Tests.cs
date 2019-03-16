@@ -14,8 +14,8 @@ using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.Sending;
+using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Sink.Statistics;
-using Vostok.Hercules.Client.Sink.StreamState;
 using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests.Sink.Sending

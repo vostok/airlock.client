@@ -1,4 +1,4 @@
-using Vostok.Hercules.Client.Sink.StreamState;
+using Vostok.Hercules.Client.Sink.State;
 
 namespace Vostok.Hercules.Client.Sink.Planner
 {

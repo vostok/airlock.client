@@ -10,7 +10,7 @@ using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
-using Vostok.Hercules.Client.Sink.StreamState;
+using Vostok.Hercules.Client.Sink.State;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Sink.Sending
