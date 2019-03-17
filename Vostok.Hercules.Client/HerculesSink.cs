@@ -19,75 +19,54 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesSink : IHerculesSink, IDisposable
     {
-        private readonly HerculesSinkSettings settings;
-        private readonly IStreamStateFactory stateFactory;
-        private readonly IDaemon sendingDaemon;
-        private readonly ILog log;
-
-        private readonly ConcurrentDictionary<string, Lazy<IStreamState>> states;
-        private readonly AtomicBoolean isDisposed;
+        private readonly State state;
 
         public HerculesSink([NotNull] HerculesSinkSettings settings, [CanBeNull] ILog log)
         {
-            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            this.log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
+            state = ConstructInternalState(this, settings, log);
+        }
 
-            states = new ConcurrentDictionary<string, Lazy<IStreamState>>();
-            isDisposed = new AtomicBoolean(false);
-
-            var jobLauncher = new JobLauncher();
-            var jobHandler = new JobHandler(jobLauncher);
-            var jobWaiter = new JobWaiter(settings.SendPeriod, settings.MaxParallelStreams);
-            var jobFactory = new StreamJobFactory(settings, this.log);
-            var statesProvider = new StreamStatesProvider(states);
-            var stateSynchronizer = new StateSynchronizer(statesProvider, jobFactory, jobLauncher);
-            var flowController = new FlowController(new WeakReference(this));
-            var scheduler = new Scheduler(stateSynchronizer, flowController, jobWaiter, jobHandler);
-
-            stateFactory = new StreamStateFactory(settings, this.log);
-            sendingDaemon = new Daemon(scheduler);
+        internal HerculesSink(IStreamStateFactory streamStateFactory, IDaemon daemon, ILog log)
+        {
+            state = new State(streamStateFactory, daemon, log, new ConcurrentDictionary<string, Lazy<IStreamState>>());
         }
 
         /// <inheritdoc />
-        public void Put(string stream, Action<IHerculesEventBuilder> build)
+        public void Put(string streamName, Action<IHerculesEventBuilder> build)
         {
-            if (isDisposed)
-            {
-                LogDisposed();
-                return;
-            }
-
-            if (!ValidateParameters(stream, build))
+            if (!CanPut(streamName, build))
                 return;
 
-            var streamState = ObtainStreamState(stream);
-            var statistics = streamState.Statistics;
-            var bufferPool = streamState.BufferPool;
+            var stream = ObtainStream(streamName);
 
-            if (!bufferPool.TryAcquire(out var buffer))
+            if (!stream.BufferPool.TryAcquire(out var buffer))
             {
-                statistics.ReportOverflow();
+                stream.Statistics.ReportOverflow();
                 return;
             }
 
             try
             {
-                streamState.RecordWriter.TryWrite(buffer, build, out _);
+                stream.RecordWriter.TryWrite(buffer, build, out _);
             }
             finally
             {
-                bufferPool.Release(buffer);
+                stream.BufferPool.Release(buffer);
             }
 
-            sendingDaemon.Initialize();
+            state.Daemon.Initialize();
         }
+
+        /// <inheritdoc />
+        public void ConfigureStream(string stream, StreamSettings streamSettings)
+            => ObtainStream(stream).Settings = streamSettings ?? throw new ArgumentNullException(nameof(streamSettings));
 
         /// <summary>
         /// <para>Provides diagnostics information about <see cref="HerculesSink"/>.</para>
         /// </summary>
         public HerculesSinkStatistics GetStatistics()
         {
-            var perStreamCounters = states
+            var perStreamCounters = state.Streams
                 .Where(x => x.Value.IsValueCreated)
                 .ToDictionary(x => x.Key, x => x.Value.Value.Statistics.GetCounters());
 
@@ -100,43 +79,105 @@ namespace Vostok.Hercules.Client
         }
 
         /// <inheritdoc />
-        public void ConfigureStream(string stream, StreamSettings streamSettings)
-            => ObtainStreamState(stream).Settings = streamSettings ?? throw new ArgumentNullException(nameof(streamSettings));
-
-        /// <inheritdoc />
         public void Dispose()
         {
-            if (isDisposed.TrySetTrue())
-                sendingDaemon.Dispose();
+            if (state.IsDisposed.TrySetTrue())
+                state.Daemon.Dispose();
         }
 
-        private void LogDisposed()
+        private static State ConstructInternalState(
+            [NotNull] HerculesSink sink,
+            [NotNull] HerculesSinkSettings settings,
+            [CanBeNull] ILog log)
         {
-            log.Warn("An attempt to put event to disposed HerculesSink.");
+            log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
+
+            var jobLauncher = new JobLauncher();
+            var jobHandler = new JobHandler(jobLauncher);
+            var jobWaiter = new JobWaiter(settings.SendPeriod, settings.MaxParallelStreams);
+            var jobFactory = new StreamJobFactory(settings, log);
+            var streamStates = new ConcurrentDictionary<string, Lazy<IStreamState>>();
+            var streamStatesFactory = new StreamStateFactory(settings, log);
+            var streamStatesProvider = new StreamStatesProvider(streamStates);
+            var stateSynchronizer = new StateSynchronizer(streamStatesProvider, jobFactory, jobLauncher);
+            var flowController = new FlowController(new WeakReference(sink));
+            var scheduler = new Scheduler(stateSynchronizer, flowController, jobWaiter, jobHandler);
+            var daemon = new Daemon(scheduler);
+
+            return new State(streamStatesFactory, daemon, log, streamStates);
         }
 
-        private bool ValidateParameters(string stream, Action<IHerculesEventBuilder> build)
+        private IStreamState ObtainStream(string name)
+            => state.Streams.GetOrAdd(name, v => new Lazy<IStreamState>(() => state.Factory.Create(v))).Value;
+
+        private bool CanPut(string streamName, Action<IHerculesEventBuilder> build)
         {
-            if (string.IsNullOrEmpty(stream))
+            if (state.IsDisposed)
             {
-                log.Warn("An attempt to put event to stream which name is null or empty.");
+                LogPutOnDisposedSink();
                 return false;
             }
 
-            // ReSharper disable once InvertIf
+            if (string.IsNullOrEmpty(streamName))
+            {
+                LogIncorrectStreamName();
+                return false;
+            }
+
             if (build == null)
             {
-                log.Warn("A delegate that provided to build an event is null.");
+                LogNullBuildDelegate();
                 return false;
             }
 
             return true;
         }
 
-        [NotNull]
-        private IStreamState ObtainStreamState([NotNull] string stream) =>
-            states
-                .GetOrAdd(stream, s => new Lazy<IStreamState>(() => stateFactory.Create(s)))
-                .Value;
+        #region Internal state class
+
+        private class State
+        {
+            public State(
+                [NotNull] IStreamStateFactory factory,
+                [NotNull] IDaemon daemon,
+                [NotNull] ILog log,
+                [NotNull] ConcurrentDictionary<string, Lazy<IStreamState>> streams)
+            {
+                Factory = factory ?? throw new ArgumentNullException(nameof(factory));
+                Streams = streams ?? throw new ArgumentNullException(nameof(streams));
+                Daemon = daemon ?? throw new ArgumentNullException(nameof(daemon));
+                Log = log.ForContext<HerculesSink>();
+            }
+
+            [NotNull]
+            public AtomicBoolean IsDisposed { get; } = new AtomicBoolean(false);
+
+            [NotNull]
+            public ConcurrentDictionary<string, Lazy<IStreamState>> Streams { get; }
+
+            [NotNull]
+            public IStreamStateFactory Factory { get; }
+
+            [NotNull]
+            public IDaemon Daemon { get; }
+
+            [NotNull]
+            public ILog Log { get; }
+        }
+
+        #endregion
+
+        #region Logging
+
+        private void LogPutOnDisposedSink()
+            => state.Log.Warn($"An attempt to put event to a disposed {nameof(HerculesSink)}.");
+
+        private void LogIncorrectStreamName()
+            => state.Log.Warn("An attempt to put event to a stream with a null or empty name.");
+
+        private void LogNullBuildDelegate()
+            => state.Log.Warn("User-provided event builder delegate was null.");
+
+        #endregion
     }
 }
