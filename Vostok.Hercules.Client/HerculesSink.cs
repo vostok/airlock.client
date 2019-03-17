@@ -153,7 +153,7 @@ namespace Vostok.Hercules.Client
                 Factory = factory ?? throw new ArgumentNullException(nameof(factory));
                 Streams = streams ?? throw new ArgumentNullException(nameof(streams));
                 Daemon = daemon ?? throw new ArgumentNullException(nameof(daemon));
-                Log = log.ForContext<HerculesSink>();
+                Log = log;
             }
 
             [NotNull]
