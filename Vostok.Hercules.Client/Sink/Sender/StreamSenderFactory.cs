@@ -25,13 +25,18 @@ namespace Vostok.Hercules.Client.Sink.Sender
             apiKeyProvider = settings.ApiKeyProvider;
             contentFactory = new RequestContentFactory();
             snapshotBatcher = new BufferSnapshotBatcher(settings.MaximumBatchSize);
-            requestSender = new GateRequestSender(settings.Cluster, log, settings.ClusterClientSetup);
+
+            requestSender = new GateRequestSender(
+                settings.Cluster, 
+                settings.SuppressVerboseLogging ? log.WithMinimumLevel(LogLevel.Warn) : log,
+                settings.ClusterClientSetup);
+
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
             statusAnalyzer = new StatusAnalyzer();
         }
 
         public IStreamSender Create(IStreamState state) =>
             new StreamSender(apiKeyProvider, state, snapshotBatcher, contentFactory, 
-                requestSender, responseAnalyzer, statusAnalyzer, log);
+                requestSender, responseAnalyzer, statusAnalyzer, log.ForContext(state.Name));
     }
 }

@@ -119,21 +119,21 @@ namespace Vostok.Hercules.Client
 
         private bool CanPut(string streamName, Action<IHerculesEventBuilder> build)
         {
-            if (state.IsDisposed)
-            {
-                LogPutOnDisposedSink();
-                return false;
-            }
-
             if (string.IsNullOrEmpty(streamName))
             {
                 LogIncorrectStreamName();
                 return false;
             }
 
+            if (state.IsDisposed)
+            {
+                LogPutOnDisposedSink(streamName);
+                return false;
+            }
+
             if (build == null)
             {
-                LogNullBuildDelegate();
+                LogNullBuildDelegate(streamName);
                 return false;
             }
 
@@ -176,14 +176,14 @@ namespace Vostok.Hercules.Client
 
         #region Logging
 
-        private void LogPutOnDisposedSink()
-            => state.Log.Warn($"An attempt to put event to a disposed {nameof(HerculesSink)}.");
-
         private void LogIncorrectStreamName()
             => state.Log.Warn("An attempt to put event to a stream with a null or empty name.");
 
-        private void LogNullBuildDelegate()
-            => state.Log.Warn("User-provided event builder delegate was null.");
+        private void LogPutOnDisposedSink(string stream)
+            => state.Log.ForContext(stream).Warn($"An attempt to put event to a disposed {nameof(HerculesSink)}.");
+
+        private void LogNullBuildDelegate(string stream)
+            => state.Log.ForContext(stream).Warn("User-provided event builder delegate was null.");
 
         #endregion
     }

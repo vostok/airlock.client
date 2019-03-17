@@ -17,15 +17,14 @@ namespace Vostok.Hercules.Client.Sink.State
 
         private readonly HerculesSinkSettings settings;
         private readonly MemoryManager globalMemoryManager;
-        private readonly RecordWriter globalRecordWriter;
+        private readonly ILog log;
 
         public StreamStateFactory([NotNull] HerculesSinkSettings settings, [NotNull] ILog log)
         {
             this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.log = log;
 
             globalMemoryManager = new MemoryManager(settings.MaximumMemoryConsumption);
-            globalRecordWriter = new RecordWriter(log, () => PreciseDateTime.UtcNow, 
-                Constants.EventProtocolVersion, settings.MaximumRecordSize);
         }
 
         public IStreamState Create(string name)
@@ -33,7 +32,7 @@ namespace Vostok.Hercules.Client.Sink.State
             var statistics = new StatisticsCollector();
             var sendSignal = new AsyncManualResetEvent(false);
             var bufferPool = CreateBufferPool();
-            var recordWriter = CreateRecordWriter(statistics, sendSignal);
+            var recordWriter = CreateRecordWriter(name, statistics, sendSignal);
 
             return new StreamState(name, bufferPool, recordWriter, statistics, sendSignal);
         }
@@ -49,9 +48,10 @@ namespace Vostok.Hercules.Client.Sink.State
                 settings.MaximumBatchSize);
         }
 
-        private IRecordWriter CreateRecordWriter(IStatisticsCollector statistics, AsyncManualResetEvent signal)
+        private IRecordWriter CreateRecordWriter(string name, IStatisticsCollector statistics, AsyncManualResetEvent signal)
         {
-            var writer = globalRecordWriter as IRecordWriter;
+            IRecordWriter writer = new RecordWriter(log.ForContext(name), 
+                () => PreciseDateTime.UtcNow, Constants.EventProtocolVersion, settings.MaximumRecordSize);
 
             writer = new ReportingWriter(writer, statistics);
 

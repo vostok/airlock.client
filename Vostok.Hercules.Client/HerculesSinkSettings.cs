@@ -78,5 +78,10 @@ namespace Vostok.Hercules.Client
         /// <para>Maximum number of streams whose data might being sent to Hercules gate in parallel.</para>
         /// </summary>
         public int MaxParallelStreams { get; set; } = 2;
+
+        /// <summary>
+        /// If set to <c>true</c>, suppresses all verbose request/response logging of <see cref="Vostok.Logging.Abstractions.LogLevel.Info"/> and lower levels.
+        /// </summary>
+        public bool SuppressVerboseLogging { get; set; } = true;
     }
 }
