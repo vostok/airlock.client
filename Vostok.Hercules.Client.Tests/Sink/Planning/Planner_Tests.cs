@@ -65,6 +65,16 @@ namespace Vostok.Hercules.Client.Tests.Sink.Planning
         }
 
         [Test]
+        public void WaitForNextSendAsync_should_reset_signal()
+        {
+            signal.Set();
+
+            MeasureWaitDelay(HerculesStatus.Success).Should().Be(TimeSpan.Zero);
+
+            signal.WaitAsync().IsCompleted.Should().BeFalse();
+        }
+
+        [Test]
         public void WaitForNextSendAsync_should_complete_immediately_when_computed_period_is_already_due_because_of_send_latency()
         {
             MeasureWaitDelay(HerculesStatus.ServerError, SendPeriodCap).Should().Be(TimeSpan.Zero);

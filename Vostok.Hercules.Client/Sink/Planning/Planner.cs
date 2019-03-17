@@ -36,7 +36,7 @@ namespace Vostok.Hercules.Client.Sink.Planning
             this.maxJitterFraction = maxJitterFraction;
         }
 
-        public Task WaitForNextSendAsync(StreamSendResult lastResult, CancellationToken cancellationToken)
+        public async Task WaitForNextSendAsync(StreamSendResult lastResult, CancellationToken cancellationToken)
         {
             if (statusAnalyzer.ShouldIncreaseSendPeriod(lastResult.Status))
             {
@@ -49,13 +49,16 @@ namespace Vostok.Hercules.Client.Sink.Planning
 
             var periodicDelay = Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, backoffDepth, maxJitterFraction) - lastResult.Elapsed;
             if (periodicDelay <= TimeSpan.Zero)
-                return Task.CompletedTask;
+                return;
 
             var signalToUse = backoffDepth == 0 ? signal : NeverSignaled;
 
-            return signalToUse
+            await signalToUse
                 .WaitAsync(cancellationToken)
-                .WaitAsync(periodicDelay);
+                .WaitAsync(periodicDelay)
+                .ConfigureAwait(false);
+
+            signalToUse.Reset();
         }
     }
 }
