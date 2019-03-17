@@ -20,16 +20,10 @@ notests *default:
     - vostok.commons.time/src
     - vostok.commons.threading/src
     - vostok.commons.binary/src
-    - vostok.commons.primitives/src
 
 full-build > notests: 
   deps:
     - vostok.logging.console
-    - vostok.configuration.abstractions
-    - vostok.clusterconfig.client.abstractions
-    - vostok.clusterconfig.client
-    - vostok.clusterclient.topology.cc
-    - vostok.hercules.client.management
     - vostok.commons.testing/src
 
   build:

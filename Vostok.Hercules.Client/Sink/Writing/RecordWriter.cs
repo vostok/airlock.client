@@ -1,7 +1,6 @@
 ﻿using System;
-using Vostok.Commons.Primitives;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Serialization.Writers;
+using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Logging.Abstractions;
 
@@ -11,52 +10,63 @@ namespace Vostok.Hercules.Client.Sink.Writing
     {
         private readonly ILog log;
         private readonly Func<DateTimeOffset> timeProvider;
-        private readonly byte recordVersion;
+        private readonly byte protocolVersion;
         private readonly int maxRecordSize;
 
-        public RecordWriter(ILog log, Func<DateTimeOffset> timeProvider, byte recordVersion, int maxRecordSize)
+        public RecordWriter(ILog log, Func<DateTimeOffset> timeProvider, byte protocolVersion, int maxRecordSize)
         {
             this.log = log;
             this.timeProvider = timeProvider;
-            this.recordVersion = recordVersion;
+            this.protocolVersion = protocolVersion;
             this.maxRecordSize = maxRecordSize;
         }
 
-        public RecordWriteResult TryWrite(IBuffer binaryWriter, Action<IHerculesEventBuilder> build, out int recordSize)
+        public RecordWriteResult TryWrite(IBuffer buffer, Action<IHerculesEventBuilder> build, out int recordSize)
         {
-            var startingPosition = binaryWriter.Position;
+            recordSize = 0;
+
+            var startingPosition = buffer.Position;
+
+            RecordWriteResult RollbackWithError(RecordWriteResult error)
+            {
+                buffer.Position = startingPosition;
+                return error;
+            }
 
             try
             {
-                binaryWriter.IsOverflowed = false;
-                binaryWriter.Write(recordVersion);
+                buffer.IsOverflowed = false;
 
-                using (var builder = new EventBuilder(binaryWriter, timeProvider))
-                    build.Invoke(builder);
+                using (var builder = new BinaryEventBuilder(buffer, timeProvider, protocolVersion))
+                    build(builder);
 
-                if (binaryWriter.IsOverflowed)
-                {
-                    binaryWriter.Position = startingPosition;
-                    recordSize = 0;
-                    return RecordWriteResult.OutOfMemory;
-                }
+                if (buffer.IsOverflowed)
+                    return RollbackWithError(RecordWriteResult.OutOfMemory);
             }
-            catch (Exception exception)
+            catch (Exception error)
             {
-                binaryWriter.Position = startingPosition;
-                recordSize = 0;
-                log.Error(exception);
-                return RecordWriteResult.Exception;
+                LogBuilderException(error);
+
+                return RollbackWithError(RecordWriteResult.Exception);
             }
 
-            recordSize = (int)(binaryWriter.Position - startingPosition);
+            recordSize = (int)(buffer.Position - startingPosition);
 
             if (recordSize <= maxRecordSize)
+            {
+                buffer.CommitRecord(recordSize);
                 return RecordWriteResult.Success;
+            }
 
-            log.Warn("Discarded record with size {RecordSize} larger than maximum allowed size {MaximumRecordSize}", DataSize.FromBytes(recordSize), DataSize.FromBytes(maxRecordSize));
-            binaryWriter.Position = startingPosition;
-            return RecordWriteResult.RecordTooLarge;
+            LogRecordWasTooLarge(recordSize);
+
+            return RollbackWithError(RecordWriteResult.RecordTooLarge);
         }
+
+        private void LogBuilderException(Exception error)
+            => log.Error(error, "User-provided record builder has thrown an exception.");
+
+        private void LogRecordWasTooLarge(int recordSize)
+            => log.Warn("Discarded record with size {RecordSize} larger than maximum allowed size {MaximumRecordSize}.", recordSize, maxRecordSize);
     }
 }

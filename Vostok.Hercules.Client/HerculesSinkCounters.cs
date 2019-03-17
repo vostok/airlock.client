@@ -9,18 +9,18 @@ namespace Vostok.Hercules.Client
     public class HerculesSinkCounters
     {
         public static readonly HerculesSinkCounters Zero
-            = new HerculesSinkCounters((0, 0), (0, 0), (0, 0), 0, 0, 0);
+            = new HerculesSinkCounters((0, 0), (0, 0), (0, 0), 0,  0, 0);
 
         public HerculesSinkCounters(
             (long Count, long Size) sentRecords,
-            (long Count, long Size) lostRecords,
+            (long Count, long Size) rejectedRecords,
             (long Count, long Size) storedRecords,
             long recordsLostDueToBuildFailures,
             long recordsLostDueToSizeLimit,
             long recordsLostDueToOverflows)
         {
             SentRecords = sentRecords;
-            LostRecords = lostRecords;
+            RejectedRecords = rejectedRecords;
             StoredRecords = storedRecords;
             RecordsLostDueToBuildFailures = recordsLostDueToBuildFailures;
             RecordsLostDueToSizeLimit = recordsLostDueToSizeLimit;
@@ -33,14 +33,23 @@ namespace Vostok.Hercules.Client
         public (long Count, long Size) SentRecords { get; }
 
         /// <summary>
-        /// Records that have been lost due to non-retriable sending errors or internal buffer overflows.
+        /// Records that have been lost due to non-retriable sending errors.
         /// </summary>
-        public (long Count, long Size) LostRecords { get; }
+        public (long Count, long Size) RejectedRecords { get; }
 
         /// <summary>
         /// Records that are currently stored in internal buffers and waiting to be sent.
         /// </summary>
         public (long Count, long Size) StoredRecords { get; }
+
+        /// <summary>
+        /// Returns how many records have been lost in total, whatever the reason.
+        /// </summary>
+        public long TotalLostRecords => 
+            RejectedRecords.Count + 
+            RecordsLostDueToOverflows + 
+            RecordsLostDueToSizeLimit +
+            RecordsLostDueToBuildFailures;
 
         /// <summary>
         /// Returns how many records have been lost due to exceptions in user-provided record building delegates.
@@ -64,7 +73,7 @@ namespace Vostok.Hercules.Client
         {
             return new HerculesSinkCounters(
                 Sum(left.SentRecords, right.SentRecords),
-                Sum(left.LostRecords, right.LostRecords),
+                Sum(left.RejectedRecords, right.RejectedRecords),
                 Sum(left.StoredRecords, right.StoredRecords),
                 left.RecordsLostDueToBuildFailures + right.RecordsLostDueToBuildFailures,
                 left.RecordsLostDueToSizeLimit + right.RecordsLostDueToSizeLimit,

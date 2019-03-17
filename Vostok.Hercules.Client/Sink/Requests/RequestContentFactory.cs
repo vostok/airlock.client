@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Sink.Buffers;
@@ -7,35 +9,42 @@ namespace Vostok.Hercules.Client.Sink.Requests
 {
     internal class RequestContentFactory : IRequestContentFactory
     {
-        public CompositeContent CreateContent(ArraySegment<BufferSnapshot> snapshots, out int recordsCount)
+        public CompositeContent CreateContent(IReadOnlyList<BufferSnapshot> snapshots, out int recordsCount, out int recordsSize)
         {
-            recordsCount = 0;
-
             if (snapshots.Count == 0)
-                return new CompositeContent(Array.Empty<Content>());
+                throw new ArgumentException("Provided snapshots slice is empty.");
 
             var contents = new Content[snapshots.Count + 1];
 
+            recordsCount = 0;
+            recordsSize = 0;
+
             for (var i = 0; i < snapshots.Count; i++)
             {
-                var snapshot = snapshots.Array[snapshots.Offset + i];
+                var snapshot = snapshots[i];
+
                 recordsCount += snapshot.State.RecordsCount;
+                recordsSize += snapshot.State.Length;
+
                 contents[i + 1] = new Content(snapshot.Data);
             }
 
-            var count = new byte[sizeof(int)];
-
-            SetRecordsCount(count, recordsCount);
-
-            contents[0] = new Content(count);
+            contents[0] = CreateCountContent(recordsCount);
 
             return new CompositeContent(contents);
         }
 
-        private static unsafe void SetRecordsCount(byte[] buffer, int recordsCount)
+        [NotNull]
+        private static Content CreateCountContent(int recordsCount)
         {
-            fixed (byte* b = buffer)
-                *(int*)b = EndiannessConverter.Convert(recordsCount, Endianness.Big);
+            var writer = new BinaryBufferWriter(sizeof(int))
+            {
+                Endianness = Endianness.Big
+            };
+
+            writer.Write(recordsCount);
+
+            return new Content(writer.FilledSegment);
         }
     }
 }

@@ -1,81 +1,105 @@
 using System;
-using System.Text;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Threading;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
-    internal class Buffer : IBuffer
+    internal partial class Buffer : IBuffer
     {
-        private readonly AtomicBoolean isLockedForWrite = new AtomicBoolean(false);
-
         private readonly BinaryBufferWriter writer;
-        private readonly int maxSize;
         private readonly IMemoryManager memoryManager;
+        private readonly int maxSize;
 
         private readonly BufferStateHolder committed = new BufferStateHolder();
         private readonly BufferStateHolder garbage = new BufferStateHolder();
+        private readonly AtomicBoolean isLocked = new AtomicBoolean(false);
 
-        public Buffer(int bufferSize, int maxSize, IMemoryManager memoryManager)
+        public Buffer(int initialSize, int maxSize, IMemoryManager memoryManager)
         {
-            writer = new BinaryBufferWriter(bufferSize)
+            writer = new BinaryBufferWriter(initialSize)
             {
                 Endianness = Endianness.Big
             };
 
             this.maxSize = maxSize;
             this.memoryManager = memoryManager;
-
-            committed.Value = default;
         }
 
-        public long Position
+        public BufferState Committed => committed.Value;
+
+        public BufferState Garbage => garbage.Value;
+
+        public long UsefulDataSize => Committed.Length - Garbage.Length;
+
+        public void CommitRecord(int size)
         {
-            get => writer.Position;
-            set => writer.Position = value;
+            if (size <= 0)
+                throw new ArgumentOutOfRangeException(nameof(size), $"Attempt to commit a record of incorrect size {size}.");
+
+            var currentCommitted = committed.Value;
+            if (currentCommitted.Length + size > Position)
+                throw new InvalidOperationException($"Attempt to commit a record of size {size} on top of current commited length {currentCommitted.Length} past current physical length {Position}.");
+
+            committed.Value = currentCommitted + new BufferState(size, 1);
         }
 
-        public Endianness Endianness
+        public void ReportGarbage(BufferState region)
         {
-            get => Endianness.Big;
-            set => throw new NotSupportedException();
+            var currentCommitted = committed.Value;
+            var currentGarbage = garbage.Value;
+
+            if (!currentGarbage.IsEmpty)
+                throw new InvalidOperationException($"Attempt to report a garbage region of size {region.Length} when there's already garbage of size {currentGarbage.Length}.");
+
+            if (region.Length > currentCommitted.Length)
+                throw new InvalidOperationException($"Attempt to report a garbage region of size {region.Length} that exceeds current committed region of size {currentCommitted.Length}.");
+
+            if (region.RecordsCount > currentCommitted.RecordsCount)
+                throw new InvalidOperationException($"Attempt to report a garbage region with {region.RecordsCount} records, which is more than current committed records count {currentCommitted.RecordsCount}.");
+
+            garbage.Value = region;
         }
 
-        public bool IsOverflowed { get; set; }
-        public byte[] Array => writer.Buffer;
-        public ArraySegment<byte> FilledSegment => writer.FilledSegment;
+        public bool TryLock()
+            => isLocked.TrySetTrue();
 
-        public void Commit(int recordSize)
-        {
-            var oldValue = committed.Value;
-            committed.Value = new BufferState(oldValue.Length + recordSize, oldValue.RecordsCount + 1);
-        }
-
-        public BufferState GetState() => committed.Value;
-        public long GetUsefulLength() => committed.Value.Length - garbage.Value.Length;
+        public void Unlock()
+            => isLocked.Value = false;
 
         public BufferSnapshot TryMakeSnapshot()
         {
-            // (epeshk): we should read committed.Value BEFORE acquiring a buffer because buffer may be changed on resizing.
-            return TryCollectGarbage()
-                ? new BufferSnapshot(this, committed.Value, writer.Buffer)
-                : null;
+            if (!TryCollectGarbage())
+                return null;
+
+            // (epeshk): we should read committed.Value BEFORE acquiring a buffer because buffer may be changed due to resizing.
+            var committedState = Committed;
+            var internalBuffer = writer.Buffer;
+
+            return new BufferSnapshot(this, committedState, internalBuffer);
         }
 
-        public void RequestGarbageCollection(BufferState state)
+        public bool TryCollectGarbage()
         {
-            garbage.Value = state;
+            if (Garbage.Length == 0)
+                return true;
+
+            if (!isLocked.TrySetTrue())
+                return false;
+
+            try
+            {
+                CollectGarbage();
+                return true;
+            }
+            finally
+            {
+                isLocked.Value = false;
+            }
         }
 
-        public bool TryLock() => isLockedForWrite.TrySetTrue();
-        public void Unlock() => isLockedForWrite.Value = false;
-
-        /// <summary>
-        /// <threadsafety>This method is NOT threadsafe and should be called only when buffer is not available for write.</threadsafety>
-        /// </summary>
         public void CollectGarbage()
         {
-            var garbageState = garbage.Value;
+            var garbageState = Garbage;
             if (garbageState.Length == 0)
                 return;
 
@@ -88,243 +112,9 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
             writer.Position -= garbageState.Length;
             committed.Value -= garbageState;
-            // (epeshk): reset garbage state at last for synchronization with MakeSnapshot
+
+            // (epeshk): reset garbage state last for synchronization with TryMakeSnapshot:
             garbage.Value = default;
-        }
-
-        public void Write(int value)
-        {
-            if (!EnsureAvailableBytes(sizeof(int)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void Write(long value)
-        {
-            if (!EnsureAvailableBytes(sizeof(long)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void Write(short value)
-        {
-            if (!EnsureAvailableBytes(sizeof(short)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void Write(double value)
-        {
-            if (!EnsureAvailableBytes(sizeof(double)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void Write(float value)
-        {
-            if (!EnsureAvailableBytes(sizeof(float)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void Write(byte value)
-        {
-            if (!EnsureAvailableBytes(sizeof(byte)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void Write(bool value)
-        {
-            if (!EnsureAvailableBytes(sizeof(bool)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void Write(ushort value)
-        {
-            if (!EnsureAvailableBytes(sizeof(ushort)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void Write(Guid value)
-        {
-            const int size = 16;
-
-            if (!EnsureAvailableBytes(size))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void WriteWithoutLength(string value)
-        {
-            if (TryEnsureAvailableBytes(Encoding.UTF8.GetMaxByteCount(value.Length)))
-                writer.WriteWithoutLength(value);
-
-            if (!EnsureAvailableBytes(value.Length))
-                return;
-
-            var bytes = Encoding.UTF8.GetBytes(value);
-            WriteWithoutLength(bytes);
-        }
-
-        public void WriteWithLength(string value)
-        {
-            if (TryEnsureAvailableBytes(sizeof(int) + Encoding.UTF8.GetMaxByteCount(value.Length)))
-                writer.WriteWithLength(value);
-
-            if (!EnsureAvailableBytes(sizeof(int) + value.Length))
-                return;
-
-            var bytes = Encoding.UTF8.GetBytes(value);
-            WriteWithLength(bytes);
-        }
-
-        public void WriteWithLength(byte[] value, int offset, int length)
-        {
-            if (!EnsureAvailableBytes(sizeof(int) + length))
-                return;
-
-            writer.WriteWithLength(value, offset, length);
-        }
-
-        public void WriteWithoutLength(byte[] value, int offset, int length)
-        {
-            if (!EnsureAvailableBytes(length))
-                return;
-
-            writer.WriteWithoutLength(value, offset, length);
-        }
-
-        public int WriteVarlen(uint value)
-        {
-            // ReSharper disable once ConvertIfStatementToReturnStatement
-            if (!EnsureAvailableBytes(sizeof(uint) + 1))
-                return 0;
-
-            return writer.WriteVarlen(value);
-        }
-
-        public int WriteVarlen(ulong value)
-        {
-            // ReSharper disable once ConvertIfStatementToReturnStatement
-            if (!EnsureAvailableBytes(sizeof(ulong) + 1))
-                return 0;
-
-            return writer.WriteVarlen(value);
-        }
-
-        public void WriteWithLength(string value, Encoding encoding)
-        {
-            if (!EnsureAvailableBytes(sizeof(int) + encoding.GetMaxByteCount(value.Length)))
-                return;
-
-            writer.WriteWithLength(value);
-        }
-
-        public void WriteWithoutLength(string value, Encoding encoding)
-        {
-            if (!EnsureAvailableBytes(encoding.GetMaxByteCount(value.Length)))
-                return;
-
-            writer.WriteWithoutLength(value);
-        }
-
-        public void WriteWithLength(byte[] value)
-        {
-            if (!EnsureAvailableBytes(sizeof(int) + value.Length))
-                return;
-
-            writer.WriteWithLength(value);
-        }
-
-        public void Write(uint value)
-        {
-            if (!EnsureAvailableBytes(sizeof(uint)))
-                return;
-
-            writer.Write(value);
-        }
-
-        public void WriteWithoutLength(byte[] value)
-        {
-            if (!EnsureAvailableBytes(value.Length))
-                return;
-
-            writer.WriteWithoutLength(value);
-        }
-
-        public void Write(ulong value)
-        {
-            if (!EnsureAvailableBytes(sizeof(ulong)))
-                return;
-
-            writer.Write(value);
-        }
-
-        private bool TryCollectGarbage()
-        {
-            if (garbage.Value.Length == 0)
-                return true;
-
-            if (isLockedForWrite.TrySetTrue())
-            {
-                CollectGarbage();
-                isLockedForWrite.Value = false;
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool EnsureAvailableBytes(int amount)
-        {
-            if (TryEnsureAvailableBytes(amount))
-                return true;
-
-            IsOverflowed = true;
-            return false;
-        }
-
-        private bool TryEnsureAvailableBytes(int amount)
-        {
-            if (IsOverflowed)
-                return false;
-
-            var currentLength = writer.Buffer.Length;
-            var maxPositionAfterWrite = writer.Position + amount;
-
-            if (currentLength >= maxPositionAfterWrite)
-                return true;
-
-            if (maxPositionAfterWrite > maxSize)
-                return false;
-
-            if (currentLength + currentLength > maxSize)
-                return TryResize(maxSize);
-
-            var reserveAmount = Math.Max(currentLength, maxPositionAfterWrite - currentLength);
-
-            return memoryManager.TryReserveBytes(reserveAmount);
-        }
-
-        private bool TryResize(int capacity)
-        {
-            if (!memoryManager.TryReserveBytes(capacity - writer.Buffer.Length))
-                return false;
-
-            writer.Resize(capacity);
-            return true;
         }
     }
 }

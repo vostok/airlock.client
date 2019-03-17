@@ -4,16 +4,20 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 {
     internal class BufferSnapshot
     {
-        public BufferSnapshot(IBuffer parent, BufferState state, byte[] buffer)
+        private readonly byte[] buffer;
+
+        public BufferSnapshot(IBuffer source, BufferState state, byte[] buffer)
         {
-            Parent = parent;
-            Buffer = buffer;
+            Source = source;
             State = state;
+
+            this.buffer = buffer;
         }
 
-        public IBuffer Parent { get; }
-        public byte[] Buffer { get; }
+        public IBuffer Source { get; }
+
         public BufferState State { get; }
-        public ArraySegment<byte> Data => new ArraySegment<byte>(Buffer, 0, State.Length);
+
+        public ArraySegment<byte> Data => new ArraySegment<byte>(buffer, 0, State.Length);
     }
 }
