@@ -79,6 +79,30 @@ namespace Vostok.Hercules.Client.Tests.Sink.Writing
             signal.WaitAsync().IsCompleted.Should().BeTrue();
         }
 
+        [Test]
+        public void Should_set_signal_on_oom_result_when_there_are_some_stored_records()
+        {
+            SetupResult(RecordWriteResult.OutOfMemory, 0);
+
+            SetupStoredSizes(1, 1);
+
+            Write(out _);
+
+            signal.WaitAsync().IsCompleted.Should().BeTrue();
+        }
+
+        [Test]
+        public void Should_not_set_signal_on_oom_result_when_there_are_no_stored_records()
+        {
+            SetupResult(RecordWriteResult.OutOfMemory, 0);
+
+            SetupStoredSizes(0, 0);
+
+            Write(out _);
+
+            signal.WaitAsync().IsCompleted.Should().BeFalse();
+        }
+
         private RecordWriteResult Write(out int recordSize)
             => signalingWriter.TryWrite(null, null, out recordSize);
 

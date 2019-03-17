@@ -38,7 +38,8 @@ namespace Vostok.Hercules.Client.Sink.Writing
 
             var storedSizeAfter = statistics.EstimateStoredSize();
 
-            if (storedSizeAfter >= constantSignalThreshold || 
+            if (storedSizeAfter >= constantSignalThreshold ||
+                storedSizeAfter > 0 && result == RecordWriteResult.OutOfMemory ||
                 storedSizeBefore < transitionSignalThreshold && storedSizeAfter >= transitionSignalThreshold)
             {
                 signal.Set();
