@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Sink.Planning;
 using Vostok.Hercules.Client.Sink.Sender;
 using Vostok.Logging.Abstractions;
@@ -23,6 +24,8 @@ namespace Vostok.Hercules.Client.Sink.Job
             this.planner = planner;
             this.requestTimeout = requestTimeout;
         }
+
+        public bool IsHealthy => lastSendResult.Status == HerculesStatus.Success;
 
         public async Task SendAsync(CancellationToken cancellationToken)
         {
