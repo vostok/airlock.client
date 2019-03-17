@@ -13,6 +13,7 @@ namespace Vostok.Hercules.Client.Sink.Daemon
         private const int Disposed = 2;
 
         private readonly AtomicInt state;
+        private readonly AsyncManualResetEvent schedulerTaskBarrier;
         private readonly CancellationTokenSource schedulerCancellation;
 
         private volatile IScheduler scheduler;
@@ -23,6 +24,7 @@ namespace Vostok.Hercules.Client.Sink.Daemon
             this.scheduler = scheduler;
 
             schedulerCancellation = new CancellationTokenSource();
+            schedulerTaskBarrier = new AsyncManualResetEvent(false);
             state = new AtomicInt(NotInitialized);
         }
 
@@ -31,18 +33,26 @@ namespace Vostok.Hercules.Client.Sink.Daemon
             if (state == NotInitialized && state.TryIncreaseTo(Initialized))
             {
                 Interlocked.Exchange(ref schedulerTask, Task.Run(() => scheduler?.RunAsync(schedulerCancellation.Token)));
+
+                schedulerTaskBarrier.Set();
             }
         }
 
         public void Dispose()
         {
-            if (state.TryIncreaseTo(Disposed))
-            {
-                schedulerCancellation.Cancel();
-                schedulerTask?.SilentlyContinue()?.GetAwaiter().GetResult();
-                schedulerCancellation.Dispose();
-                scheduler = null;
-            }
+            var stateBefore = state.Exchange(Disposed);
+            if (stateBefore == Disposed)
+                return;
+
+            // (iloktionov): Ensure that we don't miss scheduler task due to a race with Initialize().
+            if (stateBefore == Initialized)
+                schedulerTaskBarrier.GetAwaiter().GetResult();
+
+            schedulerCancellation.Cancel();
+            schedulerTask?.SilentlyContinue()?.GetAwaiter().GetResult();
+            schedulerTask = null;
+            scheduler = null;
+            schedulerCancellation.Dispose();
         }
     }
 }

@@ -42,6 +42,7 @@ namespace Vostok.Hercules.Client.Sink.Scheduler
 
                     if (controller.ShouldStillOperateOn(state))
                         jobHandler.HandleCompletedJob(completedJobTask, state);
+                    else break;
                 }
 
                 foreach (var sendingJob in state.SendingJobs)
