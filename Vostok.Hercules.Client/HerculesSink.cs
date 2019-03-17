@@ -11,6 +11,7 @@ using Vostok.Hercules.Client.Sink.Job;
 using Vostok.Hercules.Client.Sink.Scheduler;
 using Vostok.Hercules.Client.Sink.Scheduler.Helpers;
 using Vostok.Hercules.Client.Sink.State;
+using Vostok.Hercules.Client.Sink.Validation;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -94,6 +95,8 @@ namespace Vostok.Hercules.Client
             [NotNull] HerculesSinkSettings settings,
             [CanBeNull] ILog log)
         {
+            SettingsValidator.Validate(settings);
+
             log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
             var jobLauncher = new JobLauncher();
