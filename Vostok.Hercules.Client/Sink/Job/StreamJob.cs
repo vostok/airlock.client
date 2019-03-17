@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Vostok.Commons.Helpers.Extensions;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Sink.Planning;
 using Vostok.Hercules.Client.Sink.Sender;
@@ -40,6 +41,6 @@ namespace Vostok.Hercules.Client.Sink.Job
         }
 
         public Task WaitForNextSendAsync(CancellationToken cancellationToken) 
-            => planner.WaitForNextSendAsync(lastSendResult, cancellationToken);
+            => planner.WaitForNextSendAsync(lastSendResult, cancellationToken).SilentlyContinue();
     }
 }
