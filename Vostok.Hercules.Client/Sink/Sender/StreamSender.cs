@@ -118,6 +118,9 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
         private void LogBatchSendFailure(int recordsCount, long recordsSize, ResponseCode code, GateResponseClass responseClass)
         {
+            if (code == ResponseCode.Canceled)
+                return;
+
             log.Warn(
                 "Failed to send {RecordsCount} record(s) of size {RecordsSize} to stream '{StreamName}'. " +
                 "Response code = {NumericResponseCode} ({ResponseCode}). Response class = {ResponseClass}.",
