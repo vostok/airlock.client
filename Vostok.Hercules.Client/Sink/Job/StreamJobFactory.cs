@@ -11,16 +11,20 @@ namespace Vostok.Hercules.Client.Sink.Job
     {
         private readonly IStreamSenderFactory senderFactory;
         private readonly IPlannerFactory plannerFactory;
+        private readonly ILog log;
+
         private readonly TimeSpan requestTimeout;
 
         public StreamJobFactory([NotNull] HerculesSinkSettings settings, [NotNull] ILog log)
         {
+            this.log = log;
+
             senderFactory = new StreamSenderFactory(settings, log);
             plannerFactory = new PlannerFactory(settings);
             requestTimeout = settings.RequestTimeout;
         }
 
         public IStreamJob CreateJob(IStreamState state) 
-            => new StreamJob(senderFactory.Create(state), plannerFactory.Create(state), requestTimeout);
+            => new StreamJob(senderFactory.Create(state), plannerFactory.Create(state), log, requestTimeout);
     }
 }
