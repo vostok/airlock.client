@@ -65,6 +65,12 @@ namespace Vostok.Hercules.Client.Tests.Sink.Planning
         }
 
         [Test]
+        public void WaitForNextSendAsync_should_complete_immediately_when_computed_period_is_already_due_because_of_send_latency()
+        {
+            MeasureWaitDelay(GateResponseClass.DefinitiveFailure, SendPeriodCap).Should().Be(TimeSpan.Zero);
+        }
+
+        [Test]
         public void WaitForNextSendAsync_should_wait_for_send_period_when_nothing_special_happens()
         {
             for (var i = 0; i < 3; i++)
