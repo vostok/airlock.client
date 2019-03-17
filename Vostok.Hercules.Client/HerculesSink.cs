@@ -42,6 +42,10 @@ namespace Vostok.Hercules.Client
             if (!stream.BufferPool.TryAcquire(out var buffer))
             {
                 stream.Statistics.ReportOverflow();
+
+                if (stream.Statistics.EstimateStoredSize() > 0)
+                    stream.SendSignal.Set();
+
                 return;
             }
 
@@ -66,9 +70,9 @@ namespace Vostok.Hercules.Client
         /// </summary>
         public HerculesSinkStatistics GetStatistics()
         {
-            var perStreamCounters = state.Streams
-                .Where(x => x.Value.IsValueCreated)
-                .ToDictionary(x => x.Key, x => x.Value.Value.Statistics.GetCounters());
+            var perStreamCounters = new StreamStatesProvider(state.Streams)
+                .GetStates()
+                .ToDictionary(s => s.Name, s => s.Statistics.GetCounters());
 
             var totalCounters = HerculesSinkCounters.Zero;
 

@@ -1,219 +1,171 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using Vostok.Clusterclient.Core.Model;
-using Vostok.Clusterclient.Core.Topology;
-using Vostok.Clusterclient.Core.Transport;
-using Vostok.Commons.Binary;
-using Vostok.Commons.Testing;
-using Vostok.Commons.Time;
-using Vostok.Hercules.Client.Abstractions.Models;
-using Vostok.Hercules.Client.Serialization.Builders;
+using Vostok.Commons.Threading;
+using Vostok.Hercules.Client.Abstractions.Events;
+using Vostok.Hercules.Client.Sink.Buffers;
+using Vostok.Hercules.Client.Sink.Daemon;
+using Vostok.Hercules.Client.Sink.State;
+using Vostok.Hercules.Client.Sink.Statistics;
+using Vostok.Hercules.Client.Sink.Writing;
+using Vostok.Logging.Abstractions;
 using Vostok.Logging.Console;
+
+// ReSharper disable AssignNullToNotNullAttribute
 
 namespace Vostok.Hercules.Client.Tests
 {
     internal class HerculesSink_Tests
     {
-        private string apiKey;
-        private ITransport transport;
-        private HerculesSinkSettings config;
-        private HerculesSink client;
-        private Request lastRequest;
+        private const string Stream = "logs";
+
+        private IStreamStateFactory factory;
+        private IStreamState state;
+        private IBufferPool pool;
+        private IBuffer buffer;
+        private IRecordWriter writer;
+        private IStatisticsCollector stats;
+        private IDaemon daemon;
+        private ILog log;
+
+        private HerculesSink sink;
 
         [SetUp]
-        public void Setup()
+        public void TestSetup()
         {
-            client?.Dispose();
+            factory = Substitute.For<IStreamStateFactory>();
+            factory.Create(Arg.Any<string>()).Returns(_ => state);
 
-            lastRequest = null;
+            state = Substitute.For<IStreamState>();
+            state.BufferPool.Returns(_ => pool);
+            state.Statistics.Returns(_ => stats);
+            state.RecordWriter.Returns(_ => writer);
+            state.SendSignal.Returns(new AsyncManualResetEvent(false));
 
-            apiKey = Guid.NewGuid().ToString();
+            buffer = Substitute.For<IBuffer>();
+            writer = Substitute.For<IRecordWriter>();
+            stats = Substitute.For<IStatisticsCollector>();
+            daemon = Substitute.For<IDaemon>();
 
-            transport = Substitute.For<ITransport>();
-
-            transport.Capabilities.Returns(TransportCapabilities.RequestStreaming | TransportCapabilities.ResponseStreaming | TransportCapabilities.RequestCompositeBody);
-
-            config = new HerculesSinkSettings(new FixedClusterProvider(new Uri("http://example.com/dev/null")), () => apiKey)
-            {
-                ClusterClientSetup = c => c.Transport = transport
-            };
-
-            client = new HerculesSink(config, new SynchronousConsoleLog());
-
-            SetResponse(Responses.Ok);
-        }
-
-        [Test]
-        public void LostRecordsCount_should_not_grows_infinitely_when_gate_is_offline()
-        {
-            SetResponse(Responses.BadRequest);
-
-            client.Put("stream", x => x.AddValue("key", true));
-
-            var action = new Action(() => client.GetStatistics().Total.RejectedRecords.Count.Should().Be(1));
-            action.ShouldPassIn(5.Seconds());
-            action.ShouldNotFailIn(5.Seconds());
-        }
-
-        [TestCase(1, TestName = "Should_pass_global_api_key_to_hercules_sink")]
-        [TestCase(3, TestName = "Should_not_cache_global_api_key")]
-        public void ApiKeyTests(int iterations)
-        {
-            for (var i = 0; i < iterations; ++i)
-            {
-                client.Put("stream", _ => {});
-                new Action(
-                    () =>
-                    {
-                        var apiKeyHeaderValue = lastRequest?.Headers?["apiKey"];
-                        apiKeyHeaderValue.Should().Be(apiKey);
-                    }).ShouldPassIn(5.Seconds());
-                apiKey = Guid.NewGuid().ToString();
-            }
-        }
-
-        [TestCase(1, TestName = "Should_support_per_stream_api_key_overriding")]
-        [TestCase(3, TestName = "Should_not_cache_per_stream_api_key")]
-        public void PerStreamApiKeyTests(int iterations)
-        {
-            var perStreamApiKey = Guid.NewGuid().ToString();
-
-            client.ConfigureStream(
-                "stream",
-                new StreamSettings
+            pool = Substitute.For<IBufferPool>();
+            pool.TryAcquire(out _).Returns(
+                info =>
                 {
-                    ApiKeyProvider = () => perStreamApiKey
+                    info[0] = buffer;
+                    return true;
                 });
 
-            for (var i = 0; i < iterations; ++i)
+            log = new SynchronousConsoleLog();
+
+            sink = new HerculesSink(factory, daemon, log);
+        }
+
+        [Test]
+        public void Should_not_put_when_disposed()
+        {
+            sink.Dispose();
+
+            sink.Put(Stream, _ => {});
+
+            factory.ReceivedCalls().Should().BeEmpty();
+        }
+
+        [Test]
+        public void Should_not_put_when_given_a_null_stream()
+        {
+            sink.Put(null, _ => { });
+
+            factory.ReceivedCalls().Should().BeEmpty();
+        }
+
+        [Test]
+        public void Should_not_put_when_given_a_null_builder()
+        {
+            sink.Put(Stream, null);
+
+            factory.ReceivedCalls().Should().BeEmpty();
+        }
+
+        [Test]
+        public void Dispose_should_dispose_the_daemon_only_once()
+        {
+            sink.Dispose();
+            sink.Dispose();
+            sink.Dispose();
+
+            daemon.Received(1).Dispose();
+        }
+
+        [Test]
+        public void Should_report_an_overflow_when_failed_to_acquire_a_buffer()
+        {
+            pool.TryAcquire(out _).Returns(false);
+
+            sink.Put(Stream, _ => { });
+
+            stats.Received(1).ReportOverflow();
+        }
+
+        [Test]
+        public void Should_set_send_signal_when_overflow_occurs_while_some_data_is_in_buffers()
+        {
+            pool.TryAcquire(out _).Returns(false);
+
+            stats.EstimateStoredSize().Returns(1L);
+
+            sink.Put(Stream, _ => { });
+
+            state.SendSignal.WaitAsync().IsCompleted.Should().BeTrue();
+        }
+
+        [Test]
+        public void Should_not_set_send_signal_when_overflow_occurs_while_no_data_is_in_buffers()
+        {
+            pool.TryAcquire(out _).Returns(false);
+
+            stats.EstimateStoredSize().Returns(0L);
+
+            sink.Put(Stream, _ => { });
+
+            state.SendSignal.WaitAsync().IsCompleted.Should().BeFalse();
+        }
+
+        [Test]
+        public void Should_write_a_record()
+        {
+            sink.Put(Stream, _ => { });
+
+            writer.Received(1).TryWrite(buffer, Arg.Any<Action<IHerculesEventBuilder>>(), out _);
+        }
+
+        [Test]
+        public void Should_release_the_buffer_back_to_pool()
+        {
+            sink.Put(Stream, _ => { });
+
+            pool.Received(1).Release(buffer);
+        }
+
+        [Test]
+        public void Should_initialize_sending_daemon()
+        {
+            sink.Put(Stream, _ => { });
+
+            daemon.Received(1).Initialize();
+        }
+
+        [Test]
+        public void Should_reuse_stream_states()
+        {
+            for (var i = 0; i < 10; i++)
             {
-                client.Put("stream", _ => {});
-                new Action(
-                    () =>
-                    {
-                        var apiKeyHeaderValue = lastRequest?.Headers?["apiKey"];
-                        apiKeyHeaderValue.Should().Be(perStreamApiKey);
-                    }).ShouldPassIn(5.Seconds());
-                perStreamApiKey = Guid.NewGuid().ToString();
+                sink.Put(Stream, _ => { });
             }
+
+            writer.ReceivedCalls().Should().HaveCount(10);
+            daemon.ReceivedCalls().Should().HaveCount(10);
+            pool.ReceivedCalls().Should().HaveCount(20);
         }
-
-        [Test]
-        public void Should_pass_stream_name_header()
-        {
-            var streamName = Guid.NewGuid().ToString();
-            client.Put(streamName, _ => {});
-            new Action(
-                () =>
-                {
-                    var query = lastRequest?.Url.Query;
-                    query.Should().Be($"?{Constants.QueryParameters.Stream}={streamName}");
-                }).ShouldPassIn(5.Seconds());
-        }
-
-        [Test]
-        public void Should_send_record()
-        {
-            const int GuidSize = 16;
-
-            var key1 = "intValue";
-            var key2 = "longValue";
-            var byteKey1 = Encoding.UTF8.GetBytes(key1);
-            var byteKey2 = Encoding.UTF8.GetBytes(key2);
-            var value1 = 100500;
-            var value2 = (long)1e16 + 5;
-            var timestamp = DateTime.UtcNow;
-            var unixTimestamp = EpochHelper.ToUnixTimeUtcTicks(timestamp);
-
-            var size =
-                +sizeof(byte) // protocol version
-                + sizeof(long) // timestamp
-                + GuidSize // guid
-                + sizeof(ushort) // tag count
-                + sizeof(byte) // key length
-                + byteKey1.Length // key
-                + sizeof(byte) // type tag
-                + sizeof(int) // value
-                + sizeof(byte) // key length
-                + byteKey2.Length // key
-                + sizeof(byte) // type tag
-                + sizeof(long); // value
-
-            var uuidOffset =
-                +sizeof(byte) // protocol version
-                + sizeof(long); // timestamp
-
-            var writer = new BinaryBufferWriter(size) {Endianness = Endianness.Big};
-            writer.Write(Constants.EventProtocolVersion);
-            writer.Write(unixTimestamp);
-            writer.Write(Guid.Empty);
-
-            writer.Write((ushort)2);
-
-            // first tag
-            writer.Write((byte)byteKey1.Length);
-            writer.WriteWithoutLength(byteKey1);
-            writer.Write((byte)TagType.Integer);
-            writer.Write(value1);
-
-            // second tag
-            writer.Write((byte)byteKey2.Length);
-            writer.WriteWithoutLength(byteKey2);
-            writer.Write((byte)TagType.Long);
-            writer.Write(value2);
-
-            var recordCountContent = new byte[] {0, 0, 0, 1};
-            var recordContent = writer.FilledSegment;
-
-            client.Put(
-                "stream",
-                builder => builder
-                    .SetTimestamp(timestamp)
-                    .AddValue(key1, value1)
-                    .AddValue(key2, value2));
-            new Action(
-                () =>
-                {
-                    var first = lastRequest?.CompositeContent?.Parts[0]?.ToArraySegment();
-                    var second = lastRequest?.CompositeContent?.Parts[1]?.ToArray();
-                    second.Should().NotBeNull();
-                    Fill(second, 0, uuidOffset, GuidSize);
-
-                    Console.WriteLine(string.Join(" ", second.Select(x => x.ToString("x2"))));
-
-                    first.Should().BeEquivalentTo(recordCountContent, c => c.WithStrictOrdering());
-                    second.Should().BeEquivalentTo(recordContent, c => c.WithStrictOrdering());
-                }).ShouldPassIn(5.Seconds());
-        }
-
-        [Test]
-        [Explicit]
-        public void Test()
-        {
-            var config = new HerculesSinkSettings(new FixedClusterProvider(new Uri("")), () => "");
-
-            var client = new HerculesSink(config, new ConsoleLog());
-
-            client.Put("", x => { x.AddValue("key", true); });
-
-            Thread.Sleep(1000000);
-        }
-
-        private static void Fill(byte[] arr, byte value, int startIndex, int count)
-        {
-            for (var i = 0; i < count; i++)
-                arr[startIndex + i] = value;
-        }
-
-        private void SetResponse(Response response) =>
-            transport
-                .SendAsync(null, TimeSpan.Zero, TimeSpan.Zero, CancellationToken.None)
-                .ReturnsForAnyArgs(response)
-                .AndDoes(x => lastRequest = x.Arg<Request>());
     }
 }
