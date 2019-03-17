@@ -1,3 +1,4 @@
+using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.State;
 
 namespace Vostok.Hercules.Client.Sink.Planning
@@ -12,6 +13,6 @@ namespace Vostok.Hercules.Client.Sink.Planning
             this.settings = settings;
 
         public IPlanner Create(IStreamState state) =>
-            new Planner(state.SendSignal, settings.SendPeriod, settings.SendPeriodCap, MaxJitterFraction);
+            new Planner(new StatusAnalyzer(), state.SendSignal, settings.SendPeriod, settings.SendPeriodCap, MaxJitterFraction);
     }
 }

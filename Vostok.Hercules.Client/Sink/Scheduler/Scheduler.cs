@@ -109,7 +109,7 @@ namespace Vostok.Hercules.Client.Sink.Scheduler
                 var planner = plannerFactory.Create(streamState);
 
                 senders[pair.Key] = (sender, planner);
-                waitingJobs.Add(CreateWaiterAsync(stream, StreamSendResult.Empty, cancellationToken));
+                waitingJobs.Add(CreateWaiterAsync(stream, StreamSendResult.Success, cancellationToken));
             }
         }
 

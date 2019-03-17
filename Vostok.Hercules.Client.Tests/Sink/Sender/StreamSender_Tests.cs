@@ -9,8 +9,10 @@ using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Hercules.Client.Abstractions.Models;
+using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Gate;
+using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.Sender;
@@ -35,7 +37,8 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         private IStreamState state;
         private IRequestContentFactory contentFactory;
         private IGateRequestSender requestSender;
-        private IGateResponseClassifier responseClassifier;
+        private IResponseAnalyzer responseAnalyzer;
+        private IStatusAnalyzer statusAnalyzer;
         private StreamSettings settings;
 
         private CancellationTokenSource cancellation;
@@ -53,12 +56,13 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             batcher = new BufferSnapshotBatcher(1);
             contentFactory = new RequestContentFactory();
-            responseClassifier = new GateResponseClassifier(new ResponseAnalyzer(ResponseAnalysisContext.Stream));
+            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+            statusAnalyzer = new StatusAnalyzer();
 
             requestSender = Substitute.For<IGateRequestSender>();
 
             sender = new StreamSender(() => GlobalApiKey, state, batcher, contentFactory, 
-                requestSender, responseClassifier, new SynchronousConsoleLog());
+                requestSender, responseAnalyzer, statusAnalyzer, new SynchronousConsoleLog());
 
             cancellation = new CancellationTokenSource();
 
@@ -67,21 +71,21 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         }
 
         [Test]
-        public void Should_return_empty_result_when_all_collected_snapshots_are_null()
+        public void Should_return_successful_result_when_all_collected_snapshots_are_null()
         {
             SetupBuffers(null, null, null);
 
-            Send().BatchResults.Should().BeEmpty();
+            Send().Status.Should().Be(HerculesStatus.Success);
 
             requestSender.ReceivedCalls().Should().BeEmpty();
         }
 
         [Test]
-        public void Should_return_empty_result_when_all_collected_snapshots_are_empty()
+        public void Should_return_successful_result_when_all_collected_snapshots_are_empty()
         {
             SetupBuffers(0, 0, 0);
 
-            Send().BatchResults.Should().BeEmpty();
+            Send().Status.Should().Be(HerculesStatus.Success);
 
             requestSender.ReceivedCalls().Should().BeEmpty();
         }
@@ -101,9 +105,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             var result = Send();
 
-            result.IsSuccessful.Should().BeTrue();
-            result.BatchResults.Should().OnlyContain(r => r == GateResponseClass.Success);
-            result.BatchResults.Should().HaveCount(pool.Count());
+            result.Status.Should().Be(HerculesStatus.Success);
         }
 
         [Test]
@@ -113,24 +115,21 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             var result = Send();
 
-            result.HasTransientFailures.Should().BeTrue();
-            result.BatchResults.Should().OnlyContain(r => r == GateResponseClass.TransientFailure);
-            result.BatchResults.Should().HaveCount(1);
+            result.Status.Should().Be(HerculesStatus.ServerError);
 
             requestSender.ReceivedCalls().Should().HaveCount(1);
         }
 
         [Test]
-        public void Should_not_stop_on_first_definitive_failure()
+        public void Should_stop_on_first_definitive_failure()
         {
             SetupResponses(ResponseCode.NotFound, ResponseCode.NotFound, ResponseCode.Ok);
 
             var result = Send();
 
-            result.BatchResults.Should().Equal(GateResponseClass.DefinitiveFailure, GateResponseClass.DefinitiveFailure, GateResponseClass.Success);
-            result.BatchResults.Should().HaveCount(3);
+            result.Status.Should().Be(HerculesStatus.StreamNotFound);
 
-            requestSender.ReceivedCalls().Should().HaveCount(3);
+            requestSender.ReceivedCalls().Should().HaveCount(1);
         }
 
         [Test]
@@ -173,7 +172,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_perform_gc_on_definitive_failure()
         {
-            SetupResponses(ResponseCode.NotFound);
+            SetupResponses(ResponseCode.BadRequest);
 
             Send();
 
@@ -199,7 +198,20 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_report_successful_sends()
         {
-            SetupResponses(ResponseCode.NotFound);
+            SetupBuffers(56, 132, 13);
+
+            Send();
+
+            stats.ReceivedCalls().Should().HaveCount(3);
+            stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 56);
+            stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 132);
+            stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 13);
+        }
+
+        [Test]
+        public void Should_report_failed_sends_that_drop_data()
+        {
+            SetupResponses(ResponseCode.RequestEntityTooLarge);
 
             SetupBuffers(56, 132, 13);
 
@@ -209,19 +221,6 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             stats.Received(1).ReportSendingFailure(RecordsPerBuffer, 56);
             stats.Received(1).ReportSendingFailure(RecordsPerBuffer, 132);
             stats.Received(1).ReportSendingFailure(RecordsPerBuffer, 13);
-        }
-
-        [Test]
-        public void Should_report_definitely_failed_sends()
-        {
-            SetupBuffers(56, 132, 13);
-
-            Send();
-
-            stats.ReceivedCalls().Should().HaveCount(3);
-            stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 56);
-            stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 132);
-            stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 13);
         }
 
         [Test]

@@ -1,8 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Vostok.Commons.Helpers.Extensions;
 using Vostok.Commons.Threading;
+using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Sender;
 
 namespace Vostok.Hercules.Client.Sink.Planning
@@ -12,15 +14,22 @@ namespace Vostok.Hercules.Client.Sink.Planning
         private static readonly AsyncManualResetEvent NeverSignaled
             = new AsyncManualResetEvent(false);
 
+        private readonly IStatusAnalyzer statusAnalyzer;
         private readonly AsyncManualResetEvent signal;
         private readonly TimeSpan sendPeriod;
         private readonly TimeSpan sendPeriodCap;
         private readonly double maxJitterFraction;
 
-        private volatile int successiveFailures;
+        private volatile int backoffDepth;
 
-        public Planner(AsyncManualResetEvent signal, TimeSpan sendPeriod, TimeSpan sendPeriodCap, double maxJitterFraction)
+        public Planner(
+            [NotNull] IStatusAnalyzer statusAnalyzer,
+            [NotNull] AsyncManualResetEvent signal, 
+            TimeSpan sendPeriod, 
+            TimeSpan sendPeriodCap, 
+            double maxJitterFraction)
         {
+            this.statusAnalyzer = statusAnalyzer;
             this.signal = signal;
             this.sendPeriod = sendPeriod;
             this.sendPeriodCap = sendPeriodCap;
@@ -29,20 +38,20 @@ namespace Vostok.Hercules.Client.Sink.Planning
 
         public Task WaitForNextSendAsync(StreamSendResult lastResult, CancellationToken cancellationToken)
         {
-            if (lastResult.HasTransientFailures)
+            if (statusAnalyzer.ShouldIncreaseSendPeriod(lastResult.Status))
             {
-                Interlocked.Increment(ref successiveFailures);
+                Interlocked.Increment(ref backoffDepth);
             }
             else
             {
-                Interlocked.Exchange(ref successiveFailures, 0);
+                Interlocked.Exchange(ref backoffDepth, 0);
             }
 
-            var periodicDelay = Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, successiveFailures, maxJitterFraction) - lastResult.Elapsed;
+            var periodicDelay = Delays.ExponentialWithJitter(sendPeriodCap, sendPeriod, backoffDepth, maxJitterFraction) - lastResult.Elapsed;
             if (periodicDelay <= TimeSpan.Zero)
                 return Task.CompletedTask;
 
-            var signalToUse = successiveFailures == 0 ? signal : NeverSignaled;
+            var signalToUse = backoffDepth == 0 ? signal : NeverSignaled;
 
             return signalToUse
                 .WaitAsync(cancellationToken)

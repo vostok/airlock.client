@@ -12,7 +12,7 @@ namespace Vostok.Hercules.Client.Sink.Job
         private readonly IPlanner planner;
         private readonly TimeSpan requestTimeout;
 
-        private volatile StreamSendResult lastSendResult = StreamSendResult.Empty;
+        private volatile StreamSendResult lastSendResult = StreamSendResult.Success;
 
         public StreamJob(IStreamSender sender, IPlanner planner, TimeSpan requestTimeout)
         {

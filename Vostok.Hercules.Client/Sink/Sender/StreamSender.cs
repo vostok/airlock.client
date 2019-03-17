@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Time;
+using Vostok.Hercules.Client.Abstractions.Results;
+using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Gate;
+using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.State;
@@ -22,7 +25,8 @@ namespace Vostok.Hercules.Client.Sink.Sender
         private readonly IBufferSnapshotBatcher snapshotBatcher;
         private readonly IRequestContentFactory contentFactory;
         private readonly IGateRequestSender gateRequestSender;
-        private readonly IGateResponseClassifier gateResponseClassifier;
+        private readonly IResponseAnalyzer responseAnalyzer;
+        private readonly IStatusAnalyzer statusAnalyzer;
         private readonly ILog log;
 
         public StreamSender(
@@ -31,7 +35,8 @@ namespace Vostok.Hercules.Client.Sink.Sender
             [NotNull] IBufferSnapshotBatcher snapshotBatcher,
             [NotNull] IRequestContentFactory contentFactory,
             [NotNull] IGateRequestSender gateRequestSender,
-            [NotNull] IGateResponseClassifier gateResponseClassifier,
+            [NotNull] IResponseAnalyzer responseAnalyzer,
+            [NotNull] IStatusAnalyzer statusAnalyzer,
             [NotNull] ILog log)
         {
             this.globalApiKeyProvider = globalApiKeyProvider;
@@ -39,7 +44,8 @@ namespace Vostok.Hercules.Client.Sink.Sender
             this.snapshotBatcher = snapshotBatcher;
             this.contentFactory = contentFactory;
             this.gateRequestSender = gateRequestSender;
-            this.gateResponseClassifier = gateResponseClassifier;
+            this.responseAnalyzer = responseAnalyzer;
+            this.statusAnalyzer = statusAnalyzer;
             this.log = log;
         }
 
@@ -48,21 +54,19 @@ namespace Vostok.Hercules.Client.Sink.Sender
             var watch = Stopwatch.StartNew();
             var snapshots = CollectSnapshots();
             var batches = snapshotBatcher.Batch(snapshots);
-            var batchResults = new List<GateResponseClass>();
+            var currentStatus = HerculesStatus.Success;
 
             foreach (var batch in batches)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var batchResult = await SendBatchAsync(batch, perRequestTimeout, cancellationToken).ConfigureAwait(false);
+                currentStatus = await SendBatchAsync(batch, perRequestTimeout, cancellationToken).ConfigureAwait(false);
 
-                batchResults.Add(batchResult);
-
-                if (batchResult == GateResponseClass.TransientFailure)
+                if (!statusAnalyzer.ShouldDropStoredRecords(currentStatus))
                     break;
             }
 
-            return new StreamSendResult(batchResults, watch.Elapsed);
+            return new StreamSendResult(currentStatus, watch.Elapsed);
         }
 
         [NotNull]
@@ -76,7 +80,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
         private string ObtainApiKey()
             => streamState.Settings.ApiKeyProvider?.Invoke() ?? globalApiKeyProvider();
 
-        private async Task<GateResponseClass> SendBatchAsync([NotNull] IReadOnlyList<BufferSnapshot> batch, TimeSpan timeout, CancellationToken cancellationToken)
+        private async Task<HerculesStatus> SendBatchAsync([NotNull] IReadOnlyList<BufferSnapshot> batch, TimeSpan timeout, CancellationToken cancellationToken)
         {
             var watch = Stopwatch.StartNew();
 
@@ -86,24 +90,23 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 .FireAndForgetAsync(streamState.Name, ObtainApiKey(), body, timeout, cancellationToken)
                 .ConfigureAwait(false);
 
-            var responseClass = gateResponseClassifier.Classify(response);
-            if (responseClass != GateResponseClass.TransientFailure)
+            var status = responseAnalyzer.Analyze(response, out _);
+            if (statusAnalyzer.ShouldDropStoredRecords(status))
             {
                 RequestGarbageCollection(batch);
 
-                if (responseClass == GateResponseClass.Success)
+                if (status == HerculesStatus.Success)
                     streamState.Statistics.ReportSuccessfulSending(recordsCount, recordsSize);
-
-                if (responseClass == GateResponseClass.DefinitiveFailure)
+                else
                     streamState.Statistics.ReportSendingFailure(recordsCount, recordsSize);
             }
 
-            if (responseClass == GateResponseClass.Success)
+            if (status == HerculesStatus.Success)
                 LogBatchSendSuccess(recordsCount, recordsSize, watch.Elapsed);
             else
-                LogBatchSendFailure(recordsCount, recordsSize, response.Code, responseClass);
+                LogBatchSendFailure(recordsCount, recordsSize, response.Code, status);
 
-            return responseClass;
+            return status;
         }
 
         private static void RequestGarbageCollection([NotNull] IEnumerable<BufferSnapshot> snapshots)
@@ -116,17 +119,17 @@ namespace Vostok.Hercules.Client.Sink.Sender
             => log.Info("Successfully sent {RecordsCount} record(s) of size {RecordsSize} to stream '{StreamName}' in {ElapsedTime}.",
                 recordsCount, recordsSize, streamState.Name, elapsed.ToPrettyString());
 
-        private void LogBatchSendFailure(int recordsCount, long recordsSize, ResponseCode code, GateResponseClass responseClass)
+        private void LogBatchSendFailure(int recordsCount, long recordsSize, ResponseCode code, HerculesStatus status)
         {
-            if (code == ResponseCode.Canceled)
+            if (status == HerculesStatus.Canceled)
                 return;
 
             log.Warn(
                 "Failed to send {RecordsCount} record(s) of size {RecordsSize} to stream '{StreamName}'. " +
-                "Response code = {NumericResponseCode} ({ResponseCode}). Response class = {ResponseClass}.",
-                recordsCount, recordsSize, streamState.Name, (int) code, code, responseClass);
+                "Response code = {NumericResponseCode} ({ResponseCode}). Status = {ResponseStatus}.",
+                recordsCount, recordsSize, streamState.Name, (int) code, code, status);
 
-            if (responseClass == GateResponseClass.DefinitiveFailure)
+            if (statusAnalyzer.ShouldDropStoredRecords(status))
                 log.Warn("Dropped {RecordsCount} record(s) as a result of non-retriable failure.", recordsCount);
         }
     }
