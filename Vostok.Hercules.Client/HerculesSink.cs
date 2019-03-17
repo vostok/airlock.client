@@ -7,9 +7,9 @@ using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Sink.Daemon;
-using Vostok.Hercules.Client.Sink.Planning;
+using Vostok.Hercules.Client.Sink.Job;
 using Vostok.Hercules.Client.Sink.Scheduler;
-using Vostok.Hercules.Client.Sink.Sender;
+using Vostok.Hercules.Client.Sink.Scheduler.Helpers;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Logging.Abstractions;
 
@@ -20,38 +20,32 @@ namespace Vostok.Hercules.Client
     public class HerculesSink : IHerculesSink, IDisposable
     {
         private readonly HerculesSinkSettings settings;
-        private readonly IDaemon sendingDaemon;
         private readonly IStreamStateFactory stateFactory;
+        private readonly IDaemon sendingDaemon;
         private readonly ILog log;
 
-        private readonly ConcurrentDictionary<string, Lazy<IStreamState>> streamStates;
+        private readonly ConcurrentDictionary<string, Lazy<IStreamState>> states;
         private readonly AtomicBoolean isDisposed;
 
         public HerculesSink([NotNull] HerculesSinkSettings settings, [CanBeNull] ILog log)
-            : this(settings, null, null, log)
-        {
-            var senderFactory = new StreamSenderFactory(settings, this.log);
-            var plannerFactory = new PlannerFactory(settings);
-            var scheduler = new Scheduler(this, streamStates, settings, senderFactory, plannerFactory);
-
-            stateFactory = new StreamStateFactory(settings, this.log);
-            sendingDaemon = new Daemon(this.log, scheduler);
-        }
-
-        internal HerculesSink(
-            HerculesSinkSettings settings,
-            IDaemon sendingDaemon,
-            IStreamStateFactory stateFactory,
-            ILog log)
         {
             this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
             this.log = (log ?? LogProvider.Get()).ForContext<HerculesSink>();
 
-            this.sendingDaemon = sendingDaemon;
-            this.stateFactory = stateFactory;
-
-            streamStates = new ConcurrentDictionary<string, Lazy<IStreamState>>();
+            states = new ConcurrentDictionary<string, Lazy<IStreamState>>();
             isDisposed = new AtomicBoolean(false);
+
+            var jobLauncher = new JobLauncher();
+            var jobHandler = new JobHandler(jobLauncher);
+            var jobWaiter = new JobWaiter(settings.SendPeriod, settings.MaxParallelStreams);
+            var jobFactory = new StreamJobFactory(settings, this.log);
+            var statesProvider = new StreamStatesProvider(states);
+            var stateSynchronizer = new StateSynchronizer(statesProvider, jobFactory, jobLauncher);
+            var flowController = new FlowController(new WeakReference(this));
+            var scheduler = new Scheduler(stateSynchronizer, flowController, jobWaiter, jobHandler);
+
+            stateFactory = new StreamStateFactory(settings, this.log);
+            sendingDaemon = new Daemon(scheduler);
         }
 
         /// <inheritdoc />
@@ -93,7 +87,7 @@ namespace Vostok.Hercules.Client
         /// </summary>
         public HerculesSinkStatistics GetStatistics()
         {
-            var perStreamCounters = streamStates
+            var perStreamCounters = states
                 .Where(x => x.Value.IsValueCreated)
                 .ToDictionary(x => x.Key, x => x.Value.Value.Statistics.GetCounters());
 
@@ -141,7 +135,7 @@ namespace Vostok.Hercules.Client
 
         [NotNull]
         private IStreamState ObtainStreamState([NotNull] string stream) =>
-            streamStates
+            states
                 .GetOrAdd(stream, s => new Lazy<IStreamState>(() => stateFactory.Create(s)))
                 .Value;
     }

@@ -39,6 +39,7 @@
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\ThreadSafeRandom.cs" Link="Commons\ThreadSafeRandom.cs" />
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AsyncManualResetEvent.cs" Link="Commons\AsyncManualResetEvent.cs" />
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AtomicBoolean.cs" Link="Commons\AtomicBoolean.cs" />
+    <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AtomicInt.cs" Link="Commons\AtomicInt.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,67 +1,47 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Helpers.Extensions;
+using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Sink.Scheduler;
-using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Sink.Daemon
 {
     internal class Daemon : IDaemon
     {
-        private readonly object startLock = new object();
+        private const int NotInitialized = 0;
+        private const int Initialized = 1;
+        private const int Disposed = 2;
 
-        private readonly ILog log;
-        private readonly IScheduler scheduler;
+        private readonly AtomicInt state;
+        private readonly CancellationTokenSource schedulerCancellation;
 
-        private readonly CancellationTokenSource daemonCancellation;
-        private Task daemonTask;
+        private volatile IScheduler scheduler;
+        private volatile Task schedulerTask;
 
-        public Daemon(ILog log, IScheduler scheduler)
+        public Daemon(IScheduler scheduler)
         {
-            this.log = log;
             this.scheduler = scheduler;
 
-            daemonCancellation = new CancellationTokenSource();
+            schedulerCancellation = new CancellationTokenSource();
+            state = new AtomicInt(NotInitialized);
         }
 
         public void Initialize()
         {
-            // ReSharper disable once InvertIf
-            if (daemonTask == null)
+            if (state == NotInitialized && state.TryIncreaseTo(Initialized))
             {
-                lock (startLock)
-                {
-                    if (daemonTask != null)
-                        return;
-
-                    daemonTask = Task.Run(StartAsync, daemonCancellation.Token);
-                }
+                Interlocked.Exchange(ref schedulerTask, Task.Run(() => scheduler?.RunAsync(schedulerCancellation.Token)));
             }
         }
 
         public void Dispose()
         {
-            daemonCancellation.Cancel();
-            daemonTask?.SilentlyContinue()?.GetAwaiter().GetResult();
-            daemonCancellation.Dispose();
-
-            scheduler.Dispose();
-        }
-
-        private async Task StartAsync()
-        {
-            try
+            if (state.TryIncreaseTo(Disposed))
             {
-                await scheduler.RunAsync(daemonCancellation.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                log.Fatal(exception);
+                schedulerCancellation.Cancel();
+                schedulerTask?.SilentlyContinue()?.GetAwaiter().GetResult();
+                schedulerCancellation.Dispose();
+                scheduler = null;
             }
         }
     }

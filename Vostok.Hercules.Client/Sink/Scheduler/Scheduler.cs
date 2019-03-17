@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Commons.Helpers.Extensions;
@@ -26,7 +25,7 @@ namespace Vostok.Hercules.Client.Sink.Scheduler
             this.jobHandler = jobHandler;
         }
 
-        public async Task<SchedulerState> RunAsync(CancellationToken cancellationToken)
+        public async Task RunAsync(CancellationToken cancellationToken)
         {
             var cancellationTaskSource = new TaskCompletionSource<bool>();
 
@@ -44,18 +43,13 @@ namespace Vostok.Hercules.Client.Sink.Scheduler
                         jobHandler.HandleCompletedJob(completedJobTask, state);
                 }
 
-                return state;
+                foreach (var sendingJob in state.SendingJobs)
+                    await sendingJob.SilentlyContinue().ConfigureAwait(false);
+
+                // TODO(iloktionov): only healthy jobs
+                foreach (var job in state.AllJobs.Values)
+                    await job.SendAsync(CancellationToken.None).SilentlyContinue().ConfigureAwait(false);
             }
-        }
-
-        public async Task CleanupAsync(SchedulerState state)
-        {
-            foreach (var sendingJob in state.SendingJobs)
-                await sendingJob.SilentlyContinue().ConfigureAwait(false);
-
-            // TODO(iloktionov): only healthy jobs
-            foreach (var job in state.AllJobs.Values)
-                await job.SendAsync(CancellationToken.None).SilentlyContinue().ConfigureAwait(false);
         }
     }
 }
