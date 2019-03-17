@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Hercules.Client.Sink.Job;
 
-namespace Vostok.Hercules.Client.Sink.Scheduler.Helpers
+namespace Vostok.Hercules.Client.Sink.Scheduler
 {
     internal class SchedulerState
     {
