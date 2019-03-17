@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Vostok.Hercules.Client.Sink.Planner;
+using Vostok.Hercules.Client.Sink.Planning;
 using Vostok.Hercules.Client.Sink.Sender;
 
 namespace Vostok.Hercules.Client.Sink.Job

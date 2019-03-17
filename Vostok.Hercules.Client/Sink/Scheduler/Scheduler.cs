@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vostok.Commons.Helpers.Extensions;
 using Vostok.Hercules.Client.Abstractions;
-using Vostok.Hercules.Client.Sink.Planner;
+using Vostok.Hercules.Client.Sink.Planning;
 using Vostok.Hercules.Client.Sink.Sender;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Utilities;

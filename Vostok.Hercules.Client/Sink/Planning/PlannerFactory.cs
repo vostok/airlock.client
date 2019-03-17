@@ -1,6 +1,6 @@
 using Vostok.Hercules.Client.Sink.State;
 
-namespace Vostok.Hercules.Client.Sink.Planner
+namespace Vostok.Hercules.Client.Sink.Planning
 {
     internal class PlannerFactory : IPlannerFactory
     {

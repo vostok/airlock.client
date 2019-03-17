@@ -1,6 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
-using Vostok.Hercules.Client.Sink.Planner;
+using Vostok.Hercules.Client.Sink.Planning;
 using Vostok.Hercules.Client.Sink.Sender;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Logging.Abstractions;

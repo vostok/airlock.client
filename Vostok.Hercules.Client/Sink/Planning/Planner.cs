@@ -5,7 +5,7 @@ using Vostok.Commons.Helpers.Extensions;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Sink.Sender;
 
-namespace Vostok.Hercules.Client.Sink.Planner
+namespace Vostok.Hercules.Client.Sink.Planning
 {
     internal class Planner : IPlanner
     {
