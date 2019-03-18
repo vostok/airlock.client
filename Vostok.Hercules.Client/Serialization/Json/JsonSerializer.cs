@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.Serialization.Json;
+using JetBrains.Annotations;
 using Vostok.Commons.Collections;
 
 namespace Vostok.Hercules.Client.Serialization.Json
@@ -11,9 +12,9 @@ namespace Vostok.Hercules.Client.Serialization.Json
         private readonly ConcurrentDictionary<Type, UnboundedObjectPool<DataContractJsonSerializer>> serializerPools
             = new ConcurrentDictionary<Type, UnboundedObjectPool<DataContractJsonSerializer>>();
 
-        public byte[] Serialize<T>(T item)
+        public byte[] Serialize([NotNull] object item)
         {
-            using (ObtainSerializer<T>(out var serializer))
+            using (ObtainSerializer(item.GetType(), out var serializer))
             {
                 var buffer = new MemoryStream();
 
@@ -30,12 +31,11 @@ namespace Vostok.Hercules.Client.Serialization.Json
         }
 
         private IDisposable ObtainSerializer<T>(out DataContractJsonSerializer serializer)
-        {
-            return serializerPools
-                .GetOrAdd(
-                    typeof(T),
-                    type => new UnboundedObjectPool<DataContractJsonSerializer>(() => new DataContractJsonSerializer(type)))
+            => ObtainSerializer(typeof(T), out serializer);
+
+        private IDisposable ObtainSerializer(Type type, out DataContractJsonSerializer serializer)
+            => serializerPools
+                .GetOrAdd(type, t => new UnboundedObjectPool<DataContractJsonSerializer>(() => new DataContractJsonSerializer(t)))
                 .Acquire(out serializer);
-        }
     }
 }

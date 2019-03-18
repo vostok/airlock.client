@@ -1,54 +1,27 @@
-using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
-using Vostok.Hercules.Client.Abstractions.Models;
-using Vostok.Hercules.Client.Abstractions.Queries;
 
 namespace Vostok.Hercules.Client.Management
 {
     [DataContract]
     internal class StreamDescriptionDto
     {
-        private const int DefaultPartitionsCount = 3;
-        private static readonly TimeSpan DefaultTTL = TimeSpan.FromDays(3);
-        
-        public StreamDescriptionDto(CreateStreamQuery query)
-        {
-            name = query.Name;
-            type = query.Type.ToString().ToLowerInvariant();
-            partitions = query.Partitions ?? DefaultPartitionsCount;
-            ttl = (long) (query.TTL ?? DefaultTTL).TotalMilliseconds;
-            sources = query.Sources;
-            shardingKey = query.ShardingKey ?? Array.Empty<string>();
-        }
+        [DataMember(Name = "name", IsRequired = true)]
+        public string Name;
 
-        [DataMember]
-        public string name;
+        [DataMember(Name = "type", IsRequired = true)]
+        public string Type;
 
-        [DataMember]
-        public string type;
+        [DataMember(Name = "partitions")]
+        public int Partitions;
 
-        [DataMember]
-        public int partitions;
+        [DataMember(Name = "ttl")]
+        public long TtlMilliseconds;
 
-        [DataMember]
-        public long ttl;
+        [CanBeNull, DataMember(Name = "shardingKey", EmitDefaultValue = false)]
+        public string[] ShardingKey;
 
-        [CanBeNull, DataMember(EmitDefaultValue = false)]
-        public string[] shardingKey;
-
-        [CanBeNull, DataMember(EmitDefaultValue = false)]
-        public string[] sources;
-
-        public StreamDescription ToDescription() =>
-            new StreamDescription(name)
-            {
-                Partitions = partitions,
-                TTL = TimeSpan.FromMilliseconds(ttl),
-                ShardingKey = shardingKey,
-                Type = (StreamType)Enum.Parse(typeof(StreamType), type, true),
-                Sources = sources
-            };
+        [CanBeNull, DataMember(Name = "sources", EmitDefaultValue = false)]
+        public string[] Sources;
     }
 }
