@@ -111,24 +111,16 @@ namespace Vostok.Hercules.Client
 
         private async Task<HerculesResult<TPayload>> SendAsync<TDto, TPayload>(Request request, TimeSpan timeout, IResponseAnalyzer analyzer, Func<TDto, TPayload> converter, Func<object> requestDtoFactory = null)
         {
-            try
-            {
-                request = WithRequestDto(request, requestDtoFactory ?? (() => null));
+            request = WithRequestDto(request, requestDtoFactory ?? (() => null));
 
-                var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
-                var payload = default(TPayload);
+            var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
+            var payload = default(TPayload);
 
-                var status = analyzer.Analyze(result.Response, out var errorMessage);
-                if (status == HerculesStatus.Success)
-                    payload = converter(serializer.Deserialize<TDto>(result.Response.Content.ToMemoryStream()));
+            var status = analyzer.Analyze(result.Response, out var errorMessage);
+            if (status == HerculesStatus.Success)
+                payload = converter(serializer.Deserialize<TDto>(result.Response.Content.ToMemoryStream()));
 
-                return new HerculesResult<TPayload>(status, payload, errorMessage);
-            }
-            catch (Exception e)
-            {
-                log.Error(e);
-                return new HerculesResult<TPayload>(HerculesStatus.UnknownError, default, e.ToString());
-            }
+            return new HerculesResult<TPayload>(status, payload, errorMessage);
         }
 
         private Request WithRequestDto(Request request, Func<object> requestDtoFactory)
