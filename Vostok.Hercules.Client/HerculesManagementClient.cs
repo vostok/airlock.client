@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
@@ -47,17 +48,17 @@ namespace Vostok.Hercules.Client
         public Task<HerculesResult> CreateStreamAsync(CreateStreamQuery query, TimeSpan timeout)
             => SendAsync(
                 Request.Post("streams/create"),
-                StreamDescriptionDtoConverter.CreateFromQuery(query),
                 timeout,
-                StreamAnalyzer);
+                StreamAnalyzer,
+                () => StreamDescriptionDtoConverter.CreateFromQuery(query));
 
         /// <inheritdoc />
         public Task<HerculesResult> CreateTimelineAsync(CreateTimelineQuery query, TimeSpan timeout)
             => SendAsync(
                 Request.Post("timelines/create"),
-                TimelineDescriptionDtoConverter.CreateFromQuery(query),
                 timeout,
-                TimelineAnalyzer);
+                TimelineAnalyzer,
+                () => TimelineDescriptionDtoConverter.CreateFromQuery(query));
 
         /// <inheritdoc />
         public Task<DeleteStreamResult> DeleteStreamAsync(string name, TimeSpan timeout)
@@ -99,28 +100,19 @@ namespace Vostok.Hercules.Client
                 TimelineAnalyzer,
                 TimelineDescriptionDtoConverter.ConvertToDescription);
 
-        private Task<TResult> SendAsync<TResult>(Request request, TimeSpan timeout, IResponseAnalyzer analyzer, Func<HerculesResult, TResult> resultFactory)
-            => SendAsync(request, null, timeout, analyzer).ContinueWith(task => resultFactory(task.GetAwaiter().GetResult()));
+        private Task<TResult> SendAsync<TResult>(Request request, TimeSpan timeout, IResponseAnalyzer analyzer, Func<HerculesResult, TResult> resultFactory, Func<object> requestDtoFactory = null)
+            => SendAsync(request, timeout, analyzer).ContinueWith(task => resultFactory(task.GetAwaiter().GetResult()));
 
-        private Task<HerculesResult<TPayload>> SendAsync<TPayload>(Request request, TimeSpan timeout, IResponseAnalyzer analyzer)
-            => SendAsync<TPayload, TPayload>(request, timeout, analyzer, _ => _);
+        private Task<HerculesResult<TPayload>> SendAsync<TPayload>(Request request, TimeSpan timeout, IResponseAnalyzer analyzer, Func<object> requestDtoFactory = null)
+            => SendAsync<TPayload, TPayload>(request, timeout, analyzer, _ => _, requestDtoFactory);
 
-        private async Task<HerculesResult> SendAsync(Request request, object requestDto, TimeSpan timeout, IResponseAnalyzer analyzer)
+        private async Task<HerculesResult> SendAsync(Request request, TimeSpan timeout, IResponseAnalyzer analyzer, Func<object> requestDtoFactory = null)
+            => await SendAsync<bool>(request, timeout, analyzer, requestDtoFactory).ConfigureAwait(false);
+
+        private async Task<HerculesResult<TPayload>> SendAsync<TDto, TPayload>(Request request, TimeSpan timeout, IResponseAnalyzer analyzer, Func<TDto, TPayload> converter, Func<object> requestDtoFactory = null)
         {
-            if (requestDto != null)
-            {
-                request = request.WithContentTypeHeader(Constants.ContentTypes.Json);
-                request = request.WithContent(serializer.Serialize(requestDto));
-            }
+            request = WithRequestDto(request, requestDtoFactory ?? (() => null));
 
-            var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
-            var status = analyzer.Analyze(result.Response, out var errorMessage);
-
-            return new HerculesResult(status, errorMessage);
-        }
-
-        private async Task<HerculesResult<TPayload>> SendAsync<TDto, TPayload>(Request request, TimeSpan timeout, IResponseAnalyzer analyzer, Func<TDto, TPayload> converter)
-        {
             var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
             var payload = default(TPayload);
 
@@ -129,6 +121,19 @@ namespace Vostok.Hercules.Client
                 payload = converter(serializer.Deserialize<TDto>(result.Response.Content.ToMemoryStream()));
 
             return new HerculesResult<TPayload>(status, payload, errorMessage);
+        }
+
+        private Request WithRequestDto(Request request, Func<object> requestDtoFactory)
+        {
+            var requestDto = requestDtoFactory();
+
+            if (requestDto == null)
+                return request;
+
+            request = request.WithContentTypeHeader(Constants.ContentTypes.Json);
+            request = request.WithContent(serializer.Serialize(requestDto));
+
+            return request;
         }
 
         private static IClusterClient CreateClient(HerculesManagementClientSettings settings, ILog log)
