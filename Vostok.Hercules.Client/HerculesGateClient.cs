@@ -31,10 +31,9 @@ namespace Vostok.Hercules.Client
         private readonly IGateRequestSender sender;
         private readonly ILog log;
 
-        /// <inheritdoc />
-        public HerculesGateClient(HerculesGateClientSettings settings, ILog log)
+        public HerculesGateClient([NotNull] HerculesGateClientSettings settings, [CanBeNull] ILog log)
         {
-            this.settings = settings;
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesGateClient>();
 
             sender = new GateRequestSender(settings.Cluster, log, settings.AdditionalSetup);
@@ -65,7 +64,7 @@ namespace Vostok.Hercules.Client
             catch (Exception error)
             {
                 log.Warn(error);
-                return new InsertEventsResult(HerculesStatus.UnknownError);
+                return new InsertEventsResult(HerculesStatus.UnknownError, error.Message);
             }
         }
 

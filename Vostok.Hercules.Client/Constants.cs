@@ -16,6 +16,9 @@ namespace Vostok.Hercules.Client
         {
             public const string Stream = "stream";
             public const string Timeline = "timeline";
+            public const string ClientShard = "shardIndex";
+            public const string ClientShardCount = "shardCount";
+            public const string Limit = "take";
         }
 
         internal static class HeaderNames
