@@ -31,7 +31,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 settings.SuppressVerboseLogging ? log.WithMinimumLevel(LogLevel.Warn) : log,
                 settings.ClusterClientSetup);
 
-            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+            responseAnalyzer = new ResponseAnalyzer();
             statusAnalyzer = new StatusAnalyzer();
         }
 
