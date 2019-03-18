@@ -29,7 +29,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
             requestSender = new GateRequestSender(
                 settings.Cluster, 
                 settings.SuppressVerboseLogging ? log.WithMinimumLevel(LogLevel.Warn) : log,
-                settings.ClusterClientSetup);
+                settings.AdditionalSetup);
 
             responseAnalyzer = new ResponseAnalyzer();
             statusAnalyzer = new StatusAnalyzer();

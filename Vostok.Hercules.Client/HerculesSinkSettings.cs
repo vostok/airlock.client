@@ -36,7 +36,7 @@ namespace Vostok.Hercules.Client
         /// <para>An optional delegate that can be used to tune underlying <see cref="IClusterClient"/> instance.</para>
         /// </summary>
         [CanBeNull]
-        public ClusterClientSetup ClusterClientSetup { get; set; }
+        public ClusterClientSetup AdditionalSetup { get; set; }
 
         /// <summary>
         /// <para>A total upper limit (in bytes) on the size of all <see cref="HerculesSink"/> internal buffers.</para>
