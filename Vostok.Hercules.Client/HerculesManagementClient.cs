@@ -106,44 +106,28 @@ namespace Vostok.Hercules.Client
 
         private async Task<HerculesResult> SendAsync(Request request, object requestDto, TimeSpan timeout, IResponseAnalyzer analyzer)
         {
-            try
+            if (requestDto != null)
             {
-                if (requestDto != null)
-                {
-                    request = request.WithContentTypeHeader(Constants.ContentTypes.Json);
-                    request = request.WithContent(serializer.Serialize(requestDto));
-                }
-
-                var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
-                var status = analyzer.Analyze(result.Response, out var errorMessage);
-
-                return new HerculesResult(status, errorMessage);
+                request = request.WithContentTypeHeader(Constants.ContentTypes.Json);
+                request = request.WithContent(serializer.Serialize(requestDto));
             }
-            catch (Exception error)
-            {
-                log.Error(error);
-                return new HerculesResult(HerculesStatus.UnknownError, error.Message);
-            }
+
+            var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
+            var status = analyzer.Analyze(result.Response, out var errorMessage);
+
+            return new HerculesResult(status, errorMessage);
         }
 
         private async Task<HerculesResult<TPayload>> SendAsync<TDto, TPayload>(Request request, TimeSpan timeout, IResponseAnalyzer analyzer, Func<TDto, TPayload> converter)
         {
-            try
-            {
-                var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
-                var payload = default(TPayload);
+            var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
+            var payload = default(TPayload);
 
-                var status = analyzer.Analyze(result.Response, out var errorMessage);
-                if (status == HerculesStatus.Success)
-                    payload = converter(serializer.Deserialize<TDto>(result.Response.Content.ToMemoryStream()));
+            var status = analyzer.Analyze(result.Response, out var errorMessage);
+            if (status == HerculesStatus.Success)
+                payload = converter(serializer.Deserialize<TDto>(result.Response.Content.ToMemoryStream()));
 
-                return new HerculesResult<TPayload>(status, payload, errorMessage);
-            }
-            catch (Exception error)
-            {
-                log.Error(error);
-                return new HerculesResult<TPayload>(HerculesStatus.UnknownError, default, error.Message);
-            }
+            return new HerculesResult<TPayload>(status, payload, errorMessage);
         }
     }
 }
