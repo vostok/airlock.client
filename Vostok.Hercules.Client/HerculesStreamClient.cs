@@ -33,7 +33,7 @@ namespace Vostok.Hercules.Client
 
             client = ClusterClientFactory.Create(settings.Cluster, this.log, Constants.ServiceNames.StreamApi, null);
 
-            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+            responseAnalyzer = new ResponseAnalyzer();
         }
 
         /// <inheritdoc />

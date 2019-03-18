@@ -34,7 +34,7 @@ namespace Vostok.Hercules.Client
             this.log = log = (log?? LogProvider.Get()).ForContext<HerculesGateClient>();
 
             sender = new GateRequestSender(settings.Cluster, log, null);
-            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+            responseAnalyzer = new ResponseAnalyzer();
         }
 
         /// <inheritdoc />

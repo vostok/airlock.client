@@ -56,7 +56,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             batcher = new BufferSnapshotBatcher(1);
             contentFactory = new RequestContentFactory();
-            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+            responseAnalyzer = new ResponseAnalyzer();
             statusAnalyzer = new StatusAnalyzer();
 
             requestSender = Substitute.For<IGateRequestSender>();

@@ -12,16 +12,34 @@ namespace Vostok.Hercules.Client.Management
         private readonly DataContractJsonSerializer timelineDtoSerializer = new DataContractJsonSerializer(typeof(TimelineDescriptionDto));
         private readonly DataContractJsonSerializer stringArraySerializer = new DataContractJsonSerializer(typeof(string[]));
 
-        public ArraySegment<byte> Serialize(CreateStreamQuery query)
+        public ArraySegment<byte> Serialize(object value)
+        {
+            if (value is CreateStreamQuery streamQuery)
+                return Serialize(streamQuery);
+            if (value is CreateTimelineQuery timelineQuery)
+                return Serialize(timelineQuery);
+            throw new ArgumentOutOfRangeException(nameof(value));
+        }
+        
+        public T Deserialize<T>(ArraySegment<byte> bytes)
+        {
+            if (typeof(T) == typeof(StreamDescription))
+                return (T) (object) DeserializeStreamDescription(bytes);
+            if (typeof(T) == typeof(TimelineDescription))
+                return (T)(object)DeserializeTimelineDescription(bytes);
+            throw new ArgumentOutOfRangeException(nameof(T), typeof(T).Name, "Unknown type.");
+        }
+        
+        private ArraySegment<byte> Serialize(CreateStreamQuery query)
             => streamDtoSerializer.SerializeObject(new StreamDescriptionDto(query));
 
-        public StreamDescription DeserializeStreamDescription(ArraySegment<byte> content)
+        private StreamDescription DeserializeStreamDescription(ArraySegment<byte> content)
             => streamDtoSerializer.DeserializeObject<StreamDescriptionDto>(content).ToDescription();
 
-        public ArraySegment<byte> Serialize(CreateTimelineQuery query)
+        private ArraySegment<byte> Serialize(CreateTimelineQuery query)
             => timelineDtoSerializer.SerializeObject(new TimelineDescriptionDto(query));
 
-        public TimelineDescription DeserializeTimelineDescription(ArraySegment<byte> content)
+        private TimelineDescription DeserializeTimelineDescription(ArraySegment<byte> content)
             => timelineDtoSerializer.DeserializeObject<TimelineDescriptionDto>(content).ToDescription();
 
         public string[] DeserializeStringArray(ArraySegment<byte> content) =>

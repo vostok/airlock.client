@@ -7,23 +7,17 @@ namespace Vostok.Hercules.Client.Client
     {
         private const int MaximumErrorMessageLength = 250;
 
-        private readonly ResponseAnalysisContext context;
 
-        public ResponseAnalyzer(ResponseAnalysisContext context)
+        public HerculesStatus Analyze(Response response, out string errorMessage, ResponseAnalysisContext context=ResponseAnalysisContext.Stream)
         {
-            this.context = context;
-        }
-
-        public HerculesStatus Analyze(Response response, out string errorMessage)
-        {
-            var status = GetStatus(response);
+            var status = GetStatus(response, context);
 
             ExtractErrorMessage(response, status, out errorMessage);
 
             return status;
         }
 
-        private HerculesStatus GetStatus(Response response)
+        private HerculesStatus GetStatus(Response response, ResponseAnalysisContext context=ResponseAnalysisContext.Stream)
         {
             switch (response.Code)
             {
@@ -91,7 +85,7 @@ namespace Vostok.Hercules.Client.Client
             return HerculesStatus.UnknownError;
         }
 
-        private void ExtractErrorMessage(Response response, HerculesStatus status, out string errorMessage)
+        private static void ExtractErrorMessage(Response response, HerculesStatus status, out string errorMessage)
         {
             errorMessage = null;
 
