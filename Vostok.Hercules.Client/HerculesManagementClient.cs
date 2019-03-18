@@ -27,7 +27,7 @@ namespace Vostok.Hercules.Client
         /// <inheritdoc cref="HerculesManagementClient"/>
         public HerculesManagementClient(HerculesManagementClientSettings settings, ILog log)
         {
-            client = ClusterClientFactory.Create(settings.Cluster, log, Constants.ServiceNames.ManagementApi, settings.ClusterClientSetup);
+            client = ClusterClientFactory.Create(settings.Cluster, log, Constants.ServiceNames.ManagementApi, settings.AdditionalSetup);
             getApiKey = settings.ApiKeyProvider;
         }
 
