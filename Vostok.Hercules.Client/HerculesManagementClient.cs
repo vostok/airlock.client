@@ -20,8 +20,8 @@ namespace Vostok.Hercules.Client
     {
         private static readonly IResponseAnalyzer StreamAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
         private static readonly IResponseAnalyzer TimelineAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Timeline);
+        private static readonly JsonSerializer Serializer = new JsonSerializer();
 
-        private readonly JsonSerializer serializer;
         private readonly IClusterClient client;
         private readonly ILog log;
 
@@ -38,8 +38,6 @@ namespace Vostok.Hercules.Client
                     config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
                     settings.AdditionalSetup?.Invoke(config);
                 });
-
-            serializer = new JsonSerializer();
         }
 
         /// <inheritdoc />
@@ -109,7 +107,7 @@ namespace Vostok.Hercules.Client
             if (requestDto != null)
             {
                 request = request.WithContentTypeHeader(Constants.ContentTypes.Json);
-                request = request.WithContent(serializer.Serialize(requestDto));
+                request = request.WithContent(Serializer.Serialize(requestDto));
             }
 
             var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
@@ -125,7 +123,7 @@ namespace Vostok.Hercules.Client
 
             var status = analyzer.Analyze(result.Response, out var errorMessage);
             if (status == HerculesStatus.Success)
-                payload = converter(serializer.Deserialize<TDto>(result.Response.Content.ToMemoryStream()));
+                payload = converter(Serializer.Deserialize<TDto>(result.Response.Content.ToMemoryStream()));
 
             return new HerculesResult<TPayload>(status, payload, errorMessage);
         }
