@@ -55,9 +55,9 @@ namespace Vostok.Hercules.Client
 
                 return new InsertEventsResult(operationStatus, errorMessage);
             }
-            catch (Exception e)
+            catch (Exception error)
             {
-                log.Warn(e);
+                log.Warn(error);
                 return new InsertEventsResult(HerculesStatus.UnknownError);
             }
         }
