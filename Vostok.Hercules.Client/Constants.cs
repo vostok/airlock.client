@@ -15,6 +15,7 @@ namespace Vostok.Hercules.Client
         internal static class QueryParameters
         {
             public const string Stream = "stream";
+            public const string Timeline = "timeline";
         }
 
         internal static class HeaderNames
