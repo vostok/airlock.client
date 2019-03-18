@@ -16,10 +16,11 @@ notests *default:
     - vostok.logging.abstractions
     - vostok.clusterclient.core
     - vostok.clusterclient.transport
-    - vostok.commons.helpers/src
     - vostok.commons.time/src
-    - vostok.commons.threading/src
     - vostok.commons.binary/src
+    - vostok.commons.helpers/src
+    - vostok.commons.threading/src
+    - vostok.commons.collections/src
 
 full-build > notests: 
   deps:

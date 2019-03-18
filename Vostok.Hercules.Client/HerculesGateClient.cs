@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Binary;
+using Vostok.Commons.Collections;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
@@ -22,6 +23,9 @@ namespace Vostok.Hercules.Client
     {
         private const int InitialBodyBufferSize = 4096;
 
+        private readonly UnboundedObjectPool<BinaryBufferWriter> BufferPool
+            = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big});
+
         private readonly HerculesGateClientSettings settings;
         private readonly ResponseAnalyzer responseAnalyzer;
         private readonly IGateRequestSender sender;
@@ -31,7 +35,7 @@ namespace Vostok.Hercules.Client
         public HerculesGateClient(HerculesGateClientSettings settings, ILog log)
         {
             this.settings = settings;
-            this.log = log = (log?? LogProvider.Get()).ForContext<HerculesGateClient>();
+            this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesGateClient>();
 
             sender = new GateRequestSender(settings.Cluster, log, settings.AdditionalSetup);
             responseAnalyzer = new ResponseAnalyzer();
@@ -45,15 +49,18 @@ namespace Vostok.Hercules.Client
         {
             try
             {
-                var content = CreateContent(query);
+                using (BufferPool.Acquire(out var buffer))
+                {
+                    var content = CreateContent(query, buffer);
 
-                var response = await sender
-                    .SendAsync(query.Stream, settings.ApiKeyProvider(), content, timeout, cancellationToken)
-                    .ConfigureAwait(false);
+                    var response = await sender
+                        .SendAsync(query.Stream, settings.ApiKeyProvider(), content, timeout, cancellationToken)
+                        .ConfigureAwait(false);
 
-                var operationStatus = responseAnalyzer.Analyze(response, out var errorMessage);
+                    var operationStatus = responseAnalyzer.Analyze(response, out var errorMessage);
 
-                return new InsertEventsResult(operationStatus, errorMessage);
+                    return new InsertEventsResult(operationStatus, errorMessage);
+                }
             }
             catch (Exception error)
             {
@@ -62,15 +69,13 @@ namespace Vostok.Hercules.Client
             }
         }
 
-        private static Content CreateContent(InsertEventsQuery query)
+        private static Content CreateContent(InsertEventsQuery query, BinaryBufferWriter buffer)
         {
-            var body = new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big};
-
-            body.Write(query.Events.Count);
+            buffer.Write(query.Events.Count);
 
             foreach (var @event in query.Events)
             {
-                using (var eventBuilder = new BinaryEventBuilder(body, () => PreciseDateTime.UtcNow, Constants.EventProtocolVersion))
+                using (var eventBuilder = new BinaryEventBuilder(buffer, () => PreciseDateTime.UtcNow, Constants.EventProtocolVersion))
                 {
                     eventBuilder
                         .SetTimestamp(@event.Timestamp)
@@ -78,7 +83,7 @@ namespace Vostok.Hercules.Client
                 }
             }
 
-            return new Content(body.FilledSegment);
+            return new Content(buffer.FilledSegment);
         }
     }
 }
