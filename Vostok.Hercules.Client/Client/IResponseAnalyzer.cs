@@ -6,6 +6,6 @@ namespace Vostok.Hercules.Client.Client
 {
     internal interface IResponseAnalyzer
     {
-        HerculesStatus Analyze([NotNull] Response response, out string errorMessage, ResponseAnalysisContext context=ResponseAnalysisContext.Stream);
+        HerculesStatus Analyze([NotNull] Response response, out string errorMessage);
     }
 }

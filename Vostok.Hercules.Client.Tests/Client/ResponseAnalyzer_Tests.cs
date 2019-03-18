@@ -80,7 +80,7 @@ namespace Vostok.Hercules.Client.Tests.Client
         }
 
         private HerculesStatus Analyze(ResponseCode code, string message = null, ResponseAnalysisContext context = ResponseAnalysisContext.Stream)
-            => new ResponseAnalyzer().Analyze(CreateResponse(code, message), out errorMessage, context);
+            => new ResponseAnalyzer(context).Analyze(CreateResponse(code, message), out errorMessage);
 
         private static Response CreateResponse(ResponseCode code, string message)
             => message == null ? new Response(code) : new Response(code).WithContent(message);

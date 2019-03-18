@@ -17,156 +17,129 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesManagementClient : IHerculesManagementClient
     {
+        private static readonly IResponseAnalyzer StreamAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+        private static readonly IResponseAnalyzer TimelineAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Timeline);
+
         private readonly JsonSerializer serializer = new JsonSerializer();
-        private readonly IResponseAnalyzer responseAnalyzer = new ResponseAnalyzer();
-        private ClusterClient client;
-        private Func<string> getApiKey;
 
-        /// <inheritdoc cref="HerculesManagementClient"/>
-        public HerculesManagementClient(HerculesManagementClientSettings settings, ILog log)
+        private readonly HerculesManagementClientSettings settings;
+        private readonly IClusterClient client;
+
+        public HerculesManagementClient([NotNull] HerculesManagementClientSettings settings, [CanBeNull] ILog log)
         {
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+
+            log = (log ?? LogProvider.Get()).ForContext<HerculesManagementClient>();
+
             client = ClusterClientFactory.Create(settings.Cluster, log, Constants.ServiceNames.ManagementApi, settings.AdditionalSetup);
-            getApiKey = settings.ApiKeyProvider;
         }
 
         /// <inheritdoc />
-        public async Task<HerculesResult> CreateStreamAsync(CreateStreamQuery query, TimeSpan timeout)
-        {
-            var request = Request
-                .Post("streams/create")
-                .WithHeader(Constants.HeaderNames.ApiKey, getApiKey())
-                .WithHeader(HeaderNames.ContentType, "application/json")
-                .WithContent(serializer.Serialize(query));
-
-            var clusterResult = await client.SendAsync(request, timeout).ConfigureAwait(false);
-
-            var status = responseAnalyzer.Analyze(clusterResult.Response, out var errorMessage);
-
-            return new HerculesResult(status, errorMessage);
-        }
+        public Task<HerculesResult> CreateStreamAsync(CreateStreamQuery query, TimeSpan timeout)
+            => CreateAsync("streams/create", query, timeout, StreamAnalyzer);
 
         /// <inheritdoc />
-        public async Task<HerculesResult> CreateTimelineAsync(CreateTimelineQuery query, TimeSpan timeout)
-        {
-            var request = Request
-                .Post("timelines/create")
-                .WithHeader(Constants.HeaderNames.ApiKey, getApiKey())
-                .WithContent(serializer.Serialize(query));
-
-            var clusterResult = await client.SendAsync(request, timeout).ConfigureAwait(false);
-
-            var status = responseAnalyzer.Analyze(clusterResult.Response, out var errorMessage, ResponseAnalysisContext.Timeline);
-
-            return new HerculesResult(status, errorMessage);
-        }
-
-
-        private async Task<HerculesResult> CreateAsync(CreateTimelineQuery query, TimeSpan timeout, ResponseAnalysisContext context)
-        {
-            var url = context == ResponseAnalysisContext.Stream
-                ? "streams/create"
-                : "timelines/create";
-
-            var request = Request
-                .Post(url)
-                .WithHeader(Constants.HeaderNames.ApiKey, getApiKey())
-                .WithContent(serializer.Serialize(query));
-
-            var clusterResult = await client.SendAsync(request, timeout).ConfigureAwait(false);
-
-            var status = responseAnalyzer.Analyze(clusterResult.Response, out var errorMessage, context);
-
-            return new HerculesResult(status, errorMessage);
-        }
+        public Task<HerculesResult> CreateTimelineAsync(CreateTimelineQuery query, TimeSpan timeout)
+            => CreateAsync("timelines/create", query, timeout, TimelineAnalyzer);
 
         /// <inheritdoc />
-        public async Task<DeleteStreamResult> DeleteStreamAsync(string name, TimeSpan timeout)
-        {
-            var result = await DeleteAsync(name, timeout, ResponseAnalysisContext.Stream).ConfigureAwait(false);
-            return new DeleteStreamResult(result.status, result.errorMessage);
-        }
+        public Task<DeleteStreamResult> DeleteStreamAsync(string name, TimeSpan timeout)
+            => DeleteAsync("streams/delete", Constants.QueryParameters.Stream, name, timeout, StreamAnalyzer, (status, error) => new DeleteStreamResult(status, error));
 
         /// <inheritdoc />
-        public async Task<DeleteTimelineResult> DeleteTimelineAsync(string name, TimeSpan timeout)
-        {
-            var result = await DeleteAsync(name, timeout, ResponseAnalysisContext.Timeline).ConfigureAwait(false);
-            return new DeleteTimelineResult(result.status, result.errorMessage);
-        }
+        public Task<DeleteTimelineResult> DeleteTimelineAsync(string name, TimeSpan timeout)
+            => DeleteAsync("timelines/delete", Constants.QueryParameters.Timeline, name, timeout, TimelineAnalyzer, (status, error) => new DeleteTimelineResult(status, error));
+
+        /// <inheritdoc />
+        public Task<HerculesResult<StreamDescription>> GetStreamDescriptionAsync(string name, TimeSpan timeout) 
+            => GetDescriptionAsync<StreamDescription>("streams/info", Constants.QueryParameters.Stream, name, timeout, StreamAnalyzer);
+
+        /// <inheritdoc />
+        public Task<HerculesResult<TimelineDescription>> GetTimelineDescriptionAsync(string name, TimeSpan timeout) 
+            => GetDescriptionAsync<TimelineDescription>("timelines/info", Constants.QueryParameters.Timeline, name, timeout, TimelineAnalyzer);
+
+        /// <inheritdoc />
+        public Task<HerculesResult<string[]>> ListStreamsAsync(TimeSpan timeout) =>
+            ListAsync("streams/list", timeout, StreamAnalyzer);
+
+        /// <inheritdoc />
+        public Task<HerculesResult<string[]>> ListTimelinesAsync(TimeSpan timeout) =>
+            ListAsync("timelines/list", timeout, TimelineAnalyzer);
         
-        private async Task<(HerculesStatus status, string errorMessage)> DeleteAsync(string name, TimeSpan timeout, ResponseAnalysisContext context)
+        private async Task<HerculesResult> CreateAsync(
+            [NotNull] string path,
+            [NotNull] object query, 
+            TimeSpan timeout,
+            [NotNull] IResponseAnalyzer analyzer)
         {
-            var (url, queryParam) = context == ResponseAnalysisContext.Stream
-                ? ("streams/delete", Constants.QueryParameters.Stream)
-                : ("timelines/delete", Constants.QueryParameters.Timeline);
-
             var request = Request
-                .Post(url)
-                .WithAdditionalQueryParameter(queryParam, name)
-                .WithHeader(Constants.HeaderNames.ApiKey, getApiKey());
+                .Post(path)
+                .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider())
+                .WithContentTypeHeader(Constants.ContentTypes.Json)
+                .WithContent(serializer.Serialize(query));
 
-            var clusterResult = await client.SendAsync(request, timeout).ConfigureAwait(false);
+            var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
 
-            var status = responseAnalyzer.Analyze(clusterResult.Response, out var errorMessage, ResponseAnalysisContext.Timeline);
+            var status = analyzer.Analyze(result.Response, out var errorMessage);
 
-            return (status, errorMessage);
+            return new HerculesResult(status, errorMessage);
         }
 
-        public Task<HerculesResult<StreamDescription>> GetStreamDescriptionAsync(string name, TimeSpan timeout) =>
-            GetDescriptionAsync<StreamDescription>(name, timeout);
-
-        public Task<HerculesResult<TimelineDescription>> GetTimelineDescriptionAsync(string name, TimeSpan timeout) =>
-            GetDescriptionAsync<TimelineDescription>(name, timeout);
-
-        private async Task<HerculesResult<TModel>> GetDescriptionAsync<TModel>(string name, TimeSpan timeout)
-            where TModel : class
+        private async Task<TResult> DeleteAsync<TResult>(
+            [NotNull] string path,
+            [NotNull] string parameterName,
+            [NotNull] string parameterValue,
+            TimeSpan timeout,
+            [NotNull] IResponseAnalyzer analyzer,
+            [NotNull] Func<HerculesStatus, string, TResult> resultFactory)
         {
-            var (context, url, queryParam) = typeof(TModel) == typeof(StreamDescription)
-                ? (ResponseAnalysisContext.Stream, "streams/info", Constants.QueryParameters.Stream)
-                : (ResponseAnalysisContext.Timeline, "timelines/info", Constants.QueryParameters.Timeline);
-            
             var request = Request
-                .Get(url)
-                .WithAdditionalQueryParameter(queryParam, name)
-                .WithHeader(Constants.HeaderNames.ApiKey, getApiKey());
+                .Post(path)
+                .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider())
+                .WithAdditionalQueryParameter(parameterName, parameterValue);
 
-            var clusterResult = await client.SendAsync(request, timeout).ConfigureAwait(false);
+            var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
 
-            var response = clusterResult.Response;
+            var status = analyzer.Analyze(result.Response, out var error);
 
-            var status = responseAnalyzer.Analyze(response, out var errorMessage, context);
+            return resultFactory(status, error);
+        }
+
+        private async Task<HerculesResult<TDescription>> GetDescriptionAsync<TDescription>(
+            [NotNull] string path,
+            [NotNull] string parameterName,
+            [NotNull] string parameterValue,
+            TimeSpan timeout,
+            [NotNull] IResponseAnalyzer analyzer)
+            where TDescription : class
+        {
+            var request = Request
+                .Get(path)
+                .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider())
+                .WithAdditionalQueryParameter(parameterName, parameterValue);
+
+            var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
+
+            var status = analyzer.Analyze(result.Response, out var errorMessage);
 
             var payload = status == HerculesStatus.Success
-                ? serializer.Deserialize<TModel>(response.Content.ToArraySegment())
+                ? serializer.Deserialize<TDescription>(result.Response.Content.ToArraySegment())
                 : null;
 
-            return new HerculesResult<TModel>(status, payload, errorMessage);
+            return new HerculesResult<TDescription>(status, payload, errorMessage);
         }
 
-        public Task<HerculesResult<string[]>> ListStreamsAsync(TimeSpan timeout) =>
-            ListAsync(timeout, ResponseAnalysisContext.Stream);
-
-        public Task<HerculesResult<string[]>> ListTimelinesAsync(TimeSpan timeout) =>
-            ListAsync(timeout, ResponseAnalysisContext.Timeline);
-        
-
-        private async Task<HerculesResult<string[]>> ListAsync(TimeSpan timeout, ResponseAnalysisContext context)
+        private async Task<HerculesResult<string[]>> ListAsync(string path, TimeSpan timeout, IResponseAnalyzer analyzer)
         {
-            var url = context == ResponseAnalysisContext.Stream
-                ? "streams/list"
-                : "timelines/list";
-            
-            var request = Request
-                .Get(url)
-                .WithHeader(Constants.HeaderNames.ApiKey, getApiKey());
+            var request = Request.Get(path)
+                .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider());
 
-            var clusterResult = await client.SendAsync(request, timeout).ConfigureAwait(false);
+            var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
 
-            var response = clusterResult.Response;
-
-            var status = responseAnalyzer.Analyze(response, out var errorMessage, context);
+            var status = analyzer.Analyze(result.Response, out var errorMessage);
 
             var payload = status == HerculesStatus.Success
-                ? serializer.DeserializeStringArray(response.Content.ToArraySegment())
+                ? serializer.DeserializeStringArray(result.Response.Content.ToArraySegment())
                 : null;
 
             return new HerculesResult<string[]>(status, payload, errorMessage);

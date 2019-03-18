@@ -7,17 +7,39 @@ namespace Vostok.Hercules.Client.Client
     {
         private const int MaximumErrorMessageLength = 250;
 
+        private readonly ResponseAnalysisContext context;
 
-        public HerculesStatus Analyze(Response response, out string errorMessage, ResponseAnalysisContext context=ResponseAnalysisContext.Stream)
+        public ResponseAnalyzer(ResponseAnalysisContext context)
         {
-            var status = GetStatus(response, context);
+            this.context = context;
+        }
+
+        public HerculesStatus Analyze(Response response, out string errorMessage)
+        {
+            var status = GetStatus(response);
 
             ExtractErrorMessage(response, status, out errorMessage);
 
             return status;
         }
 
-        private HerculesStatus GetStatus(Response response, ResponseAnalysisContext context=ResponseAnalysisContext.Stream)
+        private static void ExtractErrorMessage(Response response, HerculesStatus status, out string errorMessage)
+        {
+            errorMessage = null;
+
+            if (status == HerculesStatus.Success)
+                return;
+
+            if (!response.HasContent)
+                return;
+
+            if (response.Content.Length > MaximumErrorMessageLength)
+                return;
+
+            errorMessage = response.Content.ToString();
+        }
+
+        private HerculesStatus GetStatus(Response response)
         {
             switch (response.Code)
             {
@@ -42,6 +64,7 @@ namespace Vostok.Hercules.Client.Client
                         case ResponseAnalysisContext.Timeline:
                             return HerculesStatus.TimelineNotFound;
                     }
+
                     break;
 
                 case ResponseCode.Conflict:
@@ -53,6 +76,7 @@ namespace Vostok.Hercules.Client.Client
                         case ResponseAnalysisContext.Timeline:
                             return HerculesStatus.TimelineAlreadyExists;
                     }
+
                     break;
 
                 case ResponseCode.RequestEntityTooLarge:
@@ -63,7 +87,7 @@ namespace Vostok.Hercules.Client.Client
 
                 case ResponseCode.TooManyRequests:
                     return HerculesStatus.Throttled;
-                
+
                 case ResponseCode.RequestTimeout:
                     return HerculesStatus.Timeout;
 
@@ -83,22 +107,6 @@ namespace Vostok.Hercules.Client.Client
             }
 
             return HerculesStatus.UnknownError;
-        }
-
-        private static void ExtractErrorMessage(Response response, HerculesStatus status, out string errorMessage)
-        {
-            errorMessage = null;
-
-            if (status == HerculesStatus.Success)
-                return;
-
-            if (!response.HasContent)
-                return;
-
-            if (response.Content.Length > MaximumErrorMessageLength)
-                return;
-
-            errorMessage = response.Content.ToString();
         }
     }
 }

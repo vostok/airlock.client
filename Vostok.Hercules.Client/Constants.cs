@@ -29,6 +29,7 @@ namespace Vostok.Hercules.Client
         internal static class ContentTypes
         {
             public const string OctetStream = "application/octet-stream";
+            public const string Json = "application/json";
         }
     }
 }

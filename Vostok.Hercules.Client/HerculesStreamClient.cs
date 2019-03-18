@@ -31,8 +31,7 @@ namespace Vostok.Hercules.Client
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesStreamClient>();
 
             client = ClusterClientFactory.Create(settings.Cluster, log, Constants.ServiceNames.StreamApi, settings.AdditionalSetup);
-
-            responseAnalyzer = new ResponseAnalyzer();
+            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
         }
 
         /// <inheritdoc />
