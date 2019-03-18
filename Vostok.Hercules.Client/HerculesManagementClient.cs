@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.Serialization.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
@@ -10,7 +9,6 @@ using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Management;
-using Vostok.Hercules.Client.Utilities;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client

@@ -1,8 +1,8 @@
 using System;
+using System.IO;
 using System.Runtime.Serialization.Json;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
-using Vostok.Hercules.Client.Utilities;
 
 namespace Vostok.Hercules.Client.Management
 {
@@ -31,18 +31,36 @@ namespace Vostok.Hercules.Client.Management
         }
         
         private ArraySegment<byte> Serialize(CreateStreamQuery query)
-            => streamDtoSerializer.SerializeObject(new StreamDescriptionDto(query));
+            => SerializeObject(streamDtoSerializer, new StreamDescriptionDto(query));
 
         private StreamDescription DeserializeStreamDescription(ArraySegment<byte> content)
-            => streamDtoSerializer.DeserializeObject<StreamDescriptionDto>(content).ToDescription();
+            => DeserializeObject<StreamDescriptionDto>(streamDtoSerializer, content).ToDescription();
 
         private ArraySegment<byte> Serialize(CreateTimelineQuery query)
-            => timelineDtoSerializer.SerializeObject(new TimelineDescriptionDto(query));
+            => SerializeObject(timelineDtoSerializer, new TimelineDescriptionDto(query));
 
         private TimelineDescription DeserializeTimelineDescription(ArraySegment<byte> content)
-            => timelineDtoSerializer.DeserializeObject<TimelineDescriptionDto>(content).ToDescription();
+            => DeserializeObject<TimelineDescriptionDto>(timelineDtoSerializer, content).ToDescription();
 
         public string[] DeserializeStringArray(ArraySegment<byte> content) =>
-            stringArraySerializer.DeserializeObject<string[]>(content);
+            DeserializeObject<string[]>(stringArraySerializer, content);
+
+        private static ArraySegment<byte> SerializeObject(DataContractJsonSerializer serializer, object item)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                serializer.WriteObject(memoryStream, item);
+                return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Position);
+            }
+        }
+
+        private static T DeserializeObject<T>(DataContractJsonSerializer serializer, ArraySegment<byte> data)
+        {
+            // ReSharper disable once AssignNullToNotNullAttribute
+            using (var memoryStream = new MemoryStream(data.Array, data.Offset, data.Count))
+            {
+                return (T) serializer.ReadObject(memoryStream);
+            }
+        }
     }
 }
