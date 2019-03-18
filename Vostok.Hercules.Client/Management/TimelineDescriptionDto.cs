@@ -23,5 +23,8 @@ namespace Vostok.Hercules.Client.Management
 
         [CanBeNull, DataMember(Name = "streams", EmitDefaultValue = false)]
         public string[] Streams;
+
+        [CanBeNull, DataMember(Name = "filters", EmitDefaultValue = false)]
+        public string[] Filters;
     }
 }

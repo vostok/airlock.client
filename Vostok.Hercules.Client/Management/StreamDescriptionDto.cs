@@ -21,7 +21,10 @@ namespace Vostok.Hercules.Client.Management
         [CanBeNull, DataMember(Name = "shardingKey", EmitDefaultValue = false)]
         public string[] ShardingKey;
 
-        [CanBeNull, DataMember(Name = "sources", EmitDefaultValue = false)]
+        [CanBeNull, DataMember(Name = "streams", EmitDefaultValue = false)]
         public string[] Sources;
+
+        [CanBeNull, DataMember(Name = "filters", EmitDefaultValue = false)]
+        public string[] Filters;
     }
 }
