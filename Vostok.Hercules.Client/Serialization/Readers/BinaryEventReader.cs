@@ -4,6 +4,7 @@ using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Builders;
+using Vostok.Hercules.Client.Serialization.Helpers;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
@@ -11,8 +12,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
     {
         public static HerculesEvent ReadEvent(IBinaryReader reader)
         {
-            if (reader.Endianness != Endianness.Big)
-                throw new ArgumentException("Provided binary reader is little endian.", nameof(reader));
+            reader.EnsureBigEndian();
 
             var builder = new HerculesEventBuilder();
 

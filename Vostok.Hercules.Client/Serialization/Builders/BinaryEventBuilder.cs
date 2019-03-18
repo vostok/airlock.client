@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
+using Vostok.Hercules.Client.Serialization.Helpers;
 
 namespace Vostok.Hercules.Client.Serialization.Builders
 {
@@ -18,10 +19,7 @@ namespace Vostok.Hercules.Client.Serialization.Builders
 
         public BinaryEventBuilder(IBinaryWriter binaryWriter, Func<DateTimeOffset> timeProvider, byte protocolVersion)
         {
-            if (binaryWriter.Endianness != Endianness.Big)
-                throw new ArgumentException("Provided binary writer is little endian.", nameof(binaryWriter));
-
-            this.binaryWriter = binaryWriter;
+            this.binaryWriter = binaryWriter.EnsureBigEndian();
             this.timeProvider = timeProvider;
 
             binaryWriter.Write(protocolVersion);

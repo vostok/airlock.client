@@ -8,6 +8,14 @@ namespace Vostok.Hercules.Client.Serialization.Helpers
 {
     internal static class BinaryWriterExtensions
     {
+        public static IBinaryWriter EnsureBigEndian(this IBinaryWriter writer)
+        {
+            if (writer.Endianness != Endianness.Big)
+                throw new ArgumentException("Provided binary writer is little endian.", nameof(writer));
+
+            return writer;
+        }
+
         public static void Write(this IBinaryWriter writer, TagType valueType) =>
             writer.Write((byte)valueType);
 

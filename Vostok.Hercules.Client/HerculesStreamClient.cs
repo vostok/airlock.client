@@ -6,10 +6,12 @@ using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Serialization.Readers;
+using Vostok.Hercules.Client.Serialization.Writers;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -47,7 +49,7 @@ namespace Vostok.Hercules.Client
                     }
                     .Build();
 
-                var body = CreateRequestBody(query);
+                var body = CreateRequestBody(query.Coordinates ?? StreamCoordinates.Empty);
 
                 var request = Request
                     .Post(url)
@@ -63,7 +65,7 @@ namespace Vostok.Hercules.Client
                 if (operationStatus != HerculesStatus.Success)
                     return new ReadStreamResult(operationStatus, null, errorMessage);
 
-                return new ReadStreamResult(HerculesStatus.Success, ReadResponseBody(result.Response));
+                return new ReadStreamResult(HerculesStatus.Success, ParseResponseBody(result.Response));
             }
             catch (Exception error)
             {
@@ -72,7 +74,19 @@ namespace Vostok.Hercules.Client
             }
         }
 
-        private static ReadStreamPayload ReadResponseBody(Response response)
+        private static ArraySegment<byte> CreateRequestBody([NotNull] StreamCoordinates coordinates)
+        {
+            var writer = new BinaryBufferWriter(sizeof(int) + coordinates.Positions.Length * (sizeof(int) + sizeof(long)))
+            {
+                Endianness = Endianness.Big
+            };
+
+            StreamCoordinatesWriter.Write(coordinates, writer);
+
+            return writer.FilledSegment;
+        }
+
+        private static ReadStreamPayload ParseResponseBody([NotNull] Response response)
         {
             var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
             {
@@ -84,24 +98,6 @@ namespace Vostok.Hercules.Client
             var events = reader.ReadArray(BinaryEventReader.ReadEvent);
 
             return new ReadStreamPayload(events, coordinates);
-        }
-
-        private static ArraySegment<byte> CreateRequestBody(ReadStreamQuery query)
-        {
-            var writer = new BinaryBufferWriter(sizeof(int) + query.Coordinates.Positions.Length * (sizeof(int) + sizeof(long)))
-            {
-                Endianness = Endianness.Big
-            };
-
-            writer.Write(query.Coordinates.Positions.Length);
-
-            foreach (var position in query.Coordinates.Positions)
-            {
-                writer.Write(position.Partition);
-                writer.Write(position.Offset);
-            }
-
-            return writer.FilledSegment;
         }
     }
 }

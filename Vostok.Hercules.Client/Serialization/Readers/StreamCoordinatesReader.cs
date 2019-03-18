@@ -1,5 +1,6 @@
 ﻿using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Models;
+using Vostok.Hercules.Client.Serialization.Helpers;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
@@ -7,7 +8,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
     {
         public static StreamCoordinates Read(IBinaryReader reader)
         {
-            return new StreamCoordinates(reader.ReadArray(ReadStreamPosition));
+            return new StreamCoordinates(reader.EnsureBigEndian().ReadArray(ReadStreamPosition));
         }
 
         private static StreamPosition ReadStreamPosition(IBinaryReader reader)
