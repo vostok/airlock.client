@@ -7,10 +7,8 @@ using Vostok.Commons.Collections;
 
 namespace Vostok.Hercules.Client.Serialization.Json
 {
-    internal class JsonSerializer : IJsonSerializer
+    internal class JsonSerializer
     {
-        public static readonly JsonSerializer Instance = new JsonSerializer();
-        
         private readonly ConcurrentDictionary<Type, UnboundedObjectPool<DataContractJsonSerializer>> serializerPools
             = new ConcurrentDictionary<Type, UnboundedObjectPool<DataContractJsonSerializer>>();
 

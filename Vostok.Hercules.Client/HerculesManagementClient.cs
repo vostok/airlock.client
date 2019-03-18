@@ -21,26 +21,25 @@ namespace Vostok.Hercules.Client
         private static readonly IResponseAnalyzer StreamAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
         private static readonly IResponseAnalyzer TimelineAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Timeline);
 
-        private readonly IJsonSerializer serializer;
+        private readonly JsonSerializer serializer;
         private readonly IClusterClient client;
         private readonly ILog log;
 
         public HerculesManagementClient([NotNull] HerculesManagementClientSettings settings, [CanBeNull] ILog log)
-            : this(settings, JsonSerializer.Instance, CreateClient(settings, log), log)
-        {
-        }
-
-        internal HerculesManagementClient(
-            [NotNull] HerculesManagementClientSettings settings,
-            [NotNull] IJsonSerializer serializer,
-            [NotNull] IClusterClient client,
-            [CanBeNull] ILog log)
         {
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesManagementClient>();
 
-            this.client = client;
+            client = ClusterClientFactory.Create(
+                settings.Cluster,
+                log,
+                Constants.ServiceNames.ManagementApi,
+                config =>
+                {
+                    config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
+                    settings.AdditionalSetup?.Invoke(config);
+                });
 
-            this.serializer = serializer;
+            serializer = new JsonSerializer();
         }
 
         /// <inheritdoc />
@@ -129,19 +128,6 @@ namespace Vostok.Hercules.Client
                 payload = converter(serializer.Deserialize<TDto>(result.Response.Content.ToMemoryStream()));
 
             return new HerculesResult<TPayload>(status, payload, errorMessage);
-        }
-
-        private static IClusterClient CreateClient(HerculesManagementClientSettings settings, ILog log)
-        {
-            return ClusterClientFactory.Create(
-                settings.Cluster,
-                log,
-                Constants.ServiceNames.ManagementApi,
-                config =>
-                {
-                    config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
-                    settings.AdditionalSetup?.Invoke(config);
-                });
         }
     }
 }
