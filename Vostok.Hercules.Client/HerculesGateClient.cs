@@ -33,7 +33,7 @@ namespace Vostok.Hercules.Client
             this.settings = settings;
             this.log = log = (log?? LogProvider.Get()).ForContext<HerculesGateClient>();
 
-            sender = new GateRequestSender(settings.Cluster, log, null);
+            sender = new GateRequestSender(settings.Cluster, log, settings.AdditionalSetup);
             responseAnalyzer = new ResponseAnalyzer();
         }
 

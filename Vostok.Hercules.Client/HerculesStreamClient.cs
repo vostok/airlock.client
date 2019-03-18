@@ -31,7 +31,7 @@ namespace Vostok.Hercules.Client
 
             apiKeyProvider = settings.ApiKeyProvider;
 
-            client = ClusterClientFactory.Create(settings.Cluster, this.log, Constants.ServiceNames.StreamApi, null);
+            client = ClusterClientFactory.Create(settings.Cluster, this.log, Constants.ServiceNames.StreamApi, settings.AdditionalSetup);
 
             responseAnalyzer = new ResponseAnalyzer();
         }

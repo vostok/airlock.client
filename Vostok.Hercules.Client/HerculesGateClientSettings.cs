@@ -1,5 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
+using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
 
 namespace Vostok.Hercules.Client
@@ -27,5 +28,11 @@ namespace Vostok.Hercules.Client
         /// </summary>
         [NotNull]
         public Func<string> ApiKeyProvider { get; }
+
+        /// <summary>
+        /// <para>An optional delegate that can be used to tune underlying <see cref="IClusterClient"/> instance.</para>
+        /// </summary>
+        [CanBeNull]
+        public ClusterClientSetup AdditionalSetup { get; set; }
     }
 }
