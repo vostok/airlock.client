@@ -51,7 +51,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Scheduler
 
             controller.Received(5).ShouldStillOperateOn(Arg.Any<SchedulerState>());
 
-            synchronizer.Received(2).Synchronize(Arg.Any<SchedulerState>());
+            synchronizer.Received(3).Synchronize(Arg.Any<SchedulerState>());
 
             jobWaiter.Received(2).WaitForNextCompletedJob(Arg.Any<SchedulerState>());
 

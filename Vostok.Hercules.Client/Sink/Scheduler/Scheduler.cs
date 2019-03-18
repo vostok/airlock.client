@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -47,6 +48,8 @@ namespace Vostok.Hercules.Client.Sink.Scheduler
 
                 foreach (var sendingJob in state.SendingJobs)
                     await sendingJob.SilentlyContinue().ConfigureAwait(false);
+
+                synchronizer.Synchronize(state);
 
                 foreach (var job in state.AllJobs.Values.Where(job => job.IsHealthy))
                     await job.SendAsync(CancellationToken.None).SilentlyContinue().ConfigureAwait(false);
