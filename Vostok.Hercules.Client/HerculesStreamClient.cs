@@ -20,17 +20,21 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesStreamClient : IHerculesStreamClient
     {
-        private readonly HerculesStreamClientSettings settings;
         private readonly ResponseAnalyzer responseAnalyzer;
         private readonly IClusterClient client;
         private readonly ILog log;
 
         public HerculesStreamClient([NotNull] HerculesStreamClientSettings settings, [CanBeNull] ILog log)
         {
-            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesStreamClient>();
 
-            client = ClusterClientFactory.Create(settings.Cluster, log, Constants.ServiceNames.StreamApi, settings.AdditionalSetup);
+            client = ClusterClientFactory.Create(settings.Cluster, log, Constants.ServiceNames.StreamApi, 
+                config =>
+                {
+                    config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
+                    settings.AdditionalSetup?.Invoke(config);
+                });
+
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
         }
 
@@ -53,7 +57,6 @@ namespace Vostok.Hercules.Client
                 var request = Request
                     .Post(url)
                     .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
-                    .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider())
                     .WithContent(body);
 
                 var result = await client

@@ -22,16 +22,19 @@ namespace Vostok.Hercules.Client
 
         private readonly JsonSerializer serializer = new JsonSerializer();
 
-        private readonly HerculesManagementClientSettings settings;
         private readonly IClusterClient client;
+        private readonly ILog log;
 
         public HerculesManagementClient([NotNull] HerculesManagementClientSettings settings, [CanBeNull] ILog log)
         {
-            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesManagementClient>();
 
-            log = (log ?? LogProvider.Get()).ForContext<HerculesManagementClient>();
-
-            client = ClusterClientFactory.Create(settings.Cluster, log, Constants.ServiceNames.ManagementApi, settings.AdditionalSetup);
+            client = ClusterClientFactory.Create(settings.Cluster, log, Constants.ServiceNames.ManagementApi,
+                config =>
+                {
+                    config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
+                    settings.AdditionalSetup?.Invoke(config);
+                });
         }
 
         /// <inheritdoc />
@@ -74,7 +77,6 @@ namespace Vostok.Hercules.Client
         {
             var request = Request
                 .Post(path)
-                .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider())
                 .WithContentTypeHeader(Constants.ContentTypes.Json)
                 .WithContent(serializer.Serialize(query));
 
@@ -95,7 +97,6 @@ namespace Vostok.Hercules.Client
         {
             var request = Request
                 .Post(path)
-                .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider())
                 .WithAdditionalQueryParameter(parameterName, parameterValue);
 
             var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
@@ -115,7 +116,6 @@ namespace Vostok.Hercules.Client
         {
             var request = Request
                 .Get(path)
-                .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider())
                 .WithAdditionalQueryParameter(parameterName, parameterValue);
 
             var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
@@ -131,8 +131,7 @@ namespace Vostok.Hercules.Client
 
         private async Task<HerculesResult<string[]>> ListAsync(string path, TimeSpan timeout, IResponseAnalyzer analyzer)
         {
-            var request = Request.Get(path)
-                .WithHeader(Constants.HeaderNames.ApiKey, settings.ApiKeyProvider());
+            var request = Request.Get(path);
 
             var result = await client.SendAsync(request, timeout).ConfigureAwait(false);
 
