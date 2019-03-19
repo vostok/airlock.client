@@ -15,7 +15,7 @@ using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests
 {
-    public class HerculesSink_IntergrationTests
+    internal class HerculesSink_IntergrationTests
     {        
         private const int GuidSize = 16;
         private const int EventIdOffset = sizeof(byte) + sizeof(long);
