@@ -112,7 +112,7 @@ namespace Vostok.Hercules.Client.Tests
                 }).ShouldPassIn(5.Seconds());
         }
         
-        private void EraseEventId(byte[] data) =>
+        private static void EraseEventId(byte[] data) =>
             Fill(data, 0, EventIdOffset, GuidSize);
         
         private void SetResponse(Response response) =>
