@@ -7,6 +7,8 @@ using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Builders;
 
+// ReSharper disable AccessToDisposedClosure
+
 namespace Vostok.Hercules.Client.Tests.Serialization
 {
     [TestFixture]
@@ -60,10 +62,12 @@ namespace Vostok.Hercules.Client.Tests.Serialization
         public void Should_throw_OverflowException_when_too_many_tags_are_written()
         {
             var writer = CreateWriter();
+
             using (var builder = CreateBuilder(writer))
             {
                 for (var i = 0; i < MaxNumberOfTags; i++)
                     builder.AddValue(i.ToString(), 0);
+
                 new Action(() => builder.AddValue("overflow", 0)).Should().Throw<OverflowException>();
             }
 

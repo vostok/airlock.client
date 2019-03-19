@@ -6,6 +6,8 @@ using NUnit.Framework;
 using Vostok.Hercules.Client.Sink.Scheduler;
 using Vostok.Hercules.Client.Sink.Scheduler.Helpers;
 
+// ReSharper disable NotAccessedField.Local
+
 namespace Vostok.Hercules.Client.Tests.Sink.Scheduler.Helpers
 {
     [TestFixture]

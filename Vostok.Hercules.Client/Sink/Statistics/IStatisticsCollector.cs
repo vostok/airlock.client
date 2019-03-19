@@ -1,5 +1,4 @@
 using JetBrains.Annotations;
-using Vostok.Hercules.Client.Gate;
 
 namespace Vostok.Hercules.Client.Sink.Statistics
 {

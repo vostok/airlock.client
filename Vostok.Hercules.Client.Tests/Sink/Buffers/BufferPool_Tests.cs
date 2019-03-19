@@ -30,7 +30,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
         {
             bufferPool.TryAcquire(out var buffer).Should().BeTrue();
 
-            buffer.TryMakeSnapshot()?.Data.Array.Length.Should().Be(InitialBufferSize);
+            buffer.TryMakeSnapshot()?.Data.Array?.Length.Should().Be(InitialBufferSize);
         }
 
         [TestCase(false)]

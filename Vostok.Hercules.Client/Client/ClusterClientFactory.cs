@@ -3,7 +3,6 @@ using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Ordering.Weighed;
 using Vostok.Clusterclient.Core.Strategies;
 using Vostok.Clusterclient.Core.Topology;
-using Vostok.Clusterclient.Core.Transforms;
 using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Time;
 using Vostok.Logging.Abstractions;
