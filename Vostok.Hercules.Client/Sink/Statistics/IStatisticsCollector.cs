@@ -27,7 +27,7 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         void ReportSuccessfulSending(long count, long size);
 
         /// <summary>
-        /// Reports that <paramref name="count"/> records of total <paramref name="size"/> have been lost due to a <see cref="GateResponseClass.DefinitiveFailure"/>.
+        /// Reports that <paramref name="count"/> records of total <paramref name="size"/> have been lost due to a non-retriable failure.
         /// </summary>
         void ReportSendingFailure(long count, long size);
 
