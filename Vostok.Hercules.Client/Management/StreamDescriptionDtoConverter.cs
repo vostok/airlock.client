@@ -15,7 +15,7 @@ namespace Vostok.Hercules.Client.Management
                 Type = query.Type == StreamType.Base ? "base" : "derived",
                 Partitions = query.Partitions ?? ManagementClientDefaults.StreamPartitions,
                 TtlMilliseconds = (long)(query.TTL ?? ManagementClientDefaults.StreamTTL).TotalMilliseconds,
-                ShardingKey = query.ShardingKey,
+                ShardingKey = query.ShardingKey ?? Array.Empty<string>(),
                 Sources = query.Sources
             };
 

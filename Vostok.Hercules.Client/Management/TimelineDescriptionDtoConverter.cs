@@ -16,7 +16,7 @@ namespace Vostok.Hercules.Client.Management
                 Slices = query.Slices ?? ManagementClientDefaults.TimelineSlices,
                 TtlMilliseconds = (long)(query.TTL ?? ManagementClientDefaults.TimelineTTL).TotalMilliseconds,
                 TimetrapSizeMilliseconds = (long)(query.TimetrapSize ?? ManagementClientDefaults.TimetrapSize).TotalMilliseconds,
-                ShardingKey = query.ShardingKey
+                ShardingKey = query.ShardingKey ?? Array.Empty<string>()
             };
 
         [CanBeNull]
