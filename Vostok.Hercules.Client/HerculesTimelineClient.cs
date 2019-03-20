@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
+using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Binary;
+using Vostok.Commons.Collections;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Models;
@@ -21,7 +23,11 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesTimelineClient : IHerculesTimelineClient
     {
+        private const int MaxPooledBufferSize = 16 * 1024 * 1024;
+        private const int MaxPooledBuffersPerBucket = 8;
+
         private readonly ResponseAnalyzer responseAnalyzer;
+        private readonly BufferPool bufferPool;
         private readonly IClusterClient client;
         private readonly ILog log;
 
@@ -29,12 +35,18 @@ namespace Vostok.Hercules.Client
         {
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesTimelineClient>();
 
+            bufferPool = new BufferPool(MaxPooledBufferSize, MaxPooledBuffersPerBucket);
+
             client = ClusterClientFactory.Create(
                 settings.Cluster,
                 log,
                 Constants.ServiceNames.TimelineApi,
                 config =>
                 {
+                    config.SetupUniversalTransport(new UniversalTransportSettings
+                    {
+                        BufferFactory = bufferPool.Rent
+                    });
                     config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
                     settings.AdditionalSetup?.Invoke(config);
                 });
@@ -69,11 +81,19 @@ namespace Vostok.Hercules.Client
                     .SendAsync(request, timeout, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
-                if (operationStatus != HerculesStatus.Success)
-                    return new ReadTimelineResult(operationStatus, null, errorMessage);
+                try
+                {
+                    var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
+                    if (operationStatus != HerculesStatus.Success)
+                        return new ReadTimelineResult(operationStatus, null, errorMessage);
 
-                return new ReadTimelineResult(operationStatus, ParseResponseBody(result.Response));
+                    return new ReadTimelineResult(operationStatus, ParseResponseBody(result.Response));
+                }
+                finally
+                {
+                    if (result.Response.HasContent)
+                        bufferPool.Return(result.Response.Content.Buffer);
+                }
             }
             catch (Exception error)
             {
