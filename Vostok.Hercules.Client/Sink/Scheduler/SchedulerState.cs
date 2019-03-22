@@ -8,6 +8,8 @@ namespace Vostok.Hercules.Client.Sink.Scheduler
 {
     internal class SchedulerState
     {
+        public ConcurrentDictionary<string, IStreamJob> AllJobs = new ConcurrentDictionary<string, IStreamJob>();
+
         public SchedulerState(Task cancellationTask, CancellationToken cancellationToken)
         {
             CancellationTask = cancellationTask;
@@ -21,7 +23,5 @@ namespace Vostok.Hercules.Client.Sink.Scheduler
         public List<Task> SendingJobs { get; } = new List<Task>();
 
         public List<Task> WaitingJobs { get; } = new List<Task>();
-
-        public ConcurrentDictionary<string, IStreamJob> AllJobs = new ConcurrentDictionary<string, IStreamJob>();
     }
 }

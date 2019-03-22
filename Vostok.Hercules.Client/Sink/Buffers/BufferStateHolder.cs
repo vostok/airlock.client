@@ -4,12 +4,12 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 {
     internal class BufferStateHolder
     {
+        private long state;
+
         public BufferStateHolder()
         {
             Value = default;
         }
-
-        private long state;
 
         public unsafe BufferState Value
         {

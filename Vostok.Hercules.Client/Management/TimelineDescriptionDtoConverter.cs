@@ -21,13 +21,15 @@ namespace Vostok.Hercules.Client.Management
 
         [CanBeNull]
         public static TimelineDescription ConvertToDescription([CanBeNull] TimelineDescriptionDto dto)
-            => dto == null ? null : new TimelineDescription(dto.Name)
-            {
-                Sources = dto.Streams,
-                Slices = dto.Slices,
-                TTL = TimeSpan.FromMilliseconds(dto.TtlMilliseconds),
-                TimetrapSize = TimeSpan.FromMilliseconds(dto.TimetrapSizeMilliseconds),
-                ShardingKey = dto.ShardingKey
-            };
+            => dto == null
+                ? null
+                : new TimelineDescription(dto.Name)
+                {
+                    Sources = dto.Streams,
+                    Slices = dto.Slices,
+                    TTL = TimeSpan.FromMilliseconds(dto.TtlMilliseconds),
+                    TimetrapSize = TimeSpan.FromMilliseconds(dto.TimetrapSizeMilliseconds),
+                    ShardingKey = dto.ShardingKey
+                };
     }
 }

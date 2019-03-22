@@ -2,6 +2,7 @@
 {
     internal enum ResponseAnalysisContext
     {
-        Stream, Timeline
+        Stream,
+        Timeline
     }
 }

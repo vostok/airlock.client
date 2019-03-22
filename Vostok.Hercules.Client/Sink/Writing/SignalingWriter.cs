@@ -15,9 +15,9 @@ namespace Vostok.Hercules.Client.Sink.Writing
         private readonly long constantSignalThreshold;
 
         public SignalingWriter(
-            IRecordWriter baseWriter, 
-            IStatisticsCollector statistics, 
-            AsyncManualResetEvent signal, 
+            IRecordWriter baseWriter,
+            IStatisticsCollector statistics,
+            AsyncManualResetEvent signal,
             long sizeLimit,
             double transitionSignalFraction,
             double constantSignalFraction)

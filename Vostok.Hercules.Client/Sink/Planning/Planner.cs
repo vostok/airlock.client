@@ -24,9 +24,9 @@ namespace Vostok.Hercules.Client.Sink.Planning
 
         public Planner(
             [NotNull] IStatusAnalyzer statusAnalyzer,
-            [NotNull] AsyncManualResetEvent signal, 
-            TimeSpan sendPeriod, 
-            TimeSpan sendPeriodCap, 
+            [NotNull] AsyncManualResetEvent signal,
+            TimeSpan sendPeriod,
+            TimeSpan sendPeriodCap,
             double maxJitterFraction)
         {
             this.statusAnalyzer = statusAnalyzer;

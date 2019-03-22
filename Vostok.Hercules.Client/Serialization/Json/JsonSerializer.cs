@@ -27,7 +27,7 @@ namespace Vostok.Hercules.Client.Serialization.Json
         public T Deserialize<T>(Stream stream)
         {
             using (ObtainSerializer<T>(out var serializer))
-                return (T) serializer.ReadObject(stream);
+                return (T)serializer.ReadObject(stream);
         }
 
         private IDisposable ObtainSerializer<T>(out DataContractJsonSerializer serializer)

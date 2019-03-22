@@ -47,7 +47,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
             writer.Write(value);
         }
-       
+
         public void Write(double value)
         {
             if (!EnsureAvailableBytes(sizeof(double)))
@@ -228,7 +228,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             if (currentCapacity + currentCapacity > maxSize)
                 return TryResize(maxSize, currentCapacity);
 
-            var reserveAmount = Math.Max(currentCapacity, (int) (maxPositionAfterWrite - currentCapacity));
+            var reserveAmount = Math.Max(currentCapacity, (int)(maxPositionAfterWrite - currentCapacity));
 
             if (!memoryManager.TryReserveBytes(reserveAmount))
                 return false;

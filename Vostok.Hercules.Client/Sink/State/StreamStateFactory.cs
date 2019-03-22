@@ -50,13 +50,21 @@ namespace Vostok.Hercules.Client.Sink.State
 
         private IRecordWriter CreateRecordWriter(string name, IStatisticsCollector statistics, AsyncManualResetEvent signal)
         {
-            IRecordWriter writer = new RecordWriter(log.ForContext(name), 
-                () => PreciseDateTime.UtcNow, Constants.EventProtocolVersion, settings.MaximumRecordSize);
+            IRecordWriter writer = new RecordWriter(
+                log.ForContext(name),
+                () => PreciseDateTime.UtcNow,
+                Constants.EventProtocolVersion,
+                settings.MaximumRecordSize);
 
             writer = new ReportingWriter(writer, statistics);
 
-            writer = new SignalingWriter(writer, statistics, signal, 
-                settings.MaximumPerStreamMemoryConsumption, SignalTransitionThreshold, SignalConstantThreshold);
+            writer = new SignalingWriter(
+                writer,
+                statistics,
+                signal,
+                settings.MaximumPerStreamMemoryConsumption,
+                SignalTransitionThreshold,
+                SignalConstantThreshold);
 
             return writer;
         }

@@ -27,7 +27,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
             snapshotBatcher = new BufferSnapshotBatcher(settings.MaximumBatchSize);
 
             requestSender = new GateRequestSender(
-                settings.Cluster, 
+                settings.Cluster,
                 settings.SuppressVerboseLogging ? log.WithMinimumLevel(LogLevel.Warn) : log,
                 settings.AdditionalSetup);
 
@@ -36,7 +36,14 @@ namespace Vostok.Hercules.Client.Sink.Sender
         }
 
         public IStreamSender Create(IStreamState state) =>
-            new StreamSender(apiKeyProvider, state, snapshotBatcher, contentFactory, 
-                requestSender, responseAnalyzer, statusAnalyzer, log.ForContext(state.Name));
+            new StreamSender(
+                apiKeyProvider,
+                state,
+                snapshotBatcher,
+                contentFactory,
+                requestSender,
+                responseAnalyzer,
+                statusAnalyzer,
+                log.ForContext(state.Name));
     }
 }

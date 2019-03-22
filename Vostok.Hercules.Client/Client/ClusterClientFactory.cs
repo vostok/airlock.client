@@ -13,7 +13,7 @@ namespace Vostok.Hercules.Client.Client
     {
         [NotNull]
         public static ClusterClient Create(
-            [NotNull] IClusterProvider clusterProvider, 
+            [NotNull] IClusterProvider clusterProvider,
             [NotNull] ILog log,
             [NotNull] string serviceName,
             [CanBeNull] ClusterClientSetup additionalSetup)

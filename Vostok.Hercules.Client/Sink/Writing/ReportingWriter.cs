@@ -40,6 +40,6 @@ namespace Vostok.Hercules.Client.Sink.Writing
             }
 
             return result;
-        } 
+        }
     }
 }

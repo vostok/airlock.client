@@ -13,7 +13,7 @@ namespace Vostok.Hercules.Client.Client
             this.apiKeyProvider = apiKeyProvider ?? throw new ArgumentNullException(nameof(apiKeyProvider));
         }
 
-        public Request Transform(Request request) 
+        public Request Transform(Request request)
             => request.WithHeader(Constants.HeaderNames.ApiKey, apiKeyProvider());
     }
 }

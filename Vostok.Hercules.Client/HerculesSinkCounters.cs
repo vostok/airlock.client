@@ -9,7 +9,7 @@ namespace Vostok.Hercules.Client
     public class HerculesSinkCounters
     {
         public static readonly HerculesSinkCounters Zero
-            = new HerculesSinkCounters((0, 0), (0, 0), (0, 0), 0,  0, 0);
+            = new HerculesSinkCounters((0, 0), (0, 0), (0, 0), 0, 0, 0);
 
         public HerculesSinkCounters(
             (long Count, long Size) sentRecords,
@@ -45,9 +45,9 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// Returns how many records have been lost in total, whatever the reason.
         /// </summary>
-        public long TotalLostRecords => 
-            RejectedRecords.Count + 
-            RecordsLostDueToOverflows + 
+        public long TotalLostRecords =>
+            RejectedRecords.Count +
+            RecordsLostDueToOverflows +
             RecordsLostDueToSizeLimit +
             RecordsLostDueToBuildFailures;
 

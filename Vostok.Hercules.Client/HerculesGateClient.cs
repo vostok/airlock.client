@@ -51,7 +51,7 @@ namespace Vostok.Hercules.Client
                 using (BufferPool.Acquire(out var buffer))
                 {
                     buffer.Reset();
-                    
+
                     var content = CreateContent(query, buffer);
 
                     var response = await sender

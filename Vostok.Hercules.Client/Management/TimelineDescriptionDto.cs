@@ -18,10 +18,12 @@ namespace Vostok.Hercules.Client.Management
         [DataMember(Name = "ttl")]
         public long TtlMilliseconds;
 
-        [CanBeNull, DataMember(Name = "shardingKey", EmitDefaultValue = false)]
+        [CanBeNull]
+        [DataMember(Name = "shardingKey", EmitDefaultValue = false)]
         public string[] ShardingKey;
 
-        [CanBeNull, DataMember(Name = "streams", EmitDefaultValue = false)]
+        [CanBeNull]
+        [DataMember(Name = "streams", EmitDefaultValue = false)]
         public string[] Streams;
     }
 }

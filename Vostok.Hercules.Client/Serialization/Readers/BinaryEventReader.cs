@@ -37,7 +37,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             for (var i = 0; i < tagsCount; i++)
             {
                 var key = ReadShortString(reader);
-                var valueType = (TagType) reader.ReadByte();
+                var valueType = (TagType)reader.ReadByte();
 
                 switch (valueType)
                 {
@@ -97,7 +97,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
 
         private static void ReadVector(IBinaryReader reader, IHerculesTagsBuilder builder, string key)
         {
-            var elementType = (TagType) reader.ReadByte();
+            var elementType = (TagType)reader.ReadByte();
 
             switch (elementType)
             {
@@ -165,7 +165,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
 
             if (reader is BinaryBufferReader bufferReader)
             {
-                var result = Encoding.UTF8.GetString(bufferReader.Buffer, (int) bufferReader.Position, length);
+                var result = Encoding.UTF8.GetString(bufferReader.Buffer, (int)bufferReader.Position, length);
 
                 bufferReader.Position += length;
 

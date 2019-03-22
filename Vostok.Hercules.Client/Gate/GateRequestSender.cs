@@ -15,14 +15,14 @@ namespace Vostok.Hercules.Client.Gate
         private readonly IClusterClient client;
 
         public GateRequestSender(
-            [NotNull] IClusterProvider clusterProvider, 
-            [NotNull] ILog log, 
+            [NotNull] IClusterProvider clusterProvider,
+            [NotNull] ILog log,
             [CanBeNull] ClusterClientSetup additionalSetup)
         {
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
         }
 
-        public Task<Response> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) 
+        public Task<Response> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken)
             => SendAsync("stream/send", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
 
         public Task<Response> FireAndForgetAsync(string stream, string apiKey, CompositeContent content, TimeSpan timeout, CancellationToken cancellationToken) =>

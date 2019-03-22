@@ -16,7 +16,7 @@ namespace Vostok.Hercules.Client.Sink.Scheduler.Helpers
             if (completedJobTask is Task<SendingJobResult> sendingJobTask)
             {
                 state.SendingJobs.Remove(completedJobTask);
-                
+
                 launcher.LaunchWaitJob(sendingJobTask.GetAwaiter().GetResult().Job, state);
             }
 

@@ -26,7 +26,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         #region Equality
 
         public bool Equals(BufferState other) =>
-          Length == other.Length && RecordsCount == other.RecordsCount;
+            Length == other.Length && RecordsCount == other.RecordsCount;
 
         public override bool Equals(object obj)
         {
@@ -41,7 +41,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             {
                 return (Length * 397) ^ RecordsCount;
             }
-        } 
+        }
 
         #endregion
     }

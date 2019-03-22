@@ -11,8 +11,8 @@ namespace Vostok.Hercules.Client.Sink.State
     internal class StreamState : IStreamState
     {
         public StreamState(
-            [NotNull] string name, 
-            [NotNull] IBufferPool bufferPool, 
+            [NotNull] string name,
+            [NotNull] IBufferPool bufferPool,
             [NotNull] IRecordWriter recordWriter,
             [NotNull] IStatisticsCollector statistics,
             [NotNull] AsyncManualResetEvent sendSignal)

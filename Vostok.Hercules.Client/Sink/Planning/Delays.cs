@@ -7,8 +7,8 @@ namespace Vostok.Hercules.Client.Sink.Planning
     internal static class Delays
     {
         public static TimeSpan ExponentialWithJitter(
-            TimeSpan sendPeriodCap, 
-            TimeSpan sendPeriod, 
+            TimeSpan sendPeriodCap,
+            TimeSpan sendPeriod,
             int attempt,
             double maxJitterFraction)
         {

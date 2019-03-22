@@ -42,10 +42,11 @@ namespace Vostok.Hercules.Client
                 Constants.ServiceNames.StreamApi,
                 config =>
                 {
-                    config.SetupUniversalTransport(new UniversalTransportSettings
-                    {
-                        BufferFactory = bufferPool.Rent
-                    });
+                    config.SetupUniversalTransport(
+                        new UniversalTransportSettings
+                        {
+                            BufferFactory = bufferPool.Rent
+                        });
                     config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
                     settings.AdditionalSetup?.Invoke(config);
                 });

@@ -69,6 +69,12 @@ namespace Vostok.Hercules.Client.Sink.Sender
             return new StreamSendResult(currentStatus, watch.Elapsed);
         }
 
+        private static void RequestGarbageCollection([NotNull] IEnumerable<BufferSnapshot> snapshots)
+        {
+            foreach (var snapshot in snapshots)
+                snapshot.Source.ReportGarbage(snapshot.State);
+        }
+
         [NotNull]
         private IEnumerable<BufferSnapshot> CollectSnapshots()
             => streamState.BufferPool
@@ -109,15 +115,13 @@ namespace Vostok.Hercules.Client.Sink.Sender
             return status;
         }
 
-        private static void RequestGarbageCollection([NotNull] IEnumerable<BufferSnapshot> snapshots)
-        {
-            foreach (var snapshot in snapshots)
-                snapshot.Source.ReportGarbage(snapshot.State);
-        }
-
         private void LogBatchSendSuccess(int recordsCount, long recordsSize, TimeSpan elapsed)
-            => log.Info("Successfully sent {RecordsCount} record(s) of size {RecordsSize} to stream '{StreamName}' in {ElapsedTime}.",
-                recordsCount, recordsSize, streamState.Name, elapsed.ToPrettyString());
+            => log.Info(
+                "Successfully sent {RecordsCount} record(s) of size {RecordsSize} to stream '{StreamName}' in {ElapsedTime}.",
+                recordsCount,
+                recordsSize,
+                streamState.Name,
+                elapsed.ToPrettyString());
 
         private void LogBatchSendFailure(int recordsCount, long recordsSize, ResponseCode code, HerculesStatus status)
         {
@@ -127,7 +131,12 @@ namespace Vostok.Hercules.Client.Sink.Sender
             log.Warn(
                 "Failed to send {RecordsCount} record(s) of size {RecordsSize} to stream '{StreamName}'. " +
                 "Response code = {NumericResponseCode} ({ResponseCode}). Status = {ResponseStatus}.",
-                recordsCount, recordsSize, streamState.Name, (int) code, code, status);
+                recordsCount,
+                recordsSize,
+                streamState.Name,
+                (int)code,
+                code,
+                status);
 
             if (statusAnalyzer.ShouldDropStoredRecords(status))
                 log.Warn("Dropped {RecordsCount} record(s) as a result of non-retriable failure.", recordsCount);

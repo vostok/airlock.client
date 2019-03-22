@@ -24,7 +24,7 @@ namespace Vostok.Hercules.Client.Sink.Job
             requestTimeout = settings.RequestTimeout;
         }
 
-        public IStreamJob CreateJob(IStreamState state) 
+        public IStreamJob CreateJob(IStreamState state)
             => new StreamJob(senderFactory.Create(state), plannerFactory.Create(state), log.ForContext(state.Name), requestTimeout);
     }
 }

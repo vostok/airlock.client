@@ -21,13 +21,15 @@ namespace Vostok.Hercules.Client.Management
 
         [CanBeNull]
         public static StreamDescription ConvertToDescription([CanBeNull] StreamDescriptionDto dto)
-            => dto == null ? null : new StreamDescription(dto.Name)
-            {
-                Type = (StreamType) Enum.Parse(typeof(StreamType), dto.Type, true),
-                Partitions = dto.Partitions,
-                TTL = TimeSpan.FromMilliseconds(dto.TtlMilliseconds),
-                ShardingKey = dto.ShardingKey,
-                Sources = dto.Sources,
-            };
+            => dto == null
+                ? null
+                : new StreamDescription(dto.Name)
+                {
+                    Type = (StreamType)Enum.Parse(typeof(StreamType), dto.Type, true),
+                    Partitions = dto.Partitions,
+                    TTL = TimeSpan.FromMilliseconds(dto.TtlMilliseconds),
+                    ShardingKey = dto.ShardingKey,
+                    Sources = dto.Sources
+                };
     }
 }

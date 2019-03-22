@@ -26,13 +26,13 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         public long EstimateStoredSize()
             => Interlocked.Read(ref storedRecordsSize);
 
-        public void ReportSizeLimitViolation() 
+        public void ReportSizeLimitViolation()
             => Interlocked.Increment(ref sizeLimitViolations);
 
-        public void ReportRecordBuildFailure() 
+        public void ReportRecordBuildFailure()
             => Interlocked.Increment(ref buildFailures);
 
-        public void ReportOverflow() 
+        public void ReportOverflow()
             => Interlocked.Increment(ref overflows);
 
         public void ReportSuccessfulSending(long count, long size)

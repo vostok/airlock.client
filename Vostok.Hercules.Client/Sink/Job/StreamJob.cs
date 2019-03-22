@@ -40,7 +40,7 @@ namespace Vostok.Hercules.Client.Sink.Job
             }
         }
 
-        public Task WaitForNextSendAsync(CancellationToken cancellationToken) 
+        public Task WaitForNextSendAsync(CancellationToken cancellationToken)
             => planner.WaitForNextSendAsync(lastSendResult, cancellationToken).SilentlyContinue();
     }
 }
