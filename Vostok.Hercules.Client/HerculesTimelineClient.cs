@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
+using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Collections;
 using Vostok.Commons.Time;
@@ -42,6 +43,10 @@ namespace Vostok.Hercules.Client
                 Constants.ServiceNames.TimelineApi,
                 config =>
                 {
+                    config.SetupUniversalTransport(new UniversalTransportSettings
+                    {
+                        BufferFactory = bufferPool.Rent
+                    });
                     config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
                     settings.AdditionalSetup?.Invoke(config);
                 });
