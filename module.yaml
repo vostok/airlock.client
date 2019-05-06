@@ -24,6 +24,7 @@ notests *default:
 
 full-build > notests: 
   deps:
+    - vostok.hercules.local
     - vostok.logging.console
     - vostok.commons.testing/src
 

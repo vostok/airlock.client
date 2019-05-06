@@ -13,6 +13,10 @@
     <PackageReference Include="NSubstitute" Version="3.1.0" />
     <PackageReference Include="NUnit" Version="3.10.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="SharpZipLib" Version="1.1.0" />
+    <PackageReference Include="Confluent.Kafka" Version="1.0.0-RC2" />
+    <PackageReference Include="librdkafka.redist" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vostok.Hercules.Client\Vostok.Hercules.Client.csproj" />
@@ -33,6 +37,10 @@
     </Reference>
     <Reference Include="Vostok.ClusterClient.Core">
       <HintPath>..\..\vostok.clusterclient.core\Vostok.ClusterClient.Core\bin\Release\netstandard2.0\Vostok.ClusterClient.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Vostok.Hercules.Local">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\vostok.hercules.local\Vostok.Hercules.Local\bin\Release\netstandard2.0\Vostok.Hercules.Local.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
