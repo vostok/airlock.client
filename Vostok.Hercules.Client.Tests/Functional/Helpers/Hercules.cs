@@ -1,6 +1,8 @@
 using System;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Hercules.Local;
+using Vostok.Logging.Abstractions;
 using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests.Functional.Helpers
@@ -13,7 +15,7 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
         {
             var log = new SynchronousConsoleLog();
 
-            cluster = HerculesCluster.DeployNew(TestContext.CurrentContext.TestDirectory, log);
+            cluster = HerculesCluster.DeployNew(TestContext.CurrentContext.TestDirectory, log.WithMinimumLevel(LogLevel.Warn));
             
             string GetApiKey() => cluster.ApiKey;
 
@@ -31,7 +33,10 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
 
             var sinkSettings = new HerculesSinkSettings(
                 cluster.HerculesGateTopology,
-                GetApiKey);
+                GetApiKey)
+            {
+                SendPeriod = 1.Seconds()
+            };
 
             Management = new HerculesManagementClient(
                 managementSettings,
