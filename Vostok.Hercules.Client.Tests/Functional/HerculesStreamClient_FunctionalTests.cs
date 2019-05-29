@@ -82,5 +82,27 @@ namespace Vostok.Hercules.Client.Tests.Functional
                     shardingKeyValues[i].Should().NotIntersectWith(shardingKeyValues[j]);
             }
         }
+
+        [Test]
+        public void SeekToEnd_should_skip_existing_events()
+        {
+            var events = TestHelpers.GenerateEventBuilders(100).ToEvents();
+            var part1 = events.Take(30).ToList();
+            var part2 = events.Skip(30).ToList();
+
+            using (hercules.Management.CreateTemporaryStream(out var stream))
+            {
+                hercules.Gate.Insert(new InsertEventsQuery(stream, part1), Timeout);
+
+                hercules.Stream.ReadEvents(stream, 30).ShouldBeEqual(part1);
+
+                var end = hercules.Stream.SeekToEnd(new SeekToEndStreamQuery(stream), Timeout);
+                end.EnsureSuccess();
+
+                hercules.Gate.Insert(new InsertEventsQuery(stream, part2), Timeout);
+
+                hercules.Stream.ReadEvents(stream, 70, end.Payload.Next).ShouldBeEqual(part2);
+            }
+        }
     }
 }

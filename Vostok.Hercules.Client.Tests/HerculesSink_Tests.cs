@@ -49,12 +49,13 @@ namespace Vostok.Hercules.Client.Tests
             daemon = Substitute.For<IDaemon>();
 
             pool = Substitute.For<IBufferPool>();
-            pool.TryAcquire(out _).Returns(
-                info =>
-                {
-                    info[0] = buffer;
-                    return true;
-                });
+            pool.TryAcquire(out _)
+                .Returns(
+                    info =>
+                    {
+                        info[0] = buffer;
+                        return true;
+                    });
 
             log = new SynchronousConsoleLog();
 
@@ -74,7 +75,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test]
         public void Should_not_put_when_given_a_null_stream()
         {
-            sink.Put(null, _ => { });
+            sink.Put(null, _ => {});
 
             factory.ReceivedCalls().Should().BeEmpty();
         }
@@ -102,7 +103,7 @@ namespace Vostok.Hercules.Client.Tests
         {
             pool.TryAcquire(out _).Returns(false);
 
-            sink.Put(Stream, _ => { });
+            sink.Put(Stream, _ => {});
 
             stats.Received(1).ReportOverflow();
         }
@@ -114,7 +115,7 @@ namespace Vostok.Hercules.Client.Tests
 
             stats.EstimateStoredSize().Returns(1L);
 
-            sink.Put(Stream, _ => { });
+            sink.Put(Stream, _ => {});
 
             state.SendSignal.WaitAsync().IsCompleted.Should().BeTrue();
         }
@@ -126,7 +127,7 @@ namespace Vostok.Hercules.Client.Tests
 
             stats.EstimateStoredSize().Returns(0L);
 
-            sink.Put(Stream, _ => { });
+            sink.Put(Stream, _ => {});
 
             state.SendSignal.WaitAsync().IsCompleted.Should().BeFalse();
         }
@@ -134,7 +135,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test]
         public void Should_write_a_record()
         {
-            sink.Put(Stream, _ => { });
+            sink.Put(Stream, _ => {});
 
             writer.Received(1).TryWrite(buffer, Arg.Any<Action<IHerculesEventBuilder>>(), out _);
         }
@@ -142,7 +143,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test]
         public void Should_release_the_buffer_back_to_pool()
         {
-            sink.Put(Stream, _ => { });
+            sink.Put(Stream, _ => {});
 
             pool.Received(1).Release(buffer);
         }
@@ -150,7 +151,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test]
         public void Should_initialize_sending_daemon()
         {
-            sink.Put(Stream, _ => { });
+            sink.Put(Stream, _ => {});
 
             daemon.Received(1).Initialize();
         }
@@ -160,7 +161,7 @@ namespace Vostok.Hercules.Client.Tests
         {
             for (var i = 0; i < 10; i++)
             {
-                sink.Put(Stream, _ => { });
+                sink.Put(Stream, _ => {});
             }
 
             writer.ReceivedCalls().Should().HaveCount(10);

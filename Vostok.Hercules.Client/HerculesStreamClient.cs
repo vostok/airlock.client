@@ -85,7 +85,7 @@ namespace Vostok.Hercules.Client
                     if (operationStatus != HerculesStatus.Success)
                         return new ReadStreamResult(operationStatus, null, errorMessage);
 
-                    return new ReadStreamResult(operationStatus, ParseResponseBody(result.Response));
+                    return new ReadStreamResult(operationStatus, ParseReadResponseBody(result.Response));
                 }
                 finally
                 {
@@ -97,6 +97,46 @@ namespace Vostok.Hercules.Client
             {
                 log.Warn(error);
                 return new ReadStreamResult(HerculesStatus.UnknownError, null, error.Message);
+            }
+        }
+
+        public async Task<SeekToEndStreamResult> SeekToEndAsync(SeekToEndStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
+        {
+            try
+            {
+                var url = new RequestUrlBuilder("stream/seekToEnd")
+                    {
+                        {Constants.QueryParameters.Stream, query.Name},
+                        {Constants.QueryParameters.ClientShard, query.ClientShard},
+                        {Constants.QueryParameters.ClientShardCount, query.ClientShardCount}
+                    }
+                    .Build();
+
+                var request = Request
+                    .Get(url);
+
+                var result = await client
+                    .SendAsync(request, timeout, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                try
+                {
+                    var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
+                    if (operationStatus != HerculesStatus.Success)
+                        return new SeekToEndStreamResult(operationStatus, null, errorMessage);
+
+                    return new SeekToEndStreamResult(operationStatus, ParseSeekToEndResponseBody(result.Response), errorMessage);
+                }
+                finally
+                {
+                    if (result.Response.HasContent)
+                        bufferPool.Return(result.Response.Content.Buffer);
+                }
+            }
+            catch (Exception error)
+            {
+                log.Warn(error);
+                return new SeekToEndStreamResult(HerculesStatus.UnknownError, null, error.Message);
             }
         }
 
@@ -112,7 +152,7 @@ namespace Vostok.Hercules.Client
             return writer.FilledSegment;
         }
 
-        private static ReadStreamPayload ParseResponseBody([NotNull] Response response)
+        private static ReadStreamPayload ParseReadResponseBody([NotNull] Response response)
         {
             var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
             {
@@ -124,6 +164,18 @@ namespace Vostok.Hercules.Client
             var events = reader.ReadArray(BinaryEventReader.ReadEvent);
 
             return new ReadStreamPayload(events, coordinates);
+        }
+
+        private static SeekToEndStreamPayload ParseSeekToEndResponseBody([NotNull] Response response)
+        {
+            var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
+            {
+                Endianness = Endianness.Big
+            };
+
+            var coordinates = StreamCoordinatesReader.Read(reader);
+
+            return new SeekToEndStreamPayload(coordinates);
         }
     }
 }

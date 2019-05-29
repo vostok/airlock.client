@@ -20,24 +20,25 @@ namespace Vostok.Hercules.Client.Tests.Serialization
         [Test]
         public void Should_serialize_and_deserialize_nontrivial_coordinates()
         {
-            var coordinates = new TimelineCoordinates(new[]
-            {
-                new TimelinePosition { Slice = 0, Offset = 4325L, EventId = GenerateEventId()},
-                new TimelinePosition { Slice = 1, Offset = 645645L, EventId = GenerateEventId()},
-                new TimelinePosition { Slice = 2, Offset = 155L, EventId = GenerateEventId()},
-                new TimelinePosition { Slice = 3, Offset = 5464, EventId = GenerateEventId()}
-            });
+            var coordinates = new TimelineCoordinates(
+                new[]
+                {
+                    new TimelinePosition {Slice = 0, Offset = 4325L, EventId = GenerateEventId()},
+                    new TimelinePosition {Slice = 1, Offset = 645645L, EventId = GenerateEventId()},
+                    new TimelinePosition {Slice = 2, Offset = 155L, EventId = GenerateEventId()},
+                    new TimelinePosition {Slice = 3, Offset = 5464, EventId = GenerateEventId()}
+                });
 
             TestSerialization(coordinates);
         }
 
         private static void TestSerialization(TimelineCoordinates coordinates)
         {
-            var writer = new BinaryBufferWriter(1) { Endianness = Endianness.Big };
+            var writer = new BinaryBufferWriter(1) {Endianness = Endianness.Big};
 
             TimelineCoordinatesWriter.Write(coordinates, writer);
 
-            var reader = new BinaryBufferReader(writer.Buffer, 0) { Endianness = Endianness.Big };
+            var reader = new BinaryBufferReader(writer.Buffer, 0) {Endianness = Endianness.Big};
 
             var deserialized = TimelineCoordinatesReader.Read(reader);
 

@@ -79,10 +79,10 @@ namespace Vostok.Hercules.Client.Tests.Client
             errorMessage.Should().Be("Stream 's' already exists.");
         }
 
-        private HerculesStatus Analyze(ResponseCode code, string message = null, ResponseAnalysisContext context = ResponseAnalysisContext.Stream)
-            => new ResponseAnalyzer(context).Analyze(CreateResponse(code, message), out errorMessage);
-
         private static Response CreateResponse(ResponseCode code, string message)
             => message == null ? new Response(code) : new Response(code).WithContent(message);
+
+        private HerculesStatus Analyze(ResponseCode code, string message = null, ResponseAnalysisContext context = ResponseAnalysisContext.Stream)
+            => new ResponseAnalyzer(context).Analyze(CreateResponse(code, message), out errorMessage);
     }
 }

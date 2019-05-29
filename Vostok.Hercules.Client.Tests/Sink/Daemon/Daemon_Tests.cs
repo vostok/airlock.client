@@ -29,24 +29,26 @@ namespace Vostok.Hercules.Client.Tests.Sink.Daemon
             endSignal = new AsyncManualResetEvent(false);
 
             scheduler = Substitute.For<IScheduler>();
-            scheduler.RunAsync(Arg.Any<CancellationToken>()).Returns(info => Task.Run(
-                async () =>
-                {
-                    var cancellationToken = info.Arg<CancellationToken>();
+            scheduler.RunAsync(Arg.Any<CancellationToken>())
+                .Returns(
+                    info => Task.Run(
+                        async () =>
+                        {
+                            var cancellationToken = info.Arg<CancellationToken>();
 
-                    Interlocked.Increment(ref schedulerRuns);
+                            Interlocked.Increment(ref schedulerRuns);
 
-                    initSignal.Set();
+                            initSignal.Set();
 
-                    var cancellationSignal = new AsyncManualResetEvent(false);
+                            var cancellationSignal = new AsyncManualResetEvent(false);
 
-                    using (cancellationToken.Register(() => cancellationSignal.Set()))
-                        await cancellationSignal;
+                            using (cancellationToken.Register(() => cancellationSignal.Set()))
+                                await cancellationSignal;
 
-                    endSignal.Set();
+                            endSignal.Set();
 
-                    cancellationToken.ThrowIfCancellationRequested();
-                }));
+                            cancellationToken.ThrowIfCancellationRequested();
+                        }));
 
             daemon = new Hercules.Client.Sink.Daemon.Daemon(scheduler);
         }
@@ -89,7 +91,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Daemon
             daemon.Initialize();
 
             initSignal.GetAwaiter().GetResult();
-            
+
             daemon.Dispose();
 
             endSignal.WaitAsync().IsCompleted.Should().BeTrue();

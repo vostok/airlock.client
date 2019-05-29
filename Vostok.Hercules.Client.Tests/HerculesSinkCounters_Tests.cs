@@ -9,7 +9,7 @@ namespace Vostok.Hercules.Client.Tests
         [Test]
         public void TotalLostRecords_should_return_a_sum_of_all_lost_records()
         {
-            var counters = new HerculesSinkCounters((5, 151), (3, 134), (1, 18), 2, 13, 1 );
+            var counters = new HerculesSinkCounters((5, 151), (3, 134), (1, 18), 2, 13, 1);
 
             counters.TotalLostRecords.Should().Be(3 + 2 + 13 + 1);
         }

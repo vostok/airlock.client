@@ -61,8 +61,15 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             requestSender = Substitute.For<IGateRequestSender>();
 
-            sender = new StreamSender(() => GlobalApiKey, state, batcher, contentFactory, 
-                requestSender, responseAnalyzer, statusAnalyzer, new SynchronousConsoleLog());
+            sender = new StreamSender(
+                () => GlobalApiKey,
+                state,
+                batcher,
+                contentFactory,
+                requestSender,
+                responseAnalyzer,
+                statusAnalyzer,
+                new SynchronousConsoleLog());
 
             cancellation = new CancellationTokenSource();
 

@@ -16,7 +16,7 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
             var log = new SynchronousConsoleLog();
 
             cluster = HerculesCluster.DeployNew(TestContext.CurrentContext.TestDirectory, log.WithMinimumLevel(LogLevel.Warn));
-            
+
             string GetApiKey() => cluster.ApiKey;
 
             var managementSettings = new HerculesManagementClientSettings(
@@ -48,7 +48,7 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
 
             Gate = new HerculesGateClient(gateSettings, log);
         }
-        
+
         public HerculesSink Sink { get; }
         public HerculesManagementClient Management { get; }
         public HerculesGateClient Gate { get; }

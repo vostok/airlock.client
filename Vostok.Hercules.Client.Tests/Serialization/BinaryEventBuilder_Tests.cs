@@ -44,7 +44,7 @@ namespace Vostok.Hercules.Client.Tests.Serialization
                 builder =>
                 {
                     builder.AddValue("key1", (byte)123);
-                    builder.AddValue("key2", (short) 12345);
+                    builder.AddValue("key2", (short)12345);
                     builder.AddValue("key3", 55654645);
                     builder.AddValue("key4", -645645634564356L);
                     builder.AddValue("key5", true);
@@ -63,22 +63,22 @@ namespace Vostok.Hercules.Client.Tests.Serialization
         {
             var guidValues = new[] {Guid.NewGuid(), Guid.NewGuid()};
             var byteArray = Guid.NewGuid().ToByteArray();
-            
+
             TestSerialization(
                 builder =>
                 {
-                    builder.AddVector("key1", new [] {byte.MinValue, byte.MaxValue});
-                    builder.AddVector("key2", new [] {short.MinValue, short.MaxValue});
-                    builder.AddVector("key3", new [] {int.MinValue, int.MaxValue});
+                    builder.AddVector("key1", new[] {byte.MinValue, byte.MaxValue});
+                    builder.AddVector("key2", new[] {short.MinValue, short.MaxValue});
+                    builder.AddVector("key3", new[] {int.MinValue, int.MaxValue});
                     builder.AddVector("key4", new int[] {});
                     builder.AddVector("key5", byteArray);
                     builder.AddVector("key6", byteArray.ToList());
-                    builder.AddVector("key7", new byte[]{});
-                    builder.AddVector("key8", new[] { long.MinValue, long.MaxValue });
-                    builder.AddVector("key9", new[] { true, false });
-                    builder.AddVector("key10", new[] { float.MaxValue, float.MinValue, float.PositiveInfinity });
-                    builder.AddVector("key11", new[] { double.MaxValue, double.MinValue, double.PositiveInfinity });
-                    builder.AddVector("key12", new[] { "foo", "bar", "baz", "longer string" });
+                    builder.AddVector("key7", new byte[] {});
+                    builder.AddVector("key8", new[] {long.MinValue, long.MaxValue});
+                    builder.AddVector("key9", new[] {true, false});
+                    builder.AddVector("key10", new[] {float.MaxValue, float.MinValue, float.PositiveInfinity});
+                    builder.AddVector("key11", new[] {double.MaxValue, double.MinValue, double.PositiveInfinity});
+                    builder.AddVector("key12", new[] {"foo", "bar", "baz", "longer string"});
                     builder.AddVector("key12", guidValues);
                 });
         }
@@ -90,16 +90,17 @@ namespace Vostok.Hercules.Client.Tests.Serialization
                 builder =>
                 {
                     builder.AddContainer("empty", b => {});
-                   
-                    builder.AddContainer("foo",
+
+                    builder.AddContainer(
+                        "foo",
                         b =>
                         {
                             builder.AddValue("key", "value");
                             builder.AddContainer("baz", b2 => { b2.AddValue("int", 123); });
-
                         });
 
-                    builder.AddContainer("bar",
+                    builder.AddContainer(
+                        "bar",
                         b =>
                         {
                             builder.AddValue("key", "value");
@@ -114,12 +115,14 @@ namespace Vostok.Hercules.Client.Tests.Serialization
             TestSerialization(
                 builder =>
                 {
-                    builder.AddVectorOfContainers("containers", new Action<IHerculesTagsBuilder>[]
-                    {
-                        b => b.AddValue("k1", "v1"),
-                        b => b.AddValue("k2", "v2"),
-                        b => b.AddValue("k3", "v3")
-                    });
+                    builder.AddVectorOfContainers(
+                        "containers",
+                        new Action<IHerculesTagsBuilder>[]
+                        {
+                            b => b.AddValue("k1", "v1"),
+                            b => b.AddValue("k2", "v2"),
+                            b => b.AddValue("k3", "v3")
+                        });
                 });
         }
 
@@ -133,7 +136,7 @@ namespace Vostok.Hercules.Client.Tests.Serialization
 
             var memoryEvent = memoryBuilder.BuildEvent();
 
-            var binaryWriter = new BinaryBufferWriter(16) { Endianness = Endianness.Big };
+            var binaryWriter = new BinaryBufferWriter(16) {Endianness = Endianness.Big};
 
             for (var i = 0; i < 3; i++)
             {

@@ -11,15 +11,17 @@ namespace Vostok.Hercules.Client.Tests.Management
     internal class ManagementDtoConversion_Tests
     {
         [Test]
-        public void Should_convert_stream_creation_query_to_dto_and_back_to_description([Values(StreamType.Base, StreamType.Derived)] StreamType type)
+        public void Should_convert_stream_creation_query_to_dto_and_back_to_description(
+            [Values(StreamType.Base, StreamType.Derived)]
+            StreamType type)
         {
             var query = new CreateStreamQuery("my-stream")
             {
                 Type = type,
                 TTL = 2.Days(),
                 Partitions = 35,
-                ShardingKey = new []{ "key" },
-                Sources = new [] {"foo", "bar"}
+                ShardingKey = new[] {"key"},
+                Sources = new[] {"foo", "bar"}
             };
 
             var dto = StreamDescriptionDtoConverter.CreateFromQuery(query);
@@ -32,12 +34,12 @@ namespace Vostok.Hercules.Client.Tests.Management
         [Test]
         public void Should_convert_timeline_creation_query_to_dto_and_back_to_description()
         {
-            var query = new CreateTimelineQuery("my-timeline", new []{ "foo", "bar" })
+            var query = new CreateTimelineQuery("my-timeline", new[] {"foo", "bar"})
             {
                 Slices = 35,
                 TTL = 2.Days(),
                 TimetrapSize = 2.Seconds(),
-                ShardingKey = new[] { "key" },
+                ShardingKey = new[] {"key"}
             };
 
             var dto = TimelineDescriptionDtoConverter.CreateFromQuery(query);

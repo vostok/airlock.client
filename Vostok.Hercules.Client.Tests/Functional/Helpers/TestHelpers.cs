@@ -7,6 +7,7 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
     internal static class TestHelpers
     {
         public static string GenerateStreamName() => $"dotnet_test_csharpclient_{Guid.NewGuid().ToString().Substring(0, 8)}";
+
         public static Action<IHerculesEventBuilder>[] GenerateEventBuilders(int count, Action<IHerculesEventBuilder> eventCustomization = null)
         {
             var timestamp = DateTimeOffset.UtcNow;

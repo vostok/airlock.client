@@ -118,13 +118,13 @@ namespace Vostok.Hercules.Client.Tests.Sink.Job
             Send();
         }
 
+        private static StreamSendResult SendResult(HerculesStatus status)
+            => new StreamSendResult(status, TimeSpan.Zero);
+
         private void Send()
             => job.SendAsync(CancellationToken.None).GetAwaiter().GetResult();
 
         private void Wait()
             => job.WaitForNextSendAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-        private static StreamSendResult SendResult(HerculesStatus status)
-            => new StreamSendResult(status, TimeSpan.Zero);
     }
 }

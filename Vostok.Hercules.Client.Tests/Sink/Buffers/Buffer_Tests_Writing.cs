@@ -12,11 +12,10 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
     [TestFixture]
     internal class Buffer_Tests_Writing
     {
-        private IMemoryManager manager;
-        private Buffer buffer;
-
         private const int InitialSize = 16;
         private const int MaximumSize = 100;
+        private IMemoryManager manager;
+        private Buffer buffer;
 
         [SetUp]
         public void TestSetup()
@@ -365,13 +364,13 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
 
         private static void TestWriting(Action<IBinaryWriter> write)
         {
-            var rawWriter = new BinaryBufferWriter(1) { Endianness = Endianness.Big };
+            var rawWriter = new BinaryBufferWriter(1) {Endianness = Endianness.Big};
             var buffer = new Buffer(1, int.MaxValue, new MemoryManager(long.MaxValue));
 
             write(rawWriter);
             write(buffer);
 
-            buffer.CommitRecord((int) buffer.Position);
+            buffer.CommitRecord((int)buffer.Position);
 
             buffer.CommittedSegment.Should().Equal(rawWriter.FilledSegment);
             buffer.Position.Should().Be(rawWriter.Position);

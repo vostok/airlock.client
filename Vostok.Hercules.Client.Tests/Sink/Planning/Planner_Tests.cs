@@ -4,8 +4,8 @@ using System.Threading;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using Vostok.Commons.Time;
 using Vostok.Commons.Threading;
+using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Planning;
@@ -18,13 +18,12 @@ namespace Vostok.Hercules.Client.Tests.Sink.Planning
     [TestFixture]
     internal class Planner_Tests
     {
+        private static readonly TimeSpan SendPeriod = 100.Milliseconds();
+        private static readonly TimeSpan SendPeriodCap = 850.Milliseconds();
         private IStatusAnalyzer statusAnalyzer;
         private AsyncManualResetEvent signal;
         private CancellationTokenSource cancellation;
         private Planner planner;
-
-        private static readonly TimeSpan SendPeriod = 100.Milliseconds();
-        private static readonly TimeSpan SendPeriodCap = 850.Milliseconds();
 
         [SetUp]
         public void TestSetup()

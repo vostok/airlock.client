@@ -36,12 +36,20 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
             int count,
             int limit = 10000) => client.ReadEvents(stream, count, limit, 1).Single();
 
+        public static List<HerculesEvent> ReadEvents(
+            this IHerculesStreamClient client,
+            string stream,
+            int count,
+            StreamCoordinates coordinates,
+            int limit = 10000) => client.ReadEvents(stream, count, limit, 1, coordinates).Single();
+
         public static List<HerculesEvent>[] ReadEvents(
             this IHerculesStreamClient client,
             string stream,
             int count,
             int limit,
-            int clientShards)
+            int clientShards,
+            StreamCoordinates coordinates = null)
         {
             var timeout = 20.Seconds();
 
@@ -60,7 +68,7 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
                 var readQuery = new ReadStreamQuery(stream)
                 {
                     Limit = limit,
-                    Coordinates = new StreamCoordinates(Array.Empty<StreamPosition>()),
+                    Coordinates = coordinates ?? StreamCoordinates.Empty,
                     ClientShard = clientShard,
                     ClientShardCount = clientShards
                 };

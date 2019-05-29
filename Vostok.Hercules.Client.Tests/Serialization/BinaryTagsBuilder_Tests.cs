@@ -76,10 +76,10 @@ namespace Vostok.Hercules.Client.Tests.Serialization
             return cases.Select(x => new TestCaseData(x.testCase).SetName(x.type + "Vector").Returns(x.type));
         }
 
-        private static BinaryBufferWriter CreateWriter() 
+        private static BinaryBufferWriter CreateWriter()
             => new BinaryBufferWriter(0) {Endianness = Endianness.Big};
 
-        private static BinaryTagsBuilder CreateBuilder(IBinaryWriter writer) 
+        private static BinaryTagsBuilder CreateBuilder(IBinaryWriter writer)
             => new BinaryTagsBuilder(writer);
     }
 }

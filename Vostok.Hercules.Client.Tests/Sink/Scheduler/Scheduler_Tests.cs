@@ -91,14 +91,15 @@ namespace Vostok.Hercules.Client.Tests.Sink.Scheduler
 
             synchronizer
                 .When(s => s.Synchronize(Arg.Any<SchedulerState>()))
-                .Do(info =>
-                {
-                    var state = info.Arg<SchedulerState>();
+                .Do(
+                    info =>
+                    {
+                        var state = info.Arg<SchedulerState>();
 
-                    state.AllJobs["job1"] = job1;
-                    state.AllJobs["job2"] = job2;
-                    state.AllJobs["job3"] = job3;
-                });
+                        state.AllJobs["job1"] = job1;
+                        state.AllJobs["job2"] = job2;
+                        state.AllJobs["job3"] = job3;
+                    });
 
             Run();
 

@@ -19,13 +19,14 @@ namespace Vostok.Hercules.Client.Tests.Serialization
         [Test]
         public void Should_serialize_and_deserialize_nontrivial_coordinates()
         {
-            var coordinates = new StreamCoordinates(new []
-            {
-                new StreamPosition { Partition = 0, Offset = 4325L}, 
-                new StreamPosition { Partition = 1, Offset = 645645L}, 
-                new StreamPosition { Partition = 2, Offset = 155L}, 
-                new StreamPosition { Partition = 3, Offset = 5464L} 
-            });
+            var coordinates = new StreamCoordinates(
+                new[]
+                {
+                    new StreamPosition {Partition = 0, Offset = 4325L},
+                    new StreamPosition {Partition = 1, Offset = 645645L},
+                    new StreamPosition {Partition = 2, Offset = 155L},
+                    new StreamPosition {Partition = 3, Offset = 5464L}
+                });
 
             TestSerialization(coordinates);
         }

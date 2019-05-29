@@ -6,17 +6,17 @@ using NUnit.Framework;
 using Vostok.Commons.Testing;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Buffer = Vostok.Hercules.Client.Sink.Buffers.Buffer;
+
 // ReSharper disable PossibleNullReferenceException
 
 namespace Vostok.Hercules.Client.Tests.Sink.Buffers
 {
     internal class Buffer_Tests
     {
-        private IMemoryManager manager;
-        private Buffer buffer;
-
         private const int InitialSize = 16;
         private const int MaximumSize = 100;
+        private IMemoryManager manager;
+        private Buffer buffer;
 
         [SetUp]
         public void TestSetup()
@@ -215,7 +215,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
             WriteAndCommit(6);
             WriteAndCommit(10);
 
-            buffer.ReportGarbage(new BufferState(10 ,2));
+            buffer.ReportGarbage(new BufferState(10, 2));
 
             buffer.TryLock();
 
@@ -412,7 +412,6 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
                 WriteAndCommit(Guid.NewGuid().ToByteArray());
                 buffer.WriteWithoutLength(uncommitted = Guid.NewGuid().ToByteArray());
             }
-
         }
 
         private void WriteAndCommit(int size)

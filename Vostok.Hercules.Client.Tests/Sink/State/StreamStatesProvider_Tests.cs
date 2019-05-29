@@ -4,6 +4,7 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Hercules.Client.Sink.State;
+
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
 namespace Vostok.Hercules.Client.Tests.Sink.State
@@ -20,7 +21,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.State
                 ["stream2"] = new Lazy<IStreamState>(() => Substitute.For<IStreamState>()),
                 ["stream3"] = new Lazy<IStreamState>(() => Substitute.For<IStreamState>()),
                 ["stream4"] = new Lazy<IStreamState>(() => Substitute.For<IStreamState>()),
-                ["stream5"] = new Lazy<IStreamState>(() => Substitute.For<IStreamState>()),
+                ["stream5"] = new Lazy<IStreamState>(() => Substitute.For<IStreamState>())
             };
 
             states["stream1"].Value.GetHashCode();

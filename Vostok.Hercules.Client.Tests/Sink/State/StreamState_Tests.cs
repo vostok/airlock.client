@@ -18,7 +18,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.State
         public void TestSetup()
         {
             state = new StreamState(
-                "stream", 
+                "stream",
                 Substitute.For<IBufferPool>(),
                 Substitute.For<IRecordWriter>(),
                 Substitute.For<IStatisticsCollector>(),

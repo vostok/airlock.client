@@ -46,7 +46,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Writing
         {
             Write(b => b.AddValue("key", 123)).Should().Be(RecordWriteResult.Success);
 
-            buffer.Committed.Length.Should().Be((int) buffer.Position);
+            buffer.Committed.Length.Should().Be((int)buffer.Position);
             buffer.Committed.RecordsCount.Should().Be(originalCommitted.RecordsCount + 1);
         }
 

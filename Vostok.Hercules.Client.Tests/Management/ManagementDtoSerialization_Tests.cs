@@ -30,8 +30,8 @@ namespace Vostok.Hercules.Client.Tests.Management
             {
                 Name = "my-stream",
                 Partitions = 10,
-                Sources = new[] { "foo", "bar" },
-                ShardingKey = new[] { "baz" },
+                Sources = new[] {"foo", "bar"},
+                ShardingKey = new[] {"baz"},
                 TtlMilliseconds = 453534,
                 Type = "derived"
             };
@@ -46,8 +46,8 @@ namespace Vostok.Hercules.Client.Tests.Management
             {
                 Name = "my-timeline",
                 Slices = 10,
-                Streams = new[] { "foo", "bar" },
-                ShardingKey = new[] { "baz" },
+                Streams = new[] {"foo", "bar"},
+                ShardingKey = new[] {"baz"},
                 TtlMilliseconds = 453534,
                 TimetrapSizeMilliseconds = 5433
             };

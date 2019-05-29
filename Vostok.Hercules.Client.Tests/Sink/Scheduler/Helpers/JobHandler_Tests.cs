@@ -21,7 +21,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Scheduler.Helpers
         public void TestSetup()
         {
             state = new SchedulerState(Task.CompletedTask, CancellationToken.None);
-            
+
             job = Substitute.For<IStreamJob>();
 
             launcher = Substitute.For<IJobLauncher>();
