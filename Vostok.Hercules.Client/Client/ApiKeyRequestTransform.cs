@@ -14,6 +14,11 @@ namespace Vostok.Hercules.Client.Client
         }
 
         public Request Transform(Request request)
-            => request.WithHeader(Constants.HeaderNames.ApiKey, apiKeyProvider());
+        {
+            var key = apiKeyProvider();
+            return key == null 
+                ? request 
+                : request.WithHeader(Constants.HeaderNames.ApiKey, apiKeyProvider());
+        }
     }
 }
