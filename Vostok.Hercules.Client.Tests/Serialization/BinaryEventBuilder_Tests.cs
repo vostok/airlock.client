@@ -131,7 +131,7 @@ namespace Vostok.Hercules.Client.Tests.Serialization
                 });
         }
 
-        [Test]
+        [Test, Explicit]
         public void Should_work_with_many_events()
         {
             var log = new SynchronousConsoleLog();
