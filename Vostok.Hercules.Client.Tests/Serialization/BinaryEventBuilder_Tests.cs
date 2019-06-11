@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Hercules.Client.Serialization.Readers;
-using Vostok.Logging.Abstractions;
-using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests.Serialization
 {
@@ -129,27 +124,6 @@ namespace Vostok.Hercules.Client.Tests.Serialization
                             b => b.AddValue("k3", "v3")
                         });
                 });
-        }
-
-        [Test, Explicit]
-        public void Should_work_with_many_events()
-        {
-            var log = new SynchronousConsoleLog();
-            var sw = Stopwatch.StartNew();
-
-            var bytes = File.ReadAllBytes(@"C:\vostok\vostok.metrics.test\Reader\events.bytes");
-            var reader = new BinaryBufferReader(bytes, 0)
-            {
-                Endianness = Endianness.Big
-            };
-
-            var coordinates = StreamCoordinatesReader.Read(reader);
-
-            var events = reader.ReadArray(BinaryEventReader.ReadEvent);
-
-            var result = new ReadStreamPayload(events, coordinates);
-
-            log.Info("Responce body parsed in {Elapsed}.", sw.Elapsed);
         }
 
         private HerculesEvent TestSerialization(Action<IHerculesEventBuilder> build)
