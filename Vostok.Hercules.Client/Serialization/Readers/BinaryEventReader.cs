@@ -36,7 +36,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
 
             for (var i = 0; i < tagsCount; i++)
             {
-                var key = ReadShortString(reader);
+                var key = reader.ReadShortString();
                 var valueType = (TagType)reader.ReadByte();
 
                 switch (valueType)
@@ -157,22 +157,6 @@ namespace Vostok.Hercules.Client.Serialization.Readers
                 default:
                     throw new ArgumentOutOfRangeException(nameof(elementType), elementType, "Unexpected vector element type.");
             }
-        }
-
-        private static string ReadShortString(this IBinaryReader reader)
-        {
-            var length = reader.ReadByte();
-
-            if (reader is BinaryBufferReader bufferReader)
-            {
-                var result = Encoding.UTF8.GetString(bufferReader.Buffer, (int)bufferReader.Position, length);
-
-                bufferReader.Position += length;
-
-                return result;
-            }
-
-            return Encoding.UTF8.GetString(reader.ReadByteArray(length));
         }
     }
 }
