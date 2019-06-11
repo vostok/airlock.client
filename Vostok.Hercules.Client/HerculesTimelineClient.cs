@@ -125,7 +125,7 @@ namespace Vostok.Hercules.Client
 
             var coordinates = TimelineCoordinatesReader.Read(reader);
 
-            var events = reader.ReadArray(BinaryEventReader.ReadEvent);
+            var events = reader.ReadArray(HerculesEventsBinaryReader.ReadEvent);
 
             return new ReadTimelinePayload(events, coordinates);
         }

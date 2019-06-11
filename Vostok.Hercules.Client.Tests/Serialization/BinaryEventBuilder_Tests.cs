@@ -148,9 +148,9 @@ namespace Vostok.Hercules.Client.Tests.Serialization
 
             var binaryReader = new BinaryBufferReader(binaryWriter.Buffer, 0) {Endianness = Endianness.Big};
 
-            var binaryEvent1 = BinaryEventReader.ReadEvent(binaryReader);
-            var binaryEvent2 = BinaryEventReader.ReadEvent(binaryReader);
-            var binaryEvent3 = BinaryEventReader.ReadEvent(binaryReader);
+            var binaryEvent1 = HerculesEventsBinaryReader.ReadEvent(binaryReader);
+            var binaryEvent2 = HerculesEventsBinaryReader.ReadEvent(binaryReader);
+            var binaryEvent3 = HerculesEventsBinaryReader.ReadEvent(binaryReader);
 
             binaryEvent1.Should().Be(memoryEvent);
             binaryEvent2.Should().Be(memoryEvent);

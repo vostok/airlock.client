@@ -1,15 +1,24 @@
 ﻿using System;
-using System.Text;
+using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Builders;
-using Vostok.Hercules.Client.Serialization.Helpers;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
-    internal static class BinaryEventReader
+    internal class HerculesEventsBinaryReader : IEventsBinaryReader<HerculesEvent>
     {
+        public IList<HerculesEvent> Read(byte[] bytes, int offset)
+        {
+            var reader = new BinaryBufferReader(bytes, offset)
+            {
+                Endianness = Endianness.Big
+            };
+
+            return reader.ReadArray(ReadEvent);
+        }
+
         public static HerculesEvent ReadEvent(IBinaryReader reader)
         {
             reader.EnsureBigEndian();
@@ -25,12 +34,12 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             builder.SetTimestamp(new DateTimeOffset(utcTimestamp, TimeSpan.Zero));
 
             reader.Position += 16;
-            reader.ReadContainer(builder);
+            ReadContainer(reader, builder);
 
             return builder.BuildEvent();
         }
 
-        private static void ReadContainer(this IBinaryReader reader, IHerculesTagsBuilder builder)
+        private static void ReadContainer(IBinaryReader reader, IHerculesTagsBuilder builder)
         {
             var tagsCount = reader.ReadInt16();
 
@@ -42,7 +51,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
                 switch (valueType)
                 {
                     case TagType.Container:
-                        builder.AddContainer(key, reader.ReadContainer);
+                        builder.AddContainer(key, b => ReadContainer(reader, b));
                         break;
 
                     case TagType.Byte:
