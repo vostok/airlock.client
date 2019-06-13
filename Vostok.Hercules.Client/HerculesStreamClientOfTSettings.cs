@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
+using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Serialization.Readers;
 
 namespace Vostok.Hercules.Client

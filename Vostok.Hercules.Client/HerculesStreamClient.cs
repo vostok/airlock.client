@@ -29,9 +29,7 @@ namespace Vostok.Hercules.Client
         public async Task<ReadStreamResult> ReadAsync(ReadStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
         {
             var result = await client.ReadAsync(query, timeout, cancellationToken).ConfigureAwait(false);
-            return result.IsSuccessful 
-                ? new ReadStreamResult(result.Status, new ReadStreamPayload(result.Payload.Events, result.Payload.Next)) 
-                : new ReadStreamResult(result.Status, null, result.ErrorDetails);
+            return result.FromGenericResult();
         }
 
         public Task<SeekToEndStreamResult> SeekToEndAsync(SeekToEndStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken()) =>
