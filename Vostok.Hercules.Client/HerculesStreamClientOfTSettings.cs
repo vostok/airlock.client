@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Readers;
 
 namespace Vostok.Hercules.Client
@@ -13,7 +14,7 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesStreamClientSettings<T>
     {
-        public HerculesStreamClientSettings([NotNull] IClusterProvider cluster, [NotNull] Func<string> apiKeyProvider, [NotNull] IEventsBinaryReader<T> eventsReader)
+        public HerculesStreamClientSettings([NotNull] IClusterProvider cluster, [NotNull] Func<string> apiKeyProvider, [NotNull] IHerculesEventsBinaryReader<T> eventsReader)
         {
             Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
             ApiKeyProvider = apiKeyProvider ?? throw new ArgumentNullException(nameof(apiKeyProvider));
@@ -36,7 +37,7 @@ namespace Vostok.Hercules.Client
         /// <para>Custom hercules events bytes reader.</para>
         /// </summary>
         [NotNull]
-        public IEventsBinaryReader<T> EventsReader { get; }
+        public IHerculesEventsBinaryReader<T> EventsReader { get; }
 
         /// <summary>
         /// <para>An optional delegate that can be used to tune underlying <see cref="IClusterClient"/> instance.</para>
