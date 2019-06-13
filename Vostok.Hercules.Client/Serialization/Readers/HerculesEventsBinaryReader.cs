@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
+using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
+using Vostok.Hercules.Client.Serialization.Builders;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
-    internal class HerculesEventsBinaryReader : IHerculesEventsBinaryReader<HerculesEvent>
+    internal class HerculesEventsBinaryReader : IEventsBinaryReader<HerculesEvent>
     {
         public IList<HerculesEvent> Read(byte[] bytes, int offset)
         {

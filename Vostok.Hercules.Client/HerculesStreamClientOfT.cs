@@ -8,7 +8,6 @@ using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Collections;
 using Vostok.Hercules.Client.Abstractions;
-using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
@@ -26,7 +25,7 @@ namespace Vostok.Hercules.Client
         private const int MaxPooledBufferSize = 16 * 1024 * 1024;
         private const int MaxPooledBuffersPerBucket = 8;
 
-        private readonly IHerculesEventsBinaryReader<T> eventsReader;
+        private readonly IEventsBinaryReader<T> eventsReader;
         private readonly ResponseAnalyzer responseAnalyzer;
         private readonly BufferPool bufferPool;
         private readonly IClusterClient client;
