@@ -2,30 +2,25 @@
 using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
-using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Builders;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
-    internal class HerculesEventsBinaryReader : IEventsBinaryReader<HerculesEvent>
+    internal static class EventsBinaryReader
     {
-        public IList<HerculesEvent> Read(byte[] bytes, int offset)
+        public static IList<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBuffer, IHerculesEventBuilder<T>> eventBuilderFactory)
         {
-            var reader = new BinaryBufferReader(bytes, offset)
-            {
-                Endianness = Endianness.Big
-            };
+            var eventsBuffer = new BinaryBuffer(bytes, offset);
+            var reader = eventsBuffer.Reader;
 
-            return reader.ReadArray(ReadEvent);
+            return reader.ReadArray(r => ReadEvent(r, eventBuilderFactory(eventsBuffer)));
         }
 
-        public static HerculesEvent ReadEvent(IBinaryReader reader)
+        private static T ReadEvent<T>(IBinaryReader reader, IHerculesEventBuilder<T> builder)
         {
             reader.EnsureBigEndian();
-
-            var builder = new HerculesEventBuilder();
-
+            
             var version = reader.ReadByte();
             if (version != Constants.EventProtocolVersion)
                 throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");

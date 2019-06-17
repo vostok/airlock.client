@@ -137,6 +137,7 @@ namespace Vostok.Hercules.Client.Tests.Serialization
             var memoryEvent = memoryBuilder.BuildEvent();
 
             var binaryWriter = new BinaryBufferWriter(16) {Endianness = Endianness.Big};
+            binaryWriter.Write(3);
 
             for (var i = 0; i < 3; i++)
             {
@@ -146,17 +147,26 @@ namespace Vostok.Hercules.Client.Tests.Serialization
                 }
             }
 
-            var binaryReader = new BinaryBufferReader(binaryWriter.Buffer, 0) {Endianness = Endianness.Big};
+            var events = EventsBinaryReader.Read(binaryWriter.Buffer, 0, _ => new HerculesEventBuilder());
+            events.Count.Should().Be(3);
+            events.Should().AllBeEquivalentTo(memoryEvent);
 
-            var binaryEvent1 = HerculesEventsBinaryReader.ReadEvent(binaryReader);
-            var binaryEvent2 = HerculesEventsBinaryReader.ReadEvent(binaryReader);
-            var binaryEvent3 = HerculesEventsBinaryReader.ReadEvent(binaryReader);
+            var dummyEvents = EventsBinaryReader.Read(binaryWriter.Buffer, 0, b => new DummyBuilder(b));
+            dummyEvents.Count.Should().Be(3);
 
-            binaryEvent1.Should().Be(memoryEvent);
-            binaryEvent2.Should().Be(memoryEvent);
-            binaryEvent3.Should().Be(memoryEvent);
+            return events.Last();
+        }
 
-            return binaryEvent3;
+        private class DummyBuilder : DummyHerculesTagsBuilder, IHerculesEventBuilder<HerculesEvent>
+        {
+            public DummyBuilder(IBinaryBuffer binaryBuffer)
+            {
+                binaryBuffer.SkipMode = true;
+            }
+
+            public IHerculesEventBuilder<HerculesEvent> SetTimestamp(DateTimeOffset timestamp) => this;
+
+            public HerculesEvent BuildEvent() => new HerculesEvent(DateTimeOffset.Now, HerculesTags.Empty);
         }
     }
 }

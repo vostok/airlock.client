@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -8,6 +10,7 @@ using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Collections;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
@@ -15,6 +18,7 @@ using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Hercules.Client.Serialization.Writers;
 using Vostok.Logging.Abstractions;
+using BinaryBufferReader = Vostok.Commons.Binary.BinaryBufferReader;
 
 namespace Vostok.Hercules.Client
 {
@@ -25,7 +29,7 @@ namespace Vostok.Hercules.Client
         private const int MaxPooledBufferSize = 16 * 1024 * 1024;
         private const int MaxPooledBuffersPerBucket = 8;
 
-        private readonly IEventsBinaryReader<T> eventsReader;
+        private readonly Func<IBinaryBuffer, IHerculesEventBuilder<T>> eventBuilderProvider;
         private readonly ResponseAnalyzer responseAnalyzer;
         private readonly BufferPool bufferPool;
         private readonly IClusterClient client;
@@ -53,7 +57,7 @@ namespace Vostok.Hercules.Client
                 });
 
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
-            eventsReader = settings.EventsReader;
+            eventBuilderProvider = settings.EventBuilderProvider;
         }
 
         /// <inheritdoc />
@@ -156,6 +160,7 @@ namespace Vostok.Hercules.Client
 
         private ReadStreamPayload<T> ParseReadResponseBody([NotNull] Response response)
         {
+
             var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
             {
                 Endianness = Endianness.Big
@@ -163,7 +168,7 @@ namespace Vostok.Hercules.Client
 
             var coordinates = StreamCoordinatesReader.Read(reader);
 
-            var events = eventsReader.Read(response.Content.Buffer, (int)reader.Position);
+            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider);
 
             return new ReadStreamPayload<T>(events, coordinates);
         }

@@ -6,7 +6,6 @@ using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
-using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -22,7 +21,7 @@ namespace Vostok.Hercules.Client
             var settingsOfT = new HerculesStreamClientSettings<HerculesEvent>(
                 settings.Cluster,
                 settings.ApiKeyProvider,
-                new HerculesEventsBinaryReader());
+                _ => new HerculesEventBuilder());
             client = new HerculesStreamClient<HerculesEvent>(settingsOfT, log);
         }
 

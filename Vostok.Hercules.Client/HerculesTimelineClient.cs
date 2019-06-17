@@ -9,6 +9,7 @@ using Vostok.Commons.Binary;
 using Vostok.Commons.Collections;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
+using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
@@ -16,6 +17,7 @@ using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Hercules.Client.Serialization.Writers;
 using Vostok.Logging.Abstractions;
+using BinaryBufferReader = Vostok.Commons.Binary.BinaryBufferReader;
 
 namespace Vostok.Hercules.Client
 {
@@ -125,7 +127,7 @@ namespace Vostok.Hercules.Client
 
             var coordinates = TimelineCoordinatesReader.Read(reader);
 
-            var events = reader.ReadArray(HerculesEventsBinaryReader.ReadEvent);
+            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, _ => new HerculesEventBuilder());
 
             return new ReadTimelinePayload(events, coordinates);
         }
