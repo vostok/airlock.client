@@ -11,8 +11,9 @@ notests *default:
     - module vostok.clusterclient.core
 
   deps:
+    - force: $CURRENT_BRANCH
     - vostok.devtools
-    - vostok.hercules.client.abstractions@generic-stream-client
+    - vostok.hercules.client.abstractions
     - vostok.logging.abstractions
     - vostok.clusterclient.core
     - vostok.clusterclient.transport
