@@ -7,6 +7,7 @@ using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Hercules.Client.Serialization.Readers;
+using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests.Serialization
 {
@@ -147,11 +148,11 @@ namespace Vostok.Hercules.Client.Tests.Serialization
                 }
             }
 
-            var events = EventsBinaryReader.Read(binaryWriter.Buffer, 0, _ => new HerculesEventBuilder());
+            var events = EventsBinaryReader.Read(binaryWriter.Buffer, 0, _ => new HerculesEventBuilder(), new SynchronousConsoleLog());
             events.Count.Should().Be(3);
             events.Should().AllBeEquivalentTo(memoryEvent);
 
-            var dummyEvents = EventsBinaryReader.Read(binaryWriter.Buffer, 0, b => new DummyBuilder(b));
+            var dummyEvents = EventsBinaryReader.Read(binaryWriter.Buffer, 0, b => new DummyBuilder(b), new SynchronousConsoleLog());
             dummyEvents.Count.Should().Be(3);
 
             return events.Last();

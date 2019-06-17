@@ -4,17 +4,19 @@ using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Builders;
+using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
     internal static class EventsBinaryReader
     {
-        public static IList<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBuffer, IHerculesEventBuilder<T>> eventBuilderFactory)
+        public static IList<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBuffer, IHerculesEventBuilder<T>> eventBuilderFactory, ILog log)
         {
             var eventsBuffer = new BinaryBuffer(bytes, offset);
             var reader = eventsBuffer.Reader;
 
-            return reader.ReadArray(r => ReadEvent(r, eventBuilderFactory(eventsBuffer)));
+            return reader.ReadListSafely(r => ReadEvent(r, eventBuilderFactory(eventsBuffer)), 
+                e => log.Error(e, "Failed to read event."));
         }
 
         private static T ReadEvent<T>(IBinaryReader reader, IHerculesEventBuilder<T> builder)

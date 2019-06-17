@@ -168,7 +168,7 @@ namespace Vostok.Hercules.Client
 
             var coordinates = StreamCoordinatesReader.Read(reader);
 
-            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider);
+            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider, log);
 
             return new ReadStreamPayload<T>(events, coordinates);
         }
