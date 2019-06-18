@@ -160,7 +160,7 @@ namespace Vostok.Hercules.Client.Tests.Serialization
 
         private class DummyBuilder : DummyHerculesTagsBuilder, IHerculesEventBuilder<HerculesEvent>
         {
-            public DummyBuilder(IBinaryBuffer binaryBuffer)
+            public DummyBuilder(IBinaryBufferReader binaryBuffer)
             {
                 binaryBuffer.SkipMode = true;
             }

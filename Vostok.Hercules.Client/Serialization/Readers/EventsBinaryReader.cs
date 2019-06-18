@@ -10,12 +10,14 @@ namespace Vostok.Hercules.Client.Serialization.Readers
 {
     internal static class EventsBinaryReader
     {
-        public static IList<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBuffer, IHerculesEventBuilder<T>> eventBuilderFactory, ILog log)
+        public static IList<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderFactory, ILog log)
         {
-            var eventsBuffer = new BinaryBuffer(bytes, offset);
-            var reader = eventsBuffer.Reader;
+            var reader = new BinaryBufferReader(bytes, offset)
+            {
+                Endianness = Endianness.Big
+            };
 
-            return reader.ReadListSafely(r => ReadEvent(r, eventBuilderFactory(eventsBuffer)), 
+            return reader.ReadListSafely(r => ReadEvent(r, eventBuilderFactory(reader)), 
                 e => log.Error(e, "Failed to read event."));
         }
 

@@ -29,7 +29,7 @@ namespace Vostok.Hercules.Client
         private const int MaxPooledBufferSize = 16 * 1024 * 1024;
         private const int MaxPooledBuffersPerBucket = 8;
 
-        private readonly Func<IBinaryBuffer, IHerculesEventBuilder<T>> eventBuilderProvider;
+        private readonly Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider;
         private readonly ResponseAnalyzer responseAnalyzer;
         private readonly BufferPool bufferPool;
         private readonly IClusterClient client;

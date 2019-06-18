@@ -14,7 +14,7 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesStreamClientSettings<T>
     {
-        public HerculesStreamClientSettings([NotNull] IClusterProvider cluster, [NotNull] Func<string> apiKeyProvider, [NotNull] Func<IBinaryBuffer, IHerculesEventBuilder<T>> eventBuilderProvider)
+        public HerculesStreamClientSettings([NotNull] IClusterProvider cluster, [NotNull] Func<string> apiKeyProvider, [NotNull] Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider)
         {
             Cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
             ApiKeyProvider = apiKeyProvider ?? throw new ArgumentNullException(nameof(apiKeyProvider));
@@ -37,7 +37,7 @@ namespace Vostok.Hercules.Client
         /// <para>Custom hercules events builders provider.</para>
         /// </summary>
         [NotNull]
-        public Func<IBinaryBuffer, IHerculesEventBuilder<T>> EventBuilderProvider { get; }
+        public Func<IBinaryBufferReader, IHerculesEventBuilder<T>> EventBuilderProvider { get; }
 
         /// <summary>
         /// <para>An optional delegate that can be used to tune underlying <see cref="IClusterClient"/> instance.</para>
