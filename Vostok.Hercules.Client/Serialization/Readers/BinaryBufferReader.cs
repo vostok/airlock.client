@@ -7,8 +7,6 @@ namespace Vostok.Hercules.Client.Serialization.Readers
 {
     internal class BinaryBufferReader : Commons.Binary.BinaryBufferReader, IBinaryBufferReader
     {
-        private const string EmptyString = "";
-
         public bool SkipMode { get; set; }
         
         public BinaryBufferReader([NotNull] byte[] buffer, long position)
@@ -23,7 +21,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             {
                 var size = ReadInt32();
                 Position += size;
-                return EmptyString;
+                return string.Empty;
             }
 
             return base.ReadString(encoding);
@@ -36,7 +34,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             {
                 var size = ReadByte();
                 Position += size;
-                return EmptyString;
+                return string.Empty;
             }
 
             return base.ReadShortString(encoding);
