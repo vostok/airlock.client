@@ -152,22 +152,10 @@ namespace Vostok.Hercules.Client.Tests.Serialization
             events.Count.Should().Be(3);
             events.Should().AllBeEquivalentTo(memoryEvent);
 
-            var dummyEvents = EventsBinaryReader.Read(binaryWriter.Buffer, 0, b => new DummyBuilder(b), new SynchronousConsoleLog());
+            var dummyEvents = EventsBinaryReader.Read(binaryWriter.Buffer, 0, b => DummyEventBuilder.Instance, new SynchronousConsoleLog());
             dummyEvents.Count.Should().Be(3);
 
             return events.Last();
-        }
-
-        private class DummyBuilder : DummyHerculesTagsBuilder, IHerculesEventBuilder<HerculesEvent>
-        {
-            public DummyBuilder(IBinaryBufferReader binaryBuffer)
-            {
-                binaryBuffer.SkipMode = true;
-            }
-
-            public IHerculesEventBuilder<HerculesEvent> SetTimestamp(DateTimeOffset timestamp) => this;
-
-            public HerculesEvent BuildEvent() => new HerculesEvent(DateTimeOffset.Now, HerculesTags.Empty);
         }
     }
 }
