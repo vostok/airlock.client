@@ -12,19 +12,18 @@ notests *default:
 
   deps:
     - vostok.devtools
-    - vostok.hercules.client.abstractions
+    - vostok.hercules.client.abstractions@generic-stream-client
     - vostok.logging.abstractions
     - vostok.clusterclient.core
     - vostok.clusterclient.transport
     - vostok.commons.time/src
-    - vostok.commons.binary/src
+    - vostok.commons.binary/src@generic-stream-client
     - vostok.commons.helpers/src
     - vostok.commons.threading/src
     - vostok.commons.collections/src
 
 full-build > notests: 
   deps:
-    - force: $CURRENT_BRANCH
     - vostok.hercules.local
     - vostok.logging.console
     - vostok.commons.testing/src
