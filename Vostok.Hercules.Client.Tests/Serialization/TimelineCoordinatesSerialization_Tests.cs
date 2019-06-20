@@ -5,6 +5,7 @@ using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Hercules.Client.Serialization.Writers;
+using BinaryBufferReader = Vostok.Commons.Binary.BinaryBufferReader;
 
 namespace Vostok.Hercules.Client.Tests.Serialization
 {

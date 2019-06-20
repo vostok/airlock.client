@@ -16,6 +16,7 @@ using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Hercules.Client.Serialization.Writers;
 using Vostok.Logging.Abstractions;
+using BinaryBufferReader = Vostok.Commons.Binary.BinaryBufferReader;
 
 namespace Vostok.Hercules.Client
 {
@@ -116,7 +117,7 @@ namespace Vostok.Hercules.Client
             return writer.FilledSegment;
         }
 
-        private static ReadTimelinePayload ParseResponseBody([NotNull] Response response)
+        private ReadTimelinePayload ParseResponseBody([NotNull] Response response)
         {
             var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
             {
@@ -125,7 +126,7 @@ namespace Vostok.Hercules.Client
 
             var coordinates = TimelineCoordinatesReader.Read(reader);
 
-            var events = reader.ReadArray(BinaryEventReader.ReadEvent);
+            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, _ => new HerculesEventBuilderGeneric(), log);
 
             return new ReadTimelinePayload(events, coordinates);
         }

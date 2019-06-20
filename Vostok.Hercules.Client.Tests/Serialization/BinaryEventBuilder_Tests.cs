@@ -7,6 +7,7 @@ using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Hercules.Client.Serialization.Readers;
+using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests.Serialization
 {
@@ -137,6 +138,7 @@ namespace Vostok.Hercules.Client.Tests.Serialization
             var memoryEvent = memoryBuilder.BuildEvent();
 
             var binaryWriter = new BinaryBufferWriter(16) {Endianness = Endianness.Big};
+            binaryWriter.Write(3);
 
             for (var i = 0; i < 3; i++)
             {
@@ -146,17 +148,14 @@ namespace Vostok.Hercules.Client.Tests.Serialization
                 }
             }
 
-            var binaryReader = new BinaryBufferReader(binaryWriter.Buffer, 0) {Endianness = Endianness.Big};
+            var events = EventsBinaryReader.Read(binaryWriter.Buffer, 0, _ => new HerculesEventBuilderGeneric(), new SynchronousConsoleLog());
+            events.Count.Should().Be(3);
+            events.Should().AllBeEquivalentTo(memoryEvent);
 
-            var binaryEvent1 = BinaryEventReader.ReadEvent(binaryReader);
-            var binaryEvent2 = BinaryEventReader.ReadEvent(binaryReader);
-            var binaryEvent3 = BinaryEventReader.ReadEvent(binaryReader);
+            var dummyEvents = EventsBinaryReader.Read(binaryWriter.Buffer, 0, b => DummyEventBuilder.Instance, new SynchronousConsoleLog());
+            dummyEvents.Count.Should().Be(3);
 
-            binaryEvent1.Should().Be(memoryEvent);
-            binaryEvent2.Should().Be(memoryEvent);
-            binaryEvent3.Should().Be(memoryEvent);
-
-            return binaryEvent3;
+            return events.Last();
         }
     }
 }

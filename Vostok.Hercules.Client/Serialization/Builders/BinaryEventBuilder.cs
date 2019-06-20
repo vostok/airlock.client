@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
-using Vostok.Hercules.Client.Serialization.Helpers;
 
 namespace Vostok.Hercules.Client.Serialization.Builders
 {

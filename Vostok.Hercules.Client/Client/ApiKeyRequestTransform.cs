@@ -16,8 +16,8 @@ namespace Vostok.Hercules.Client.Client
         public Request Transform(Request request)
         {
             var key = apiKeyProvider();
-            return key == null 
-                ? request 
+            return key == null
+                ? request
                 : request.WithHeader(Constants.HeaderNames.ApiKey, apiKeyProvider());
         }
     }
