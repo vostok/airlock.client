@@ -28,7 +28,7 @@ namespace Vostok.Hercules.Client.Sink.Scheduler
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
-            var cancellationTaskSource = new TaskCompletionSource<bool>();
+            var cancellationTaskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (cancellationToken.Register(() => cancellationTaskSource.TrySetCanceled()))
             {

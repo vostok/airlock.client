@@ -1,7 +1,6 @@
 ﻿using JetBrains.Annotations;
 using Vostok.Commons.Binary;
 using Vostok.Hercules.Client.Abstractions.Models;
-using Vostok.Hercules.Client.Serialization.Helpers;
 
 namespace Vostok.Hercules.Client.Serialization.Writers
 {

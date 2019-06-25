@@ -1,21 +1,54 @@
 ﻿using System;
-using System.Text;
+using System.Collections.Generic;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Serialization.Builders;
-using Vostok.Hercules.Client.Serialization.Helpers;
+using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Serialization.Readers
 {
-    internal static class BinaryEventReader
+    internal static class EventsBinaryReader
     {
-        public static HerculesEvent ReadEvent(IBinaryReader reader)
+        public static IList<HerculesEvent> Read(byte[] bytes, long offset, ILog log)
+        {
+            return Read(bytes, offset, _ => new HerculesEventBuilderGeneric(), log);
+        }
+
+        public static IList<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider, ILog log)
+        {
+            var reader = new BinaryBufferReader(bytes, offset)
+            {
+                Endianness = Endianness.Big
+            };
+
+            var count = reader.ReadInt32();
+            var result = new List<T>(count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var startPosition = reader.Position;
+
+                try
+                {
+                    result.Add(ReadEvent(reader, eventBuilderProvider(reader)));
+                }
+                catch (Exception e)
+                {
+                    log.Error(e, "Failed to read event from position {Position}.", startPosition);
+
+                    reader.Position = startPosition;
+                    ReadEvent(reader, DummyEventBuilder.Instance);
+                }
+            }
+
+            return result;
+        }
+        
+        private static T ReadEvent<T>(IBinaryReader reader, IHerculesEventBuilder<T> builder)
         {
             reader.EnsureBigEndian();
-
-            var builder = new HerculesEventBuilder();
-
+            
             var version = reader.ReadByte();
             if (version != Constants.EventProtocolVersion)
                 throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
@@ -25,12 +58,12 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             builder.SetTimestamp(new DateTimeOffset(utcTimestamp, TimeSpan.Zero));
 
             reader.Position += 16;
-            reader.ReadContainer(builder);
+            ReadContainer(reader, builder);
 
             return builder.BuildEvent();
         }
 
-        private static void ReadContainer(this IBinaryReader reader, IHerculesTagsBuilder builder)
+        private static void ReadContainer(IBinaryReader reader, IHerculesTagsBuilder builder)
         {
             var tagsCount = reader.ReadInt16();
 
@@ -42,7 +75,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
                 switch (valueType)
                 {
                     case TagType.Container:
-                        builder.AddContainer(key, reader.ReadContainer);
+                        builder.AddContainer(key, b => ReadContainer(reader, b));
                         break;
 
                     case TagType.Byte:
