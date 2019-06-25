@@ -54,8 +54,7 @@ namespace Vostok.Hercules.Client.Sink.Planning
             var signalToUse = backoffDepth == 0 ? signal : NeverSignaled;
 
             await signalToUse
-                .WaitAsync(cancellationToken)
-                .WaitAsync(periodicDelay)
+                .WaitAsync(cancellationToken, periodicDelay)
                 .ConfigureAwait(false);
 
             signalToUse.Reset();
