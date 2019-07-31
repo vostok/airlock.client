@@ -53,7 +53,8 @@ namespace Vostok.Hercules.Client.Sink.Sender
         {
             var watch = Stopwatch.StartNew();
             var snapshots = CollectSnapshots();
-            var batches = snapshotBatcher.Batch(snapshots);
+            var batches = snapshotBatcher.Batch(snapshots).ToList();
+            LogBatches(batches);
             var currentStatus = HerculesStatus.Success;
 
             foreach (var batch in batches)
@@ -113,6 +114,15 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 LogBatchSendFailure(recordsCount, recordsSize, response.Code, status);
 
             return status;
+        }
+
+        private void LogBatches(List<IReadOnlyList<BufferSnapshot>> batches)
+        {
+            log.Info("Built {BatchesCount} batches with total size {TotalSize} for stream '{StreamName}'. Stream stored: {StreamStored}.", 
+                batches.Count,
+                batches.Sum(b => b.Sum(bb => bb.State.Length)),
+                streamState.Name,
+                streamState.Statistics.EstimateStoredSize());
         }
 
         private void LogBatchSendSuccess(int recordsCount, long recordsSize, TimeSpan elapsed)
