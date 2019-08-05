@@ -31,6 +31,8 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public long UsefulDataSize => Committed.Length - Garbage.Length;
 
+        public long ReservedDataSize => writer.Buffer.Length;
+
         public void CommitRecord(int size)
         {
             if (size <= 0)

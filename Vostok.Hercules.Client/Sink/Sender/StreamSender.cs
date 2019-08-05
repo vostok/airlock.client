@@ -118,11 +118,14 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
         private void LogBatches(List<IReadOnlyList<BufferSnapshot>> batches)
         {
-            log.Info("Built {BatchesCount} batches with total size {TotalSize} for stream '{StreamName}'. Stream stored: {StreamStored}.", 
-                batches.Count,
-                batches.Sum(b => b.Sum(bb => bb.State.Length)),
-                streamState.Name,
-                streamState.Statistics.EstimateStoredSize());
+            log.Info("Built {BatchesCount} batches with total size {TotalSize} for stream '{StreamName}'. " +
+                     "Stream stored: {StreamStored}. " +
+                     "Buffer pools count: {BufferPoolsCount}. Buffer pools reserved: {BufferPoolsReserved}. " +
+                     "Buffer pools avg reserved: {BufferPoolsAvgReserved}. Buffer pools min: {BufferPoolsMinReserved}. Buffer pools max reserved: {BufferPoolsMaxReserved}. ", 
+                batches.Count, batches.Sum(b => b.Sum(bb => bb.State.Length)), streamState.Name,
+                streamState.Statistics.EstimateStoredSize(),
+                streamState.BufferPool.Count(), streamState.BufferPool.Sum(p => p.ReservedDataSize),
+                streamState.BufferPool.Average(p => p.ReservedDataSize), streamState.BufferPool.Min(p => p.ReservedDataSize), streamState.BufferPool.Max(p => p.ReservedDataSize));
         }
 
         private void LogBatchSendSuccess(int recordsCount, long recordsSize, TimeSpan elapsed)

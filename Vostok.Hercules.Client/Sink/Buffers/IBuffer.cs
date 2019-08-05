@@ -22,6 +22,11 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         long UsefulDataSize { get; }
 
         /// <summary>
+        /// Returns total reserved data size.
+        /// </summary>
+        long ReservedDataSize { get; }
+
+        /// <summary>
         /// Commits a recently written record of given <paramref name="size"/>, so that it will be included in result of the next successful <see cref="TryMakeSnapshot"/> call.
         /// </summary>
         /// <exception cref="System.ArgumentOutOfRangeException">Provided <paramref name="size"/> is zero or negative.</exception>
