@@ -81,5 +81,21 @@ namespace Vostok.Hercules.Client
 
             (long, long) Sum((long, long) x, (long, long) y) => (x.Item1 + y.Item1, x.Item2 + y.Item2);
         }
+
+        /// <summary>
+        /// Subtracts two <see cref="HerculesSinkCounters"/> field-by-field.
+        /// </summary>
+        public static HerculesSinkCounters operator -(HerculesSinkCounters left, HerculesSinkCounters right)
+        {
+            return new HerculesSinkCounters(
+                Sub(left.SentRecords, right.SentRecords),
+                Sub(left.RejectedRecords, right.RejectedRecords),
+                Sub(left.StoredRecords, right.StoredRecords),
+                left.RecordsLostDueToBuildFailures - right.RecordsLostDueToBuildFailures,
+                left.RecordsLostDueToSizeLimit - right.RecordsLostDueToSizeLimit,
+                left.RecordsLostDueToOverflows - right.RecordsLostDueToOverflows);
+
+            (long, long) Sub((long, long) x, (long, long) y) => (x.Item1 - y.Item1, x.Item2 - y.Item2);
+        }
     }
 }
