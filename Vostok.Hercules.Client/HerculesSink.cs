@@ -12,7 +12,6 @@ using Vostok.Hercules.Client.Sink.Scheduler;
 using Vostok.Hercules.Client.Sink.Scheduler.Helpers;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Sink.Validation;
-using Vostok.Hercules.Client.Sink.Writing;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -44,7 +43,6 @@ namespace Vostok.Hercules.Client
             if (!stream.BufferPool.TryAcquire(out var buffer))
             {
                 stream.Statistics.ReportOverflow();
-                state.Log.Warn($"HerculesSinkLostEvent can't acquire buffer pool. Stored {stream.Statistics.EstimateStoredSize()} bytes.");
 
                 if (stream.Statistics.EstimateStoredSize() > 0)
                     stream.SendSignal.Set();
@@ -54,9 +52,7 @@ namespace Vostok.Hercules.Client
 
             try
             {
-                var result = stream.RecordWriter.TryWrite(buffer, build, out _);
-                if (result != RecordWriteResult.Success)
-                    state.Log.Warn($"HerculesSinkLostEvent can't write due to {result}.");
+                stream.RecordWriter.TryWrite(buffer, build, out _);
             }
             finally
             {
