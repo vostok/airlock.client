@@ -13,12 +13,14 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         private long sentRecordsSize;
         private long storedRecordsCount;
         private long storedRecordsSize;
+        private long reservedSize;
 
         public HerculesSinkCounters GetCounters()
             => new HerculesSinkCounters(
                 ReadTuple(ref sentRecordsCount, ref sentRecordsSize),
                 ReadTuple(ref rejectedRecordsCount, ref rejectedRecordsSize),
                 ReadTuple(ref storedRecordsCount, ref storedRecordsSize),
+                Interlocked.Read(ref reservedSize),
                 Interlocked.Read(ref buildFailures),
                 Interlocked.Read(ref sizeLimitViolations),
                 Interlocked.Read(ref overflows));
@@ -57,6 +59,11 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         {
             Interlocked.Increment(ref storedRecordsCount);
             Interlocked.Add(ref storedRecordsSize, size);
+        }
+
+        public void ReportReservedSize(long amount)
+        {
+            Interlocked.Exchange(ref reservedSize, amount);
         }
 
         private static (long, long) ReadTuple(ref long first, ref long second) =>

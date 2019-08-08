@@ -57,6 +57,8 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
             var storedSize = streamState.Statistics.EstimateStoredSize();
             var reservedSize = streamState.BufferPool.EstimateReservedSize();
+            streamState.Statistics.ReportReservedSize(reservedSize);
+
             IBuffer someBuffer = null;
             if (storedSize < reservedSize * FreeBufferConstantThreshold)
                 streamState.BufferPool.TryAcquire(out someBuffer);

@@ -44,5 +44,10 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         /// Reports that a record could not be stored due to an exception.
         /// </summary>
         void ReportRecordBuildFailure();
+
+        /// <summary>
+        /// Reports how many bytes reserved by buffer pool currently. 
+        /// </summary>
+        void ReportReservedSize(long amount);
     }
 }
