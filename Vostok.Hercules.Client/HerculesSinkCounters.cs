@@ -11,7 +11,7 @@ namespace Vostok.Hercules.Client
         public static readonly HerculesSinkCounters Zero
             = new HerculesSinkCounters((0, 0), (0, 0), (0, 0), 0, 0, 0);
 
-        public HerculesSinkCounters(
+        internal HerculesSinkCounters(
             (long Count, long Size) sentRecords,
             (long Count, long Size) rejectedRecords,
             (long Count, long Size) storedRecords,
