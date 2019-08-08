@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Vostok.Commons.Helpers.Extensions;
 using Vostok.Commons.Threading;
 using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Sender;

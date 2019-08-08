@@ -93,7 +93,7 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// Subtracts two <see cref="HerculesSinkCounters"/> field-by-field.
         /// </summary>
-        public static HerculesSinkCounters operator -(HerculesSinkCounters left, HerculesSinkCounters right)
+        public static HerculesSinkCounters operator-(HerculesSinkCounters left, HerculesSinkCounters right)
         {
             return new HerculesSinkCounters(
                 Sub(left.SentRecords, right.SentRecords),

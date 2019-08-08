@@ -44,11 +44,11 @@ namespace Vostok.Hercules.Client.Serialization.Readers
 
             return result;
         }
-        
+
         private static T ReadEvent<T>(IBinaryReader reader, IHerculesEventBuilder<T> builder)
         {
             reader.EnsureBigEndian();
-            
+
             var version = reader.ReadByte();
             if (version != Constants.EventProtocolVersion)
                 throw new NotSupportedException($"Unsupported Hercules protocol version: {version}");
