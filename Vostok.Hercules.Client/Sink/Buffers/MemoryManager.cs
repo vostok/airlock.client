@@ -35,5 +35,14 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                     return false;
             }
         }
+
+        public void ReleaseBytes(long amount)
+        {
+            Interlocked.Add(ref currentSize, -amount);
+            underlyingManager?.ReleaseBytes(amount);
+        }
+
+        public long EstimateReservedBytes() =>
+            Interlocked.Read(ref currentSize);
     }
 }

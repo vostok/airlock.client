@@ -20,6 +20,8 @@ namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal class StreamSender : IStreamSender
     {
+        private const double FreeBufferConstantThreshold = 0.5;
+        
         private readonly Func<string> globalApiKeyProvider;
         private readonly IStreamState streamState;
         private readonly IBufferSnapshotBatcher snapshotBatcher;
@@ -52,6 +54,23 @@ namespace Vostok.Hercules.Client.Sink.Sender
         public async Task<StreamSendResult> SendAsync(TimeSpan perRequestTimeout, CancellationToken cancellationToken)
         {
             var watch = Stopwatch.StartNew();
+
+            var storedSize = streamState.Statistics.EstimateStoredSize();
+            var reservedSize = streamState.BufferPool.EstimateReservedSize();
+            IBuffer someBuffer = null;
+            if (storedSize < reservedSize * FreeBufferConstantThreshold)
+                streamState.BufferPool.TryAcquire(out someBuffer);
+
+            var currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken);
+
+            if (someBuffer != null)
+                streamState.BufferPool.Free(someBuffer);
+
+            return new StreamSendResult(currentStatus, watch.Elapsed);
+        }
+
+        private async Task<HerculesStatus> SendInnerAsync(TimeSpan perRequestTimeout, CancellationToken cancellationToken)
+        {
             var snapshots = CollectSnapshots();
             var batches = snapshotBatcher.Batch(snapshots).ToList();
             LogBatches(batches);
@@ -67,7 +86,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
                     break;
             }
 
-            return new StreamSendResult(currentStatus, watch.Elapsed);
+            return currentStatus;
         }
 
         private static void RequestGarbageCollection([NotNull] IEnumerable<BufferSnapshot> snapshots)
@@ -120,10 +139,12 @@ namespace Vostok.Hercules.Client.Sink.Sender
         {
             log.Info("Built {BatchesCount} batches with total size {TotalSize} for stream '{StreamName}'. " +
                      "Stream stored: {StreamStored}. " +
-                     "Buffer pools count: {BufferPoolsCount}. Buffer pools reserved: {BufferPoolsReserved}. " +
-                     "Buffer pools avg reserved: {BufferPoolsAvgReserved}. Buffer pools min: {BufferPoolsMinReserved}. Buffer pools max reserved: {BufferPoolsMaxReserved}. ", 
+                     "Stream reserved: {StreamReserved}. " +
+                     "Buffers count: {BuffersCount}. Buffers reserved: {BuffersReserved}. " +
+                     "Buffers avg reserved: {BuffersAvgReserved}. Buffers min reserved: {BuffersMinReserved}. Buffers max reserved: {BuffersMaxReserved}. ", 
                 batches.Count, batches.Sum(b => b.Sum(bb => bb.State.Length)), streamState.Name,
                 streamState.Statistics.EstimateStoredSize(),
+                streamState.BufferPool.EstimateReservedSize(),
                 streamState.BufferPool.Count(), streamState.BufferPool.Sum(p => p.ReservedDataSize),
                 streamState.BufferPool.Average(p => p.ReservedDataSize), streamState.BufferPool.Min(p => p.ReservedDataSize), streamState.BufferPool.Max(p => p.ReservedDataSize));
         }
