@@ -64,7 +64,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
             if (storedSize < reservedSize * FreeBufferConstantThreshold && streamState.BufferPool.Count() > FreeBufferConstantMinimumCount)
                 streamState.BufferPool.TryAcquire(out someBuffer);
 
-            var currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken);
+            var currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken).ConfigureAwait(false);
 
             if (someBuffer != null)
                 streamState.BufferPool.Free(someBuffer);
