@@ -67,7 +67,12 @@ namespace Vostok.Hercules.Client.Sink.Sender
             var currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken).ConfigureAwait(false);
 
             if (someBuffer != null)
-                streamState.BufferPool.Free(someBuffer);
+            {
+                if (someBuffer.UsefulDataSize == 0)
+                    streamState.BufferPool.Free(someBuffer);
+                else
+                    streamState.BufferPool.Release(someBuffer);
+            }
 
             return new StreamSendResult(currentStatus, watch.Elapsed);
         }
