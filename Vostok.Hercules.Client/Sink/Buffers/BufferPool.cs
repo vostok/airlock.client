@@ -13,6 +13,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         private readonly int maxBufferSize;
 
         private readonly ConcurrentQueue<IBuffer> availableBuffers = new ConcurrentQueue<IBuffer>();
+        private readonly ConcurrentQueue<IBuffer> fullBuffers = new ConcurrentQueue<IBuffer>();
         private readonly ConcurrentDictionary<IBuffer, byte> allBuffers = new ConcurrentDictionary<IBuffer, byte>(ByReferenceEqualityComparer<IBuffer>.Instance);
 
         public BufferPool(
@@ -29,7 +30,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public bool TryAcquire(out IBuffer buffer)
         {
-            var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer);
+            var result = TryDequeueBuffer(out buffer, availableBuffers) || TryDequeueBuffer(out buffer, fullBuffers) || TryCreateBuffer(out buffer);
             if (result)
                 (buffer as Buffer)?.CollectGarbage();
 
@@ -40,7 +41,10 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         {
             Unlock(buffer);
 
-            availableBuffers.Enqueue(buffer);
+            if (buffer.UsefulDataSize + maxRecordSize <= buffer.ReservedDataSize)
+                availableBuffers.Enqueue(buffer);
+            else
+                fullBuffers.Enqueue(buffer);
         }
 
         public long EstimateReservedSize() =>
@@ -57,19 +61,19 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         private static void Unlock(IBuffer buffer) => (buffer as Buffer)?.Unlock();
         private static bool TryLock(IBuffer buffer) => (buffer as Buffer)?.TryLock() ?? true;
 
-        private bool TryDequeueBuffer(out IBuffer buffer)
+        private bool TryDequeueBuffer(out IBuffer buffer, ConcurrentQueue<IBuffer> queue)
         {
             const int dequeueAttempts = 3;
 
             for (var i = 0; i < dequeueAttempts; ++i)
             {
-                if (!availableBuffers.TryDequeue(out buffer))
+                if (!queue.TryDequeue(out buffer))
                     return false;
 
                 if (buffer.UsefulDataSize <= maxBufferSize - maxRecordSize && TryLock(buffer))
                     return true;
 
-                availableBuffers.Enqueue(buffer);
+                queue.Enqueue(buffer);
             }
 
             buffer = null;
