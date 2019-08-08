@@ -21,6 +21,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
     internal class StreamSender : IStreamSender
     {
         private const double FreeBufferConstantThreshold = 0.5;
+        private const double FreeBufferConstantMinimumCount = 1;
 
         private readonly Func<string> globalApiKeyProvider;
         private readonly IStreamState streamState;
@@ -60,7 +61,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
             streamState.Statistics.ReportReservedSize(reservedSize);
 
             IBuffer someBuffer = null;
-            if (storedSize < reservedSize * FreeBufferConstantThreshold)
+            if (storedSize < reservedSize * FreeBufferConstantThreshold && streamState.BufferPool.Count() > FreeBufferConstantMinimumCount)
                 streamState.BufferPool.TryAcquire(out someBuffer);
 
             var currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken);
