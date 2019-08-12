@@ -70,6 +70,11 @@ namespace Vostok.Hercules.Client
         public TimeSpan SendPeriodCap { get; set; } = 5.Minutes();
 
         /// <summary>
+        /// <para>Base delay between attempts of removing extra buffers.</para>
+        /// </summary>
+        public TimeSpan FreeMemoryPeriod { get; set; } = 10.Minutes();
+
+        /// <summary>
         /// <para>Timeout of requests to Hercules gate.</para>
         /// </summary>
         public TimeSpan RequestTimeout { get; set; } = 30.Seconds();

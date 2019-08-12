@@ -7,6 +7,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         bool TryAcquire(out IBuffer buffer);
         void Release(IBuffer buffer);
         void Free(IBuffer buffer);
-        long EstimateReservedSize();
+        long EstimateReservedMemorySize();
+        long LastReserveMemoryTicks();
     }
 }

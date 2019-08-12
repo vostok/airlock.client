@@ -47,8 +47,11 @@ namespace Vostok.Hercules.Client.Sink.Buffers
                 fullBuffers.Enqueue(buffer);
         }
 
-        public long EstimateReservedSize() =>
+        public long EstimateReservedMemorySize() =>
             memoryManager.EstimateReservedBytes();
+
+        public long LastReserveMemoryTicks() =>
+            memoryManager.LastReserveBytesTicks();
 
         public void Free(IBuffer buffer)
         {

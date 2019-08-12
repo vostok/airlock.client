@@ -5,5 +5,6 @@
         bool TryReserveBytes(long amount);
         void ReleaseBytes(long amount);
         long EstimateReservedBytes();
+        long LastReserveBytesTicks();
     }
 }

@@ -20,9 +20,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal class StreamSender : IStreamSender
     {
-        private const double FreeBufferConstantThreshold = 0.5;
-        private const double FreeBufferConstantMinimumCount = 1;
-
         private readonly Func<string> globalApiKeyProvider;
         private readonly IStreamState streamState;
         private readonly IBufferSnapshotBatcher snapshotBatcher;
@@ -30,6 +27,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
         private readonly IGateRequestSender gateRequestSender;
         private readonly IResponseAnalyzer responseAnalyzer;
         private readonly IStatusAnalyzer statusAnalyzer;
+        private readonly IMemoryAnalyzer memoryAnalyzer;
         private readonly ILog log;
 
         public StreamSender(
@@ -40,6 +38,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
             [NotNull] IGateRequestSender gateRequestSender,
             [NotNull] IResponseAnalyzer responseAnalyzer,
             [NotNull] IStatusAnalyzer statusAnalyzer,
+            [NotNull] IMemoryAnalyzer memoryAnalyzer,
             [NotNull] ILog log)
         {
             this.globalApiKeyProvider = globalApiKeyProvider;
@@ -49,6 +48,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
             this.gateRequestSender = gateRequestSender;
             this.responseAnalyzer = responseAnalyzer;
             this.statusAnalyzer = statusAnalyzer;
+            this.memoryAnalyzer = memoryAnalyzer;
             this.log = log;
         }
 
@@ -56,12 +56,11 @@ namespace Vostok.Hercules.Client.Sink.Sender
         {
             var watch = Stopwatch.StartNew();
 
-            var storedSize = streamState.Statistics.EstimateStoredSize();
-            var reservedSize = streamState.BufferPool.EstimateReservedSize();
+            var reservedSize = streamState.BufferPool.EstimateReservedMemorySize();
             streamState.Statistics.ReportReservedSize(reservedSize);
 
             IBuffer someBuffer = null;
-            if (storedSize < reservedSize * FreeBufferConstantThreshold && streamState.BufferPool.Count() > FreeBufferConstantMinimumCount)
+            if (memoryAnalyzer.ShouldFreeMemory(streamState.BufferPool.LastReserveMemoryTicks()))
                 streamState.BufferPool.TryAcquire(out someBuffer);
 
             var currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken).ConfigureAwait(false);
@@ -155,7 +154,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 batches.Sum(b => b.Sum(bb => bb.State.Length)),
                 streamState.Name,
                 streamState.Statistics.EstimateStoredSize(),
-                streamState.BufferPool.EstimateReservedSize(),
+                streamState.BufferPool.EstimateReservedMemorySize(),
                 streamState.BufferPool.Count(),
                 streamState.BufferPool.Sum(p => p.ReservedDataSize),
                 streamState.BufferPool.Average(p => p.ReservedDataSize),

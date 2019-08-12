@@ -77,7 +77,7 @@ namespace Vostok.Hercules.Client
                     s => s.Name,
                     s =>
                     {
-                        s.Statistics.ReportReservedSize(s.BufferPool.EstimateReservedSize());
+                        s.Statistics.ReportReservedSize(s.BufferPool.EstimateReservedMemorySize());
                         return s.Statistics.GetCounters();
                     });
 

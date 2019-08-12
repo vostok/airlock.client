@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
@@ -7,6 +8,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         private readonly long maxSize;
         private readonly IMemoryManager underlyingManager;
         private long currentSize;
+        private long lastReserveTicks;
 
         public MemoryManager(long maxSize, IMemoryManager underlyingManager = null)
         {
@@ -16,6 +18,8 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public bool TryReserveBytes(long amount)
         {
+            Interlocked.Exchange(ref lastReserveTicks, DateTime.UtcNow.Ticks);
+
             while (true)
             {
                 var tCurrentSize = Interlocked.Read(ref currentSize);
@@ -44,5 +48,8 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public long EstimateReservedBytes() =>
             Interlocked.Read(ref currentSize);
+
+        public long LastReserveBytesTicks() =>
+            Interlocked.Read(ref lastReserveTicks);
     }
 }
