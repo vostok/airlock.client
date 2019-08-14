@@ -84,12 +84,11 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
         private async Task<HerculesStatus> SendInnerAsync(TimeSpan perRequestTimeout, CancellationToken cancellationToken)
         {
-            var snapshots = CollectSnapshots();
-            var batches = snapshotBatcher.Batch(snapshots).ToList();
-            LogBatches(batches);
             var currentStatus = HerculesStatus.Success;
 
-            foreach (var batch in batches)
+            var snapshots = CollectSnapshots();
+
+            foreach (var batch in snapshotBatcher.Batch(snapshots))
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -140,26 +139,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 LogBatchSendFailure(recordsCount, recordsSize, response.Code, status);
 
             return status;
-        }
-
-        private void LogBatches(List<IReadOnlyList<BufferSnapshot>> batches)
-        {
-            log.Info(
-                "Built {BatchesCount} batches with total size {TotalSize} for stream '{StreamName}'. " +
-                "Stream stored: {StreamStored}. " +
-                "Stream reserved: {StreamReserved}. " +
-                "Buffers count: {BuffersCount}. Buffers reserved: {BuffersReserved}. " +
-                "Buffers avg reserved: {BuffersAvgReserved}. Buffers min reserved: {BuffersMinReserved}. Buffers max reserved: {BuffersMaxReserved}. ",
-                batches.Count,
-                batches.Sum(b => b.Sum(bb => bb.State.Length)),
-                streamState.Name,
-                streamState.Statistics.EstimateStoredSize(),
-                streamState.BufferPool.EstimateReservedMemorySize(),
-                streamState.BufferPool.Count(),
-                streamState.BufferPool.Sum(p => p.ReservedDataSize),
-                streamState.BufferPool.Average(p => p.ReservedDataSize),
-                streamState.BufferPool.Min(p => p.ReservedDataSize),
-                streamState.BufferPool.Max(p => p.ReservedDataSize));
         }
 
         private void LogBatchSendSuccess(int recordsCount, long recordsSize, TimeSpan elapsed)
