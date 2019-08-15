@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -16,8 +17,9 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
         public void Setup()
         {
             underlyingMemoryManager = Substitute.For<IMemoryManager>();
+            underlyingMemoryManager.TryReserveBytes(0).ReturnsForAnyArgs(true);
+
             memoryManager = new MemoryManager(MaxSize, underlyingMemoryManager);
-            memoryManager.TryReserveBytes(0).ReturnsForAnyArgs(true);
         }
 
         [Test]
@@ -64,6 +66,18 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
 
             memoryManager.ReleaseBytes(9);
             memoryManager.EstimateReservedBytes().Should().Be(MaxSize - 9);
+        }
+
+        [Test]
+        public void LastReserveBytesTicks_should_works_correctly()
+        {
+            memoryManager.LastReserveBytesTicks().Should().Be(0);
+
+            var before = DateTime.UtcNow.Ticks;
+            memoryManager.TryReserveBytes(1);
+            var after = DateTime.UtcNow.Ticks;
+
+            memoryManager.LastReserveBytesTicks().Should().BeInRange(before, after);
         }
 
         [TestCase(true, 10)]
