@@ -31,8 +31,6 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public long UsefulDataSize => Committed.Length - Garbage.Length;
 
-        public long ReservedDataSize => writer.Buffer.Length;
-
         public void CommitRecord(int size)
         {
             if (size <= 0)
@@ -118,5 +116,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             // (epeshk): reset garbage state last for synchronization with TryMakeSnapshot:
             garbage.Value = default;
         }
+
+        long IBuffer.Capacity => Capacity;
     }
 }

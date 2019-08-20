@@ -45,7 +45,7 @@ namespace Vostok.Hercules.Client
         public (long Count, long Size) StoredRecords { get; }
 
         /// <summary>
-        /// Returns how many bytes reserved by buffer pool.
+        /// Amount of memory in bytes reserved by the internal buffer pool.
         /// </summary>
         public long ReservedSize { get; }
 

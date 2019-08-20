@@ -30,7 +30,10 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
         public bool TryAcquire(out IBuffer buffer)
         {
-            var result = TryDequeueBuffer(out buffer, availableBuffers) || TryDequeueBuffer(out buffer, fullBuffers) || TryCreateBuffer(out buffer);
+            var result = TryDequeueBuffer(out buffer, availableBuffers) ||
+                         TryDequeueBuffer(out buffer, fullBuffers) ||
+                         TryCreateBuffer(out buffer);
+
             if (result)
                 (buffer as Buffer)?.CollectGarbage();
 
@@ -41,7 +44,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         {
             Unlock(buffer);
 
-            if (buffer.UsefulDataSize + maxRecordSize <= buffer.ReservedDataSize)
+            if (buffer.UsefulDataSize + maxRecordSize <= buffer.Capacity)
                 availableBuffers.Enqueue(buffer);
             else
                 fullBuffers.Enqueue(buffer);
@@ -56,9 +59,11 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         public void Free(IBuffer buffer)
         {
             allBuffers.TryRemove(buffer, out _);
-            memoryManager.ReleaseBytes(buffer.ReservedDataSize);
+            memoryManager.ReleaseBytes(buffer.Capacity);
         }
 
+        // CR(iloktionov): Never use 'Keys' or 'Values' properties of ConcurrentDictionary: they acquire all locks and perform a full copy.
+        // CR(iloktionov): Instead, just Select() keys from the dictionary enumerable of KV-pairs, which is lock-free.
         public IEnumerator<IBuffer> GetEnumerator() => allBuffers.Keys.GetEnumerator();
 
         private static void Unlock(IBuffer buffer) => (buffer as Buffer)?.Unlock();

@@ -62,9 +62,7 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         }
 
         public void ReportReservedSize(long amount)
-        {
-            Interlocked.Exchange(ref reservedSize, amount);
-        }
+            => Interlocked.Exchange(ref reservedSize, amount);
 
         private static (long, long) ReadTuple(ref long first, ref long second) =>
             (Interlocked.Read(ref first), Interlocked.Read(ref second));
