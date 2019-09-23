@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using Vostok.Commons.Collections;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
@@ -62,9 +63,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             memoryManager.ReleaseBytes(buffer.Capacity);
         }
 
-        // CR(iloktionov): Never use 'Keys' or 'Values' properties of ConcurrentDictionary: they acquire all locks and perform a full copy.
-        // CR(iloktionov): Instead, just Select() keys from the dictionary enumerable of KV-pairs, which is lock-free.
-        public IEnumerator<IBuffer> GetEnumerator() => allBuffers.Keys.GetEnumerator();
+        public IEnumerator<IBuffer> GetEnumerator() => allBuffers.Select(kvp => kvp.Key).GetEnumerator();
 
         private static void Unlock(IBuffer buffer) => (buffer as Buffer)?.Unlock();
         private static bool TryLock(IBuffer buffer) => (buffer as Buffer)?.TryLock() ?? true;
