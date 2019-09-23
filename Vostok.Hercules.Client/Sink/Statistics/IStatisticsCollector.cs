@@ -48,6 +48,6 @@ namespace Vostok.Hercules.Client.Sink.Statistics
         /// <summary>
         /// Reports how many bytes reserved by buffer pool currently. 
         /// </summary>
-        void ReportReservedSize(long amount);
+        void ReportCapacity(long amount);
     }
 }

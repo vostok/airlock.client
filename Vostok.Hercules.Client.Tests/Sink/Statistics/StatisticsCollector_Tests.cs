@@ -198,9 +198,9 @@ namespace Vostok.Hercules.Client.Tests.Sink.Statistics
         {
             for (var i = 1; i <= 5; i++)
             {
-                collector.ReportReservedSize(i);
+                collector.ReportCapacity(i);
 
-                collector.GetCounters().ReservedSize.Should().Be(i);
+                collector.GetCounters().Capacity.Should().Be(i);
             }
         }
     }

@@ -53,31 +53,31 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
         }
 
         [Test]
-        public void EstimateReservedBytes_should_works_correctly()
+        public void Capacity_should_works_correctly()
         {
             for (var i = 0; i < 10; ++i)
             {
                 memoryManager.TryReserveBytes(10);
-                memoryManager.EstimateReservedBytes().Should().Be((i + 1) * 10);
+                memoryManager.Capacity.Should().Be((i + 1) * 10);
             }
 
             memoryManager.TryReserveBytes(1).Should().BeFalse();
-            memoryManager.EstimateReservedBytes().Should().Be(MaxSize);
+            memoryManager.Capacity.Should().Be(MaxSize);
 
             memoryManager.ReleaseBytes(9);
-            memoryManager.EstimateReservedBytes().Should().Be(MaxSize - 9);
+            memoryManager.Capacity.Should().Be(MaxSize - 9);
         }
 
         [Test]
-        public void LastReserveBytesTicks_should_works_correctly()
+        public void LastReserveTicks_should_works_correctly()
         {
-            memoryManager.LastReserveBytesTicks().Should().Be(0);
+            memoryManager.LastReserveTicks.Should().Be(0);
 
             var before = DateTime.UtcNow.Ticks;
             memoryManager.TryReserveBytes(1);
             var after = DateTime.UtcNow.Ticks;
 
-            memoryManager.LastReserveBytesTicks().Should().BeInRange(before, after);
+            memoryManager.LastReserveTicks.Should().BeInRange(before, after);
         }
 
         [TestCase(true, 10)]

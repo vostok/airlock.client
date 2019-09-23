@@ -1,4 +1,5 @@
 ﻿using System;
+using Vostok.Hercules.Client.Sink.Buffers;
 
 namespace Vostok.Hercules.Client.Sink.Analyzer
 {
@@ -11,7 +12,7 @@ namespace Vostok.Hercules.Client.Sink.Analyzer
             freePeriodTicks = freePeriod.Ticks;
         }
 
-        public bool ShouldFreeMemory(long lastReserveTicks) =>
-            DateTime.UtcNow.Ticks - lastReserveTicks >= freePeriodTicks;
+        public bool ShouldFreeMemory(IReadOnlyMemoryManager memoryManager) =>
+            DateTime.UtcNow.Ticks - memoryManager.LastReserveTicks >= freePeriodTicks;
     }
 }

@@ -16,6 +16,10 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             this.underlyingManager = underlyingManager;
         }
 
+        public long Capacity => Interlocked.Read(ref currentSize);
+
+        public long LastReserveTicks => Interlocked.Read(ref lastReserveTicks);
+
         public bool TryReserveBytes(long amount)
         {
             Interlocked.Exchange(ref lastReserveTicks, DateTime.UtcNow.Ticks);
@@ -45,11 +49,5 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             Interlocked.Add(ref currentSize, -amount);
             underlyingManager?.ReleaseBytes(amount);
         }
-
-        public long EstimateReservedBytes() =>
-            Interlocked.Read(ref currentSize);
-
-        public long LastReserveBytesTicks() =>
-            Interlocked.Read(ref lastReserveTicks);
     }
 }

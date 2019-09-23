@@ -28,7 +28,7 @@ namespace Vostok.Hercules.Client.Tests
             sum1.SentRecords.Should().Be((13L, 386L));
             sum1.RejectedRecords.Should().Be((4L, 188L));
             sum1.StoredRecords.Should().Be((11L, 198L));
-            sum1.ReservedSize.Should().Be(300);
+            sum1.Capacity.Should().Be(300);
             sum1.RecordsLostDueToBuildFailures.Should().Be(7L);
             sum1.RecordsLostDueToSizeLimit.Should().Be(14L);
             sum1.RecordsLostDueToOverflows.Should().Be(41L);

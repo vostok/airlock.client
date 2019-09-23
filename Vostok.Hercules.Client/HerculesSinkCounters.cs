@@ -15,7 +15,7 @@ namespace Vostok.Hercules.Client
             (long Count, long Size) sentRecords,
             (long Count, long Size) rejectedRecords,
             (long Count, long Size) storedRecords,
-            long reservedSize,
+            long capacity,
             long recordsLostDueToBuildFailures,
             long recordsLostDueToSizeLimit,
             long recordsLostDueToOverflows)
@@ -23,7 +23,7 @@ namespace Vostok.Hercules.Client
             SentRecords = sentRecords;
             RejectedRecords = rejectedRecords;
             StoredRecords = storedRecords;
-            ReservedSize = reservedSize;
+            Capacity = capacity;
             RecordsLostDueToBuildFailures = recordsLostDueToBuildFailures;
             RecordsLostDueToSizeLimit = recordsLostDueToSizeLimit;
             RecordsLostDueToOverflows = recordsLostDueToOverflows;
@@ -45,9 +45,9 @@ namespace Vostok.Hercules.Client
         public (long Count, long Size) StoredRecords { get; }
 
         /// <summary>
-        /// Amount of memory in bytes reserved by the internal buffer pool.
+        /// Returns total current length of the buffers, including its free regions.
         /// </summary>
-        public long ReservedSize { get; }
+        public long Capacity { get; }
 
         /// <summary>
         /// Returns how many records have been lost in total, whatever the reason.
@@ -82,7 +82,7 @@ namespace Vostok.Hercules.Client
                 Sum(left.SentRecords, right.SentRecords),
                 Sum(left.RejectedRecords, right.RejectedRecords),
                 Sum(left.StoredRecords, right.StoredRecords),
-                left.ReservedSize + right.ReservedSize,
+                left.Capacity + right.Capacity,
                 left.RecordsLostDueToBuildFailures + right.RecordsLostDueToBuildFailures,
                 left.RecordsLostDueToSizeLimit + right.RecordsLostDueToSizeLimit,
                 left.RecordsLostDueToOverflows + right.RecordsLostDueToOverflows);
@@ -99,7 +99,7 @@ namespace Vostok.Hercules.Client
                 Sub(left.SentRecords, right.SentRecords),
                 Sub(left.RejectedRecords, right.RejectedRecords),
                 Sub(left.StoredRecords, right.StoredRecords),
-                left.ReservedSize - right.ReservedSize,
+                left.Capacity - right.Capacity,
                 left.RecordsLostDueToBuildFailures - right.RecordsLostDueToBuildFailures,
                 left.RecordsLostDueToSizeLimit - right.RecordsLostDueToSizeLimit,
                 left.RecordsLostDueToOverflows - right.RecordsLostDueToOverflows);
