@@ -56,16 +56,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
         {
             var watch = Stopwatch.StartNew();
 
-            var capacity = streamState.BufferPool.MemoryManager.Capacity;
-
-            // CR(iloktionov): Why is reserved size in StatisticsCollector updated both here and in HerculesSink.GetStatistics()? Looks redundant.
-            streamState.Statistics.ReportCapacity(capacity);
-
-            // CR(iloktionov): Isn't it true that in the absence of any activity this thing will eventually throw out all the buffers..?
-            // CR(iloktionov): I vote to add one or more limiting mechanics:
-            // CR(iloktionov): 1. Cooldown (probably the dumbest one)
-            // CR(iloktionov): 2. Min remaining buffers count
-            // CR(iloktionov): 3. Min memory limit utilization (>= x% of allowed memory allocated)
             IBuffer someBuffer = null;
             if (memoryAnalyzer.ShouldFreeMemory(streamState.BufferPool.MemoryManager))
                 streamState.BufferPool.TryAcquire(out someBuffer);
