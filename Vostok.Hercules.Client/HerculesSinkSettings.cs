@@ -70,9 +70,9 @@ namespace Vostok.Hercules.Client
         public TimeSpan SendPeriodCap { get; set; } = 5.Minutes();
 
         /// <summary>
-        /// <para>Base delay between attempts of removing extra buffers.</para>
+        /// Configuration of garbage collection of inner <see cref="HerculesSink"/> buffers.
         /// </summary>
-        public TimeSpan FreeMemoryPeriod { get; set; } = 10.Minutes();
+        public HerculesSinkGcSettings GcSettings { get; set; } = new HerculesSinkGcSettings();
 
         /// <summary>
         /// <para>Timeout of requests to Hercules gate.</para>

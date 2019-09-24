@@ -2,6 +2,7 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Commons.Threading;
+using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Sink.Statistics;
@@ -20,6 +21,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.State
             state = new StreamState(
                 "stream",
                 Substitute.For<IBufferPool>(),
+                Substitute.For<IMemoryAnalyzer>(),
                 Substitute.For<IRecordWriter>(),
                 Substitute.For<IStatisticsCollector>(),
                 new AsyncManualResetEvent(false));

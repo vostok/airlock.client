@@ -5,20 +5,21 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 {
     internal class MemoryManager : IMemoryManager
     {
-        private readonly long maxSize;
         private readonly IMemoryManager underlyingManager;
         private long currentSize;
         private long lastReserveTicks;
 
         public MemoryManager(long maxSize, IMemoryManager underlyingManager = null)
         {
-            this.maxSize = maxSize;
+            MaximumSize = maxSize;
             this.underlyingManager = underlyingManager;
         }
 
         public long Capacity => Interlocked.Read(ref currentSize);
 
         public long LastReserveTicks => Interlocked.Read(ref lastReserveTicks);
+
+        public long MaximumSize { get; }
 
         public bool TryReserveBytes(long amount)
         {
@@ -28,7 +29,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             {
                 var tCurrentSize = Interlocked.Read(ref currentSize);
                 var newSize = tCurrentSize + amount;
-                if (newSize <= maxSize)
+                if (newSize <= MaximumSize)
                 {
                     if (Interlocked.CompareExchange(ref currentSize, newSize, tCurrentSize) == tCurrentSize)
                     {

@@ -1,24 +1,42 @@
 ﻿using System;
+using System.Linq;
 using Vostok.Hercules.Client.Sink.Buffers;
 
 namespace Vostok.Hercules.Client.Sink.Analyzer
 {
     internal class MemoryAnalyzer : IMemoryAnalyzer
     {
-        private readonly long freePeriodTicks;
+        private readonly IMemoryManager globalMemoryManager;
+        private readonly HerculesSinkGcSettings settings;
+        private long lastFreeMemoryAttemptTicks;
 
-        // CR(iloktionov): Isn't it true that in the absence of any activity this thing will eventually throw out all the buffers..?
-        // CR(iloktionov): I vote to add one or more limiting mechanics:
-        // CR(iloktionov): 1. Cooldown (probably the dumbest one)
-        // CR(iloktionov): 2. Min remaining buffers count
-        // CR(iloktionov): 3. Min memory limit utilization (>= x% of allowed memory allocated)
-
-        public MemoryAnalyzer(TimeSpan freePeriod)
+        public MemoryAnalyzer(IMemoryManager globalMemoryManager, HerculesSinkGcSettings settings)
         {
-            freePeriodTicks = freePeriod.Ticks;
+            this.globalMemoryManager = globalMemoryManager;
+            this.settings = settings;
         }
 
-        public bool ShouldFreeMemory(IReadOnlyMemoryManager memoryManager) =>
-            DateTime.UtcNow.Ticks - memoryManager.LastReserveTicks >= freePeriodTicks;
+        public bool ShouldFreeMemory(IBufferPool bufferPool)
+        {
+            var now = DateTime.UtcNow.Ticks;
+
+            if (now - bufferPool.MemoryManager.LastReserveTicks < settings.Period.Ticks)
+                return false;
+
+            if (now - lastFreeMemoryAttemptTicks < settings.Cooldown.Ticks)
+                return false;
+
+            if (globalMemoryManager.Capacity < settings.MinimumGlobalMemoryLimitUtilization * globalMemoryManager.MaximumSize)
+                return false;
+
+            if (bufferPool.MemoryManager.Capacity < settings.MinimumStreamMemoryLimitUtilization * bufferPool.MemoryManager.MaximumSize)
+                return false;
+
+            if (bufferPool.Count() < settings.MinimumBuffersLimitUtilization)
+                return false;
+
+            lastFreeMemoryAttemptTicks = now;
+            return true;
+        }
     }
 }

@@ -4,6 +4,6 @@ namespace Vostok.Hercules.Client.Sink.Analyzer
 {
     internal interface IMemoryAnalyzer
     {
-        bool ShouldFreeMemory(IReadOnlyMemoryManager memoryManager);
+        bool ShouldFreeMemory(IBufferPool bufferPool);
     }
 }

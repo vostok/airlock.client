@@ -27,7 +27,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
         private readonly IGateRequestSender gateRequestSender;
         private readonly IResponseAnalyzer responseAnalyzer;
         private readonly IStatusAnalyzer statusAnalyzer;
-        private readonly IMemoryAnalyzer memoryAnalyzer;
         private readonly ILog log;
 
         public StreamSender(
@@ -38,7 +37,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
             [NotNull] IGateRequestSender gateRequestSender,
             [NotNull] IResponseAnalyzer responseAnalyzer,
             [NotNull] IStatusAnalyzer statusAnalyzer,
-            [NotNull] IMemoryAnalyzer memoryAnalyzer,
             [NotNull] ILog log)
         {
             this.globalApiKeyProvider = globalApiKeyProvider;
@@ -48,7 +46,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
             this.gateRequestSender = gateRequestSender;
             this.responseAnalyzer = responseAnalyzer;
             this.statusAnalyzer = statusAnalyzer;
-            this.memoryAnalyzer = memoryAnalyzer;
             this.log = log;
         }
 
@@ -57,18 +54,24 @@ namespace Vostok.Hercules.Client.Sink.Sender
             var watch = Stopwatch.StartNew();
 
             IBuffer someBuffer = null;
-            if (memoryAnalyzer.ShouldFreeMemory(streamState.BufferPool.MemoryManager))
+            if (streamState.MemoryAnalyzer.ShouldFreeMemory(streamState.BufferPool))
                 streamState.BufferPool.TryAcquire(out someBuffer);
 
-            var currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken).ConfigureAwait(false);
+            HerculesStatus currentStatus;
 
-            // CR(iloktionov): Use try/finally. Otherwise any unexpected exception here will lead to a leak of MemoryManager's resource.
-            if (someBuffer != null)
+            try
             {
-                if (someBuffer.UsefulDataSize == 0)
-                    streamState.BufferPool.Free(someBuffer);
-                else
-                    streamState.BufferPool.Release(someBuffer);
+                currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (someBuffer != null)
+                {
+                    if (someBuffer.UsefulDataSize == 0)
+                        streamState.BufferPool.Free(someBuffer);
+                    else
+                        streamState.BufferPool.Release(someBuffer);
+                }
             }
 
             return new StreamSendResult(currentStatus, watch.Elapsed);

@@ -39,7 +39,6 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         private IGateRequestSender requestSender;
         private IResponseAnalyzer responseAnalyzer;
         private IStatusAnalyzer statusAnalyzer;
-        private IMemoryAnalyzer memoryAnalyzer;
         private StreamSettings settings;
 
         private CancellationTokenSource cancellation;
@@ -59,8 +58,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             contentFactory = new RequestContentFactory();
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
             statusAnalyzer = new StatusAnalyzer();
-            memoryAnalyzer = new MemoryAnalyzer(1.Minutes());
-
+            
             requestSender = Substitute.For<IGateRequestSender>();
 
             sender = new StreamSender(
@@ -71,7 +69,6 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
                 requestSender,
                 responseAnalyzer,
                 statusAnalyzer,
-                memoryAnalyzer,
                 new SynchronousConsoleLog());
 
             cancellation = new CancellationTokenSource();

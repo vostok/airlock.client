@@ -16,7 +16,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
         private readonly IGateRequestSender requestSender;
         private readonly IResponseAnalyzer responseAnalyzer;
         private readonly IStatusAnalyzer statusAnalyzer;
-        private readonly IMemoryAnalyzer memoryAnalyzer;
         private readonly ILog log;
 
         public StreamSenderFactory(HerculesSinkSettings settings, ILog log)
@@ -34,7 +33,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
             statusAnalyzer = new StatusAnalyzer();
-            memoryAnalyzer = new MemoryAnalyzer(settings.FreeMemoryPeriod);
         }
 
         public IStreamSender Create(IStreamState state) =>
@@ -46,7 +44,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 requestSender,
                 responseAnalyzer,
                 statusAnalyzer,
-                memoryAnalyzer,
                 log.ForContext(state.Name));
     }
 }
