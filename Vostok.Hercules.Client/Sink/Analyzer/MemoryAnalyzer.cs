@@ -26,10 +26,10 @@ namespace Vostok.Hercules.Client.Sink.Analyzer
             if (now - lastFreeMemoryAttemptTicks < settings.Cooldown.Ticks)
                 return false;
 
-            if (globalMemoryManager.Capacity < settings.MinimumGlobalMemoryLimitUtilization * globalMemoryManager.MaximumSize)
+            if (globalMemoryManager.Capacity < settings.MinimumGlobalMemoryLimitUtilization * globalMemoryManager.CapacityLimit)
                 return false;
 
-            if (bufferPool.MemoryManager.Capacity < settings.MinimumStreamMemoryLimitUtilization * bufferPool.MemoryManager.MaximumSize)
+            if (bufferPool.MemoryManager.Capacity < settings.MinimumStreamMemoryLimitUtilization * bufferPool.MemoryManager.CapacityLimit)
                 return false;
 
             if (bufferPool.Count() < settings.MinimumBuffersLimitUtilization)

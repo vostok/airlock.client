@@ -2,7 +2,7 @@
 {
     internal interface IReadOnlyMemoryManager
     {
-        long MaximumSize { get; }
+        long CapacityLimit { get; }
         long Capacity { get; }
         long LastReserveTicks { get; }
     }
