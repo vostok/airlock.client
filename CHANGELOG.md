@@ -1,3 +1,7 @@
+## 0.1.2 (04-09-2019)
+
+Added generic `HerculesTimelineClient<T>` supporting custom event builder.
+
 ## 0.1.1 (25-06-2019)
 
 - Added generic `HerculesStreamClient<T>` supporting custom event builder.
