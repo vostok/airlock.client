@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using Vostok.Commons.Collections;
 
 namespace Vostok.Hercules.Client.Sink.Buffers
 {
@@ -12,7 +14,8 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         private readonly int maxBufferSize;
 
         private readonly ConcurrentQueue<IBuffer> availableBuffers = new ConcurrentQueue<IBuffer>();
-        private readonly ConcurrentQueue<IBuffer> allBuffers = new ConcurrentQueue<IBuffer>();
+        private readonly ConcurrentQueue<IBuffer> fullBuffers = new ConcurrentQueue<IBuffer>();
+        private readonly ConcurrentDictionary<IBuffer, byte> allBuffers = new ConcurrentDictionary<IBuffer, byte>(ByReferenceEqualityComparer<IBuffer>.Instance);
 
         public BufferPool(
             IMemoryManager memoryManager,
@@ -26,9 +29,14 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             this.maxBufferSize = maxBufferSize;
         }
 
+        public IReadOnlyMemoryManager MemoryManager => memoryManager;
+
         public bool TryAcquire(out IBuffer buffer)
         {
-            var result = TryDequeueBuffer(out buffer) || TryCreateBuffer(out buffer);
+            var result = TryDequeueBuffer(out buffer, availableBuffers) ||
+                         TryDequeueBuffer(out buffer, fullBuffers) ||
+                         TryCreateBuffer(out buffer);
+
             if (result)
                 (buffer as Buffer)?.CollectGarbage();
 
@@ -39,27 +47,36 @@ namespace Vostok.Hercules.Client.Sink.Buffers
         {
             Unlock(buffer);
 
-            availableBuffers.Enqueue(buffer);
+            if (buffer.UsefulDataSize + maxRecordSize <= buffer.Capacity)
+                availableBuffers.Enqueue(buffer);
+            else
+                fullBuffers.Enqueue(buffer);
         }
 
-        public IEnumerator<IBuffer> GetEnumerator() => allBuffers.GetEnumerator();
+        public void Free(IBuffer buffer)
+        {
+            allBuffers.TryRemove(buffer, out _);
+            memoryManager.ReleaseBytes(buffer.Capacity);
+        }
+
+        public IEnumerator<IBuffer> GetEnumerator() => allBuffers.Select(kvp => kvp.Key).GetEnumerator();
 
         private static void Unlock(IBuffer buffer) => (buffer as Buffer)?.Unlock();
         private static bool TryLock(IBuffer buffer) => (buffer as Buffer)?.TryLock() ?? true;
 
-        private bool TryDequeueBuffer(out IBuffer buffer)
+        private bool TryDequeueBuffer(out IBuffer buffer, ConcurrentQueue<IBuffer> queue)
         {
             const int dequeueAttempts = 3;
 
             for (var i = 0; i < dequeueAttempts; ++i)
             {
-                if (!availableBuffers.TryDequeue(out buffer))
+                if (!queue.TryDequeue(out buffer))
                     return false;
 
                 if (buffer.UsefulDataSize <= maxBufferSize - maxRecordSize && TryLock(buffer))
                     return true;
 
-                availableBuffers.Enqueue(buffer);
+                queue.Enqueue(buffer);
             }
 
             buffer = null;
@@ -78,9 +95,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
 
             TryLock(buffer);
 
-            allBuffers.Enqueue(buffer);
-
-            return true;
+            return allBuffers.TryAdd(buffer, byte.MinValue);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

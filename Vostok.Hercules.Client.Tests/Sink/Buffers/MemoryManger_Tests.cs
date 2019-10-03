@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -16,8 +17,9 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
         public void Setup()
         {
             underlyingMemoryManager = Substitute.For<IMemoryManager>();
+            underlyingMemoryManager.TryReserveBytes(0).ReturnsForAnyArgs(true);
+
             memoryManager = new MemoryManager(MaxSize, underlyingMemoryManager);
-            memoryManager.TryReserveBytes(0).ReturnsForAnyArgs(true);
         }
 
         [Test]
@@ -34,6 +36,48 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
                 memoryManager.TryReserveBytes(10);
 
             memoryManager.TryReserveBytes(1).Should().BeFalse();
+        }
+
+        [Test]
+        public void ReleaseBytes_should_works_correctly()
+        {
+            for (var i = 0; i < 10; ++i)
+                memoryManager.TryReserveBytes(10);
+
+            memoryManager.TryReserveBytes(1).Should().BeFalse();
+
+            memoryManager.ReleaseBytes(1);
+
+            memoryManager.TryReserveBytes(1).Should().BeTrue();
+            memoryManager.TryReserveBytes(1).Should().BeFalse();
+        }
+
+        [Test]
+        public void Capacity_should_works_correctly()
+        {
+            for (var i = 0; i < 10; ++i)
+            {
+                memoryManager.TryReserveBytes(10);
+                memoryManager.Capacity.Should().Be((i + 1) * 10);
+            }
+
+            memoryManager.TryReserveBytes(1).Should().BeFalse();
+            memoryManager.Capacity.Should().Be(MaxSize);
+
+            memoryManager.ReleaseBytes(9);
+            memoryManager.Capacity.Should().Be(MaxSize - 9);
+        }
+
+        [Test]
+        public void LastReserveTicks_should_works_correctly()
+        {
+            memoryManager.LastReserveTicks.Should().Be(0);
+
+            var before = DateTime.UtcNow.Ticks;
+            memoryManager.TryReserveBytes(1);
+            var after = DateTime.UtcNow.Ticks;
+
+            memoryManager.LastReserveTicks.Should().BeInRange(before, after);
         }
 
         [TestCase(true, 10)]

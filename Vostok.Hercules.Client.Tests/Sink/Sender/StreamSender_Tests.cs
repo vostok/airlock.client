@@ -58,7 +58,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             contentFactory = new RequestContentFactory();
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
             statusAnalyzer = new StatusAnalyzer();
-
+            
             requestSender = Substitute.For<IGateRequestSender>();
 
             sender = new StreamSender(
@@ -209,7 +209,6 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             Send();
 
-            stats.ReceivedCalls().Should().HaveCount(3);
             stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 56);
             stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 132);
             stats.Received(1).ReportSuccessfulSending(RecordsPerBuffer, 13);
@@ -224,7 +223,6 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             Send();
 
-            stats.ReceivedCalls().Should().HaveCount(3);
             stats.Received(1).ReportSendingFailure(RecordsPerBuffer, 56);
             stats.Received(1).ReportSendingFailure(RecordsPerBuffer, 132);
             stats.Received(1).ReportSendingFailure(RecordsPerBuffer, 13);
@@ -237,7 +235,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             Send();
 
-            stats.ReceivedCalls().Should().BeEmpty();
+            stats.Received(0).ReportSendingFailure(Arg.Any<long>(), Arg.Any<long>());
         }
 
         private void SetupBuffers(params int?[] snapshotSizes)

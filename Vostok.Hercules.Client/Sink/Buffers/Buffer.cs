@@ -116,5 +116,7 @@ namespace Vostok.Hercules.Client.Sink.Buffers
             // (epeshk): reset garbage state last for synchronization with TryMakeSnapshot:
             garbage.Value = default;
         }
+
+        long IBuffer.Capacity => Capacity;
     }
 }

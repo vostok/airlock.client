@@ -2,6 +2,7 @@ using System;
 using JetBrains.Annotations;
 using Vostok.Commons.Threading;
 using Vostok.Commons.Time;
+using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Statistics;
 using Vostok.Hercules.Client.Sink.Writing;
@@ -33,8 +34,9 @@ namespace Vostok.Hercules.Client.Sink.State
             var sendSignal = new AsyncManualResetEvent(false);
             var bufferPool = CreateBufferPool();
             var recordWriter = CreateRecordWriter(name, statistics, sendSignal);
+            var memoryAnalyzer = new MemoryAnalyzer(globalMemoryManager, settings.GcSettings);
 
-            return new StreamState(name, bufferPool, recordWriter, statistics, sendSignal);
+            return new StreamState(name, bufferPool, memoryAnalyzer, recordWriter, statistics, sendSignal);
         }
 
         private IBufferPool CreateBufferPool()

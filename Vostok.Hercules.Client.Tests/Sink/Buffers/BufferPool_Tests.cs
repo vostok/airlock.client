@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -168,6 +169,20 @@ namespace Vostok.Hercules.Client.Tests.Sink.Buffers
             bufferPool.TryAcquire(out var secondBuffer).Should().BeTrue();
 
             secondBuffer.Should().NotBeSameAs(buffer);
+        }
+
+        [Test]
+        public void Free_should_remove_buffer_and_release_memory()
+        {
+            bufferPool.TryAcquire(out var first);
+            bufferPool.TryAcquire(out var second);
+
+            bufferPool.Free(first);
+            bufferPool.Release(second);
+
+            bufferPool.Should().BeEquivalentTo(second);
+            memoryManager.Received(2).TryReserveBytes(InitialBufferSize);
+            memoryManager.Received().ReleaseBytes(InitialBufferSize);
         }
     }
 }

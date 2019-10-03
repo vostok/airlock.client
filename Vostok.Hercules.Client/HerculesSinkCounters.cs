@@ -9,12 +9,13 @@ namespace Vostok.Hercules.Client
     public class HerculesSinkCounters
     {
         public static readonly HerculesSinkCounters Zero
-            = new HerculesSinkCounters((0, 0), (0, 0), (0, 0), 0, 0, 0);
+            = new HerculesSinkCounters((0, 0), (0, 0), (0, 0), 0, 0, 0, 0);
 
-        public HerculesSinkCounters(
+        internal HerculesSinkCounters(
             (long Count, long Size) sentRecords,
             (long Count, long Size) rejectedRecords,
             (long Count, long Size) storedRecords,
+            long capacity,
             long recordsLostDueToBuildFailures,
             long recordsLostDueToSizeLimit,
             long recordsLostDueToOverflows)
@@ -22,6 +23,7 @@ namespace Vostok.Hercules.Client
             SentRecords = sentRecords;
             RejectedRecords = rejectedRecords;
             StoredRecords = storedRecords;
+            Capacity = capacity;
             RecordsLostDueToBuildFailures = recordsLostDueToBuildFailures;
             RecordsLostDueToSizeLimit = recordsLostDueToSizeLimit;
             RecordsLostDueToOverflows = recordsLostDueToOverflows;
@@ -41,6 +43,11 @@ namespace Vostok.Hercules.Client
         /// Records that are currently stored in internal buffers and waiting to be sent.
         /// </summary>
         public (long Count, long Size) StoredRecords { get; }
+
+        /// <summary>
+        /// Returns total current length of the buffers, including its free regions.
+        /// </summary>
+        public long Capacity { get; }
 
         /// <summary>
         /// Returns how many records have been lost in total, whatever the reason.
@@ -75,6 +82,7 @@ namespace Vostok.Hercules.Client
                 Sum(left.SentRecords, right.SentRecords),
                 Sum(left.RejectedRecords, right.RejectedRecords),
                 Sum(left.StoredRecords, right.StoredRecords),
+                left.Capacity + right.Capacity,
                 left.RecordsLostDueToBuildFailures + right.RecordsLostDueToBuildFailures,
                 left.RecordsLostDueToSizeLimit + right.RecordsLostDueToSizeLimit,
                 left.RecordsLostDueToOverflows + right.RecordsLostDueToOverflows);
@@ -85,12 +93,13 @@ namespace Vostok.Hercules.Client
         /// <summary>
         /// Subtracts two <see cref="HerculesSinkCounters"/> field-by-field.
         /// </summary>
-        public static HerculesSinkCounters operator -(HerculesSinkCounters left, HerculesSinkCounters right)
+        public static HerculesSinkCounters operator-(HerculesSinkCounters left, HerculesSinkCounters right)
         {
             return new HerculesSinkCounters(
                 Sub(left.SentRecords, right.SentRecords),
                 Sub(left.RejectedRecords, right.RejectedRecords),
                 Sub(left.StoredRecords, right.StoredRecords),
+                left.Capacity - right.Capacity,
                 left.RecordsLostDueToBuildFailures - right.RecordsLostDueToBuildFailures,
                 left.RecordsLostDueToSizeLimit - right.RecordsLostDueToSizeLimit,
                 left.RecordsLostDueToOverflows - right.RecordsLostDueToOverflows);

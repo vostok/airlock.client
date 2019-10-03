@@ -52,18 +52,26 @@ namespace Vostok.Hercules.Client.Sink.Sender
         public async Task<StreamSendResult> SendAsync(TimeSpan perRequestTimeout, CancellationToken cancellationToken)
         {
             var watch = Stopwatch.StartNew();
-            var snapshots = CollectSnapshots();
-            var batches = snapshotBatcher.Batch(snapshots);
-            var currentStatus = HerculesStatus.Success;
 
-            foreach (var batch in batches)
+            IBuffer someBuffer = null;
+            if (streamState.MemoryAnalyzer.ShouldFreeMemory(streamState.BufferPool))
+                streamState.BufferPool.TryAcquire(out someBuffer);
+
+            HerculesStatus currentStatus;
+
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                currentStatus = await SendBatchAsync(batch, perRequestTimeout, cancellationToken).ConfigureAwait(false);
-
-                if (!statusAnalyzer.ShouldDropStoredRecords(currentStatus))
-                    break;
+                currentStatus = await SendInnerAsync(perRequestTimeout, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (someBuffer != null)
+                {
+                    if (someBuffer.UsefulDataSize == 0)
+                        streamState.BufferPool.Free(someBuffer);
+                    else
+                        streamState.BufferPool.Release(someBuffer);
+                }
             }
 
             return new StreamSendResult(currentStatus, watch.Elapsed);
@@ -73,6 +81,25 @@ namespace Vostok.Hercules.Client.Sink.Sender
         {
             foreach (var snapshot in snapshots)
                 snapshot.Source.ReportGarbage(snapshot.State);
+        }
+
+        private async Task<HerculesStatus> SendInnerAsync(TimeSpan perRequestTimeout, CancellationToken cancellationToken)
+        {
+            var currentStatus = HerculesStatus.Success;
+
+            var snapshots = CollectSnapshots();
+
+            foreach (var batch in snapshotBatcher.Batch(snapshots))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                currentStatus = await SendBatchAsync(batch, perRequestTimeout, cancellationToken).ConfigureAwait(false);
+
+                if (!statusAnalyzer.ShouldDropStoredRecords(currentStatus))
+                    break;
+            }
+
+            return currentStatus;
         }
 
         [NotNull]

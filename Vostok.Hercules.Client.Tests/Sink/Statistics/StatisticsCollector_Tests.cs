@@ -192,5 +192,16 @@ namespace Vostok.Hercules.Client.Tests.Sink.Statistics
                 collector.GetCounters().TotalLostRecords.Should().Be(i);
             }
         }
+
+        [Test]
+        public void ReportReservedSize_should_set_reserved_size()
+        {
+            for (var i = 1; i <= 5; i++)
+            {
+                collector.ReportCapacity(i);
+
+                collector.GetCounters().Capacity.Should().Be(i);
+            }
+        }
     }
 }
