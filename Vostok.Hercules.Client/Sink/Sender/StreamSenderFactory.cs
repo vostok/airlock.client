@@ -11,7 +11,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal class StreamSenderFactory : IStreamSenderFactory
     {
-        private static readonly Dictionary<LogLevel, LogLevel> SuppressVerboseLoggingLevelsTransformation = new Dictionary<LogLevel, LogLevel>()
+        private static readonly IReadOnlyDictionary<LogLevel, LogLevel> SuppressVerboseLoggingLevelsTransformation = new Dictionary<LogLevel, LogLevel>()
         {
             [LogLevel.Error] = LogLevel.Warn
         };
