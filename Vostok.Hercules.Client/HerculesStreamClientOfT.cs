@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
+using Vostok.ClusterClient.LZ4;
 using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Collections;
@@ -51,6 +52,11 @@ namespace Vostok.Hercules.Client
                             BufferFactory = bufferPool.Rent
                         });
                     config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
+                    config.SetupLZ4Compression(new ClusterClientLZ4Configuration
+                    {
+                        RentBuffer = bufferPool.Rent,
+                        ReturnBuffer = buffer => bufferPool.Return(buffer)
+                    });
                     settings.AdditionalSetup?.Invoke(config);
                 });
 
