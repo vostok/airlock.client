@@ -12,13 +12,13 @@ namespace Vostok.Hercules.Client.Client
     internal static class ClusterClientFactory
     {
         [NotNull]
-        public static Clusterclient.Core.ClusterClient Create(
+        public static ClusterClient Create(
             [NotNull] IClusterProvider clusterProvider,
             [NotNull] ILog log,
             [NotNull] string serviceName,
             [CanBeNull] ClusterClientSetup additionalSetup)
         {
-            return new Clusterclient.Core.ClusterClient(
+            return new ClusterClient(
                 log,
                 configuration =>
                 {
