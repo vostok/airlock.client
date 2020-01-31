@@ -11,7 +11,6 @@ notests *default:
     - module vostok.clusterclient.core
 
   deps:
-    - vostok.clusterclient.lz4
     - vostok.devtools
     - vostok.hercules.client.abstractions
     - vostok.logging.abstractions
