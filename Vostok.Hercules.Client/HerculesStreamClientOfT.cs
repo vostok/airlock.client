@@ -2,9 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Kontur.Lz4;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
-using Vostok.ClusterClient.LZ4;
 using Vostok.Clusterclient.Transport;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Collections;
@@ -52,11 +52,7 @@ namespace Vostok.Hercules.Client
                             BufferFactory = bufferPool.Rent
                         });
                     config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
-                    config.SetupLZ4Compression(new ClusterClientLZ4Configuration
-                    {
-                        RentBuffer = bufferPool.Rent,
-                        ReturnBuffer = buffer => bufferPool.Return(buffer)
-                    });
+                    config.AddResponseTransform(TryDecompress);
                     settings.AdditionalSetup?.Invoke(config);
                 });
 
@@ -83,6 +79,7 @@ namespace Vostok.Hercules.Client
                 var request = Request
                     .Post(url)
                     .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
+                    .WithAcceptEncodingHeader(Constants.Compression.Lz4Encoding)
                     .WithContent(body);
 
                 var result = await client
@@ -186,6 +183,26 @@ namespace Vostok.Hercules.Client
             var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider, log);
 
             return new ReadStreamPayload<T>(events, coordinates);
+        }
+
+        private Response TryDecompress(Response response)
+        {
+            if (!response.HasContent
+                || response.Headers[HeaderNames.ContentEncoding] != Constants.Compression.Lz4Encoding
+                || !int.TryParse(response.Headers[Constants.Compression.OriginalContentLengthHeaderName], out var originalContentLength))
+                return response;
+
+            return response
+                .RemoveHeader(HeaderNames.ContentEncoding)
+                .WithContent(Decompress(response.Content, originalContentLength));
+        }
+
+        private Content Decompress(Content content, int originalContentLength)
+        {
+            var output = bufferPool.Rent(originalContentLength);
+            LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, output, 0, originalContentLength, true);
+            bufferPool.Return(content.Buffer);
+            return new Content(output, 0, originalContentLength);
         }
     }
 }
