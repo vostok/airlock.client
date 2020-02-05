@@ -36,7 +36,8 @@ namespace Vostok.Hercules.Client.Sink.Job
             }
             catch (Exception error)
             {
-                log.Error(error);
+                if (!cancellationToken.IsCancellationRequested)
+                    log.Error(error);
             }
         }
 
