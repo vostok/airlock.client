@@ -6,8 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
-using Vostok.Commons.Binary;
-using Vostok.Commons.Collections;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
@@ -22,11 +20,6 @@ namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal class StreamSender : IStreamSender
     {
-        private const int InitialBodyBufferSize = 4096;
-
-        private readonly UnboundedObjectPool<BinaryBufferWriter> bufferPool
-            = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big});
-
         private readonly Func<string> globalApiKeyProvider;
         private readonly IStreamState streamState;
         private readonly IBufferSnapshotBatcher snapshotBatcher;

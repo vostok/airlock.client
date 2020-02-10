@@ -33,11 +33,7 @@ namespace Vostok.Hercules.Client.Gate
             => SendAsync("stream/send", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
 
         public Task<Response> FireAndForgetAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) =>
-            SendAsync("stream/sendAsync", stream, apiKey, r =>
-            {
-                Console.WriteLine("Adding body");
-                return r.WithContent(content);
-            }, timeout, cancellationToken);
+            SendAsync("stream/sendAsync", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
 
         private async Task<Response> SendAsync(
             [NotNull] string path,
@@ -55,7 +51,7 @@ namespace Vostok.Hercules.Client.Gate
                 request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
 
             request = addBody(request);
-            
+
             var result = await client
                 .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
                 .ConfigureAwait(false);
@@ -72,12 +68,13 @@ namespace Vostok.Hercules.Client.Gate
                 .WithContentEncodingHeader(Constants.Compression.Lz4Encoding)
                 .WithHeader(Constants.Compression.OriginalContentLengthHeaderName, request.Content.Length)
                 .WithContent(Compress(request.Content));
-            
+
             return request;
         }
 
         private Content Compress(Content content)
         {
+            // TODO(kungurtsev): use buffer.
             var newContent = LZ4Codec.Encode(content.Buffer, content.Offset, content.Length);
             return new Content(newContent);
         }
