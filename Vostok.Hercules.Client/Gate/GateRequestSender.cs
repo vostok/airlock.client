@@ -29,8 +29,8 @@ namespace Vostok.Hercules.Client.Gate
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, newAdditionalSetup);
         }
 
-        public Task<Response> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken)
-            => SendAsync("stream/send", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
+        public Task<Response> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) =>
+            SendAsync("stream/send", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
 
         public Task<Response> FireAndForgetAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) =>
             SendAsync("stream/sendAsync", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
