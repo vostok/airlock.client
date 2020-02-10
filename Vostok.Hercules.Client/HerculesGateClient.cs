@@ -23,7 +23,7 @@ namespace Vostok.Hercules.Client
     {
         private const int InitialBodyBufferSize = 4096;
 
-        private readonly UnboundedObjectPool<BinaryBufferWriter> BufferPool
+        private readonly UnboundedObjectPool<BinaryBufferWriter> bufferPool
             = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big});
 
         private readonly HerculesGateClientSettings settings;
@@ -48,7 +48,7 @@ namespace Vostok.Hercules.Client
         {
             try
             {
-                using (BufferPool.Acquire(out var buffer))
+                using (bufferPool.Acquire(out var buffer))
                 {
                     buffer.Reset();
 

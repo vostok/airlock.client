@@ -146,7 +146,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), "custom", Arg.Any<CompositeContent>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
+            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), "custom", Arg.Any<Content>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -154,7 +154,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), GlobalApiKey, Arg.Any<CompositeContent>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
+            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), GlobalApiKey, Arg.Any<Content>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -162,7 +162,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(StreamName, Arg.Any<string>(), Arg.Any<CompositeContent>(), Timeout, cancellation.Token);
+            requestSender.Received(3).FireAndForgetAsync(StreamName, Arg.Any<string>(), Arg.Any<Content>(), Timeout, cancellation.Token);
         }
 
         [Test]
@@ -272,7 +272,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             requestSender.FireAndForgetAsync(
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<CompositeContent>(),
+                    Arg.Any<Content>(),
                     Arg.Any<TimeSpan>(),
                     Arg.Any<CancellationToken>())
                 .Returns(new Response(codes.First()), codes.Skip(1).Select(code => new Response(code)).ToArray());

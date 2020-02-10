@@ -13,7 +13,6 @@ namespace Vostok.Hercules.Client.Gate
 {
     internal class GateRequestSender : IGateRequestSender
     {
-        private readonly ILog log;
         private readonly IClusterClient client;
 
         public GateRequestSender(
@@ -21,10 +20,9 @@ namespace Vostok.Hercules.Client.Gate
             [NotNull] ILog log,
             [CanBeNull] ClusterClientSetup additionalSetup)
         {
-            this.log = log;
             ClusterClientSetup newAdditionalSetup = configuration =>
             {
-                configuration.AddRequestTransform(request => Compress(request));
+                //configuration.AddRequestTransform(request => Compress(request));
                 additionalSetup?.Invoke(configuration);
             };
 
@@ -34,7 +32,7 @@ namespace Vostok.Hercules.Client.Gate
         public Task<Response> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken)
             => SendAsync("stream/send", stream, apiKey, r => r.WithContent(content), timeout, cancellationToken);
 
-        public Task<Response> FireAndForgetAsync(string stream, string apiKey, CompositeContent content, TimeSpan timeout, CancellationToken cancellationToken) =>
+        public Task<Response> FireAndForgetAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) =>
             SendAsync("stream/sendAsync", stream, apiKey, r =>
             {
                 Console.WriteLine("Adding body");

@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
+using Vostok.Commons.Binary;
+using Vostok.Commons.Collections;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
@@ -20,6 +22,11 @@ namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal class StreamSender : IStreamSender
     {
+        private const int InitialBodyBufferSize = 4096;
+
+        private readonly UnboundedObjectPool<BinaryBufferWriter> bufferPool
+            = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big});
+
         private readonly Func<string> globalApiKeyProvider;
         private readonly IStreamState streamState;
         private readonly IBufferSnapshotBatcher snapshotBatcher;
@@ -117,29 +124,30 @@ namespace Vostok.Hercules.Client.Sink.Sender
         {
             var watch = Stopwatch.StartNew();
 
-            var body = contentFactory.CreateContent(batch, out var recordsCount, out var recordsSize);
-
-            var response = await gateRequestSender
-                .FireAndForgetAsync(streamState.Name, ObtainApiKey(), body, timeout, cancellationToken)
-                .ConfigureAwait(false);
-
-            var status = responseAnalyzer.Analyze(response, out _);
-            if (statusAnalyzer.ShouldDropStoredRecords(status))
+            using (var content = contentFactory.CreateContent(batch, out var recordsCount, out var recordsSize))
             {
-                RequestGarbageCollection(batch);
+                var response = await gateRequestSender
+                    .FireAndForgetAsync(streamState.Name, ObtainApiKey(), content.Value, timeout, cancellationToken)
+                    .ConfigureAwait(false);
+
+                var status = responseAnalyzer.Analyze(response, out _);
+                if (statusAnalyzer.ShouldDropStoredRecords(status))
+                {
+                    RequestGarbageCollection(batch);
+
+                    if (status == HerculesStatus.Success)
+                        streamState.Statistics.ReportSuccessfulSending(recordsCount, recordsSize);
+                    else
+                        streamState.Statistics.ReportSendingFailure(recordsCount, recordsSize);
+                }
 
                 if (status == HerculesStatus.Success)
-                    streamState.Statistics.ReportSuccessfulSending(recordsCount, recordsSize);
+                    LogBatchSendSuccess(recordsCount, recordsSize, watch.Elapsed);
                 else
-                    streamState.Statistics.ReportSendingFailure(recordsCount, recordsSize);
+                    LogBatchSendFailure(recordsCount, recordsSize, response.Code, status);
+
+                return status;
             }
-
-            if (status == HerculesStatus.Success)
-                LogBatchSendSuccess(recordsCount, recordsSize, watch.Elapsed);
-            else
-                LogBatchSendFailure(recordsCount, recordsSize, response.Code, status);
-
-            return status;
         }
 
         private void LogBatchSendSuccess(int recordsCount, long recordsSize, TimeSpan elapsed)

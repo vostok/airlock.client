@@ -18,7 +18,7 @@ namespace Vostok.Hercules.Client.Gate
         Task<Response> FireAndForgetAsync(
             [NotNull] string stream,
             [CanBeNull] string apiKey,
-            [NotNull] CompositeContent content,
+            [NotNull] Content content,
             TimeSpan timeout,
             CancellationToken cancellationToken);
     }
