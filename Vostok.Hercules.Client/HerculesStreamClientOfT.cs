@@ -199,10 +199,10 @@ namespace Vostok.Hercules.Client
 
         private Content Decompress(Content content, int originalContentLength)
         {
-            var output = bufferPool.Rent(originalContentLength);
-            LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, output, 0, originalContentLength, true);
+            var buffer = bufferPool.Rent(originalContentLength);
+            LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, buffer, 0, originalContentLength, true);
             bufferPool.Return(content.Buffer);
-            return new Content(output, 0, originalContentLength);
+            return new Content(buffer, 0, originalContentLength);
         }
     }
 }
