@@ -22,7 +22,7 @@ namespace Vostok.Hercules.Client.Gate
         {
             ClusterClientSetup newAdditionalSetup = configuration =>
             {
-                //configuration.AddRequestTransform(request => Compress(request));
+                configuration.AddRequestTransform(request => Compress(request));
                 additionalSetup?.Invoke(configuration);
             };
 
@@ -47,8 +47,6 @@ namespace Vostok.Hercules.Client.Gate
             TimeSpan timeout,
             CancellationToken cancellationToken)
         {
-            Console.WriteLine("hello1");
-
             var request = Request.Post(path)
                 .WithAdditionalQueryParameter(Constants.QueryParameters.Stream, stream)
                 .WithContentTypeHeader(Constants.ContentTypes.OctetStream);
@@ -67,20 +65,14 @@ namespace Vostok.Hercules.Client.Gate
 
         private Request Compress(Request request)
         {
-            Console.WriteLine("Compress ..");
-
             if (request.Content == null)
                 return request;
-
-            Console.WriteLine($"Before compress: {request.Content.Length}.");
 
             request = request
                 .WithContentEncodingHeader(Constants.Compression.Lz4Encoding)
                 .WithHeader(Constants.Compression.OriginalContentLengthHeaderName, request.Content.Length)
                 .WithContent(Compress(request.Content));
-
-            Console.WriteLine($"After compress: {request.Content.Length}.");
-
+            
             return request;
         }
 

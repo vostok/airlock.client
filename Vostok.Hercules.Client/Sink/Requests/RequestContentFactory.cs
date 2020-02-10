@@ -14,7 +14,7 @@ namespace Vostok.Hercules.Client.Sink.Requests
         private const int InitialBodyBufferSize = 4096;
 
         private readonly UnboundedObjectPool<BinaryBufferWriter> bufferPool
-            = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) { Endianness = Endianness.Big });
+            = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big});
 
         public ValueDisposable<Content> CreateContent(IReadOnlyList<BufferSnapshot> snapshots, out int recordsCount, out int recordsSize)
         {
@@ -26,16 +26,17 @@ namespace Vostok.Hercules.Client.Sink.Requests
 
             var disposable = bufferPool.Acquire(out var writer);
 
+            writer.Reset();
             writer.Write(recordsCount);
 
             foreach (var snapshot in snapshots)
             {
                 var data = snapshot.Data;
-                
+
                 if (data.Array != null)
                     writer.WriteWithoutLength(data.Array, data.Offset, data.Count);
             }
-            
+
             return new ValueDisposable<Content>(new Content(writer.FilledSegment), disposable);
         }
     }
