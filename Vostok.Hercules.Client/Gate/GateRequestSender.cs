@@ -72,9 +72,10 @@ namespace Vostok.Hercules.Client.Gate
 
         private Content Compress(Content content)
         {
-            var buffer = bufferPool.Rent(content.Length + 1024);
-            var length = LZ4Codec.Encode(content.Buffer, content.Offset, content.Length, buffer, 0, buffer.Length);
-            return new Content(buffer, 0, length);
+            var maximumCompressedLength = content.Length + content.Length / 255 + 1024;
+            var buffer = bufferPool.Rent(maximumCompressedLength);
+            var compressedLength = LZ4Codec.Encode(content.Buffer, content.Offset, content.Length, buffer, 0, buffer.Length);
+            return new Content(buffer, 0, compressedLength);
         }
     }
 }
