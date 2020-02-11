@@ -25,6 +25,8 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesStreamClient<T> : IHerculesStreamClient<T>
     {
+        // CR(iloktionov): Move buffer constants to HerculesStreamClientSettings.
+
         private const int MaxPooledBufferSize = 16 * 1024 * 1024;
         private const int MaxPooledBuffersPerBucket = 8;
 
@@ -192,6 +194,7 @@ namespace Vostok.Hercules.Client
                 || !int.TryParse(response.Headers[Constants.Compression.OriginalContentLengthHeaderName], out var originalContentLength))
                 return response;
 
+            // CR(iloktionov): What's the point of RemoveHeader call here? We never expose any of these responses to the user.
             return response
                 .RemoveHeader(HeaderNames.ContentEncoding)
                 .WithContent(Decompress(response.Content, originalContentLength));
@@ -200,6 +203,7 @@ namespace Vostok.Hercules.Client
         private Content Decompress(Content content, int originalContentLength)
         {
             var buffer = bufferPool.Rent(originalContentLength);
+            // CR(iloktionov): Could Decode return something other than originalContentLength in failure scenarios? Should we check it?
             LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, buffer, 0, originalContentLength, true);
             bufferPool.Return(content.Buffer);
             return new Content(buffer, 0, originalContentLength);

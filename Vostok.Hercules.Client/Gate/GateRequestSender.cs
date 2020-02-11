@@ -12,8 +12,12 @@ using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Gate
 {
+    // CR(iloktionov): Dispose of the outer pooled buffer ASAP (be sure to protect against double dispose though)
+
     internal class GateRequestSender : IGateRequestSender
     {
+        // CR(iloktionov): Move buffer consts to settings.
+
         private const int MaxPooledBufferSize = 16 * 1024 * 1024;
         private const int MaxPooledBuffersPerBucket = 8;
 
@@ -72,8 +76,10 @@ namespace Vostok.Hercules.Client.Gate
 
         private Content Compress(Content content)
         {
+            // CR(iloktionov): Some proof of this formula's correctness would be nice. How do we know for sure that compressed content can't grow larger?
             var maximumCompressedLength = content.Length + content.Length / 255 + 1024;
             var buffer = bufferPool.Rent(maximumCompressedLength);
+            // CR(iloktionov): Better make sure we can't silently return incomplete/corrupted data. Maybe check the result of Encode call?
             var compressedLength = LZ4Codec.Encode(content.Buffer, content.Offset, content.Length, buffer, 0, buffer.Length);
             return new Content(buffer, 0, compressedLength);
         }

@@ -25,6 +25,8 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesTimelineClient<T> : IHerculesTimelineClient<T>
     {
+        // CR(iloktionov): Move buffer constants to HerculesTimelineClientSettings.
+
         private const int MaxPooledBufferSize = 16 * 1024 * 1024;
         private const int MaxPooledBuffersPerBucket = 8;
 
