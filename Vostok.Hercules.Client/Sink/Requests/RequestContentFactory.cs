@@ -18,10 +18,6 @@ namespace Vostok.Hercules.Client.Sink.Requests
             this.bufferPool = bufferPool;
         }
 
-        //// CR(iloktionov): Reuse the same buffer pool with GateRequestSender. We don't actually need to pool BinaryBufferWriters here due to size known in advance.
-        //private readonly UnboundedObjectPool<BinaryBufferWriter> bufferPool
-        //    = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big});
-
         public ValueDisposable<Content> CreateContent(IReadOnlyList<BufferSnapshot> snapshots, out int recordsCount, out int recordsSize)
         {
             if (snapshots.Count == 0)

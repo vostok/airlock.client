@@ -1,7 +1,5 @@
 namespace Vostok.Hercules.Client
 {
-    // CR(iloktionov): Common — include merged assemblies in ILRepack build task instead of excluding everything else.
-
     internal static class Constants
     {
         public const byte EventProtocolVersion = 1;

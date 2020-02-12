@@ -63,7 +63,6 @@
       <Publish Condition=" '%(PackageReference.Publish)' != 'false' ">true</Publish>
     </PackageReference>
   </ItemGroup>
-
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
     <ILRepackExecutable>"$(MSBuildThisFileDirectory)..\..\vostok.devtools.ilrepack.bin\net40\ILRepack.exe"</ILRepackExecutable>
   </PropertyGroup>
@@ -88,18 +87,13 @@
     </ItemGroup>
     <Delete Files="@(OldPubDirFiles)" />
   </Target>
-  <Target Name="Publishing" AfterTargets="SetupILRepackProperties" Condition="'$(Configuration)' != 'Publish'">
+  <Target Name="Publishing" AfterTargets="CleanPublishDir" Condition="'$(Configuration)' != 'Publish'">
     <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet publish -c Publish -f $(TargetFramework)" />
   </Target>
   <Target Name="RepackAssemblies" AfterTargets="Publishing" Condition="'$(Configuration)' != 'Publish'">
     <ItemGroup>
       <MergeAssemblies Include="$(ProjectDir)$(OutputPath)$(AssemblyName).dll" />
-      <MergeAssemblies Include="$(PubDir)*.dll" />
-      <MergeAssemblies Remove="$(PubDir)$(AssemblyName).dll" />
-      <MergeAssemblies Remove="$(PubDir)Vostok.ClusterClient.Core.dll" />
-      <MergeAssemblies Remove="$(PubDir)Vostok.ClusterClient.Transport.dll" />
-      <MergeAssemblies Remove="$(PubDir)Vostok.Hercules.Client.Abstractions.dll" />
-      <MergeAssemblies Remove="$(PubDir)Vostok.Logging.Abstractions.dll" />
+      <MergeAssemblies Include="$(PubDir)Kontur.Lz4.dll" />
     </ItemGroup>
     <Exec WorkingDirectory="$(PubDir)" Command="$(ILRepackExecutable) /internalize /renameInternalized /log:ilrepack.log /lib:&quot;$(PubDirWithoutSlash)&quot; /out:$(ProjectDir)$(OutputPath)$(AssemblyName).dll @(MergeAssemblies->'%(RelativeDir)%(FileName)%(Extension)', ' ')" />
   </Target>
