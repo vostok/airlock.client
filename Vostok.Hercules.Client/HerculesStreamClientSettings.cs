@@ -34,5 +34,15 @@ namespace Vostok.Hercules.Client
         /// </summary>
         [CanBeNull]
         public ClusterClientSetup AdditionalSetup { get; set; }
+
+        /// <summary>
+        /// Maximum size of pooled buffer used for requests.
+        /// </summary>
+        public int MaxPooledBufferSize { get; set; } = 16 * 1024 * 1024;
+
+        /// <summary>
+        /// Maximum amount of pooled buffers per bucket used for requests.
+        /// </summary>
+        public int MaxPooledBuffersPerBucket { get; set; } = 8;
     }
 }
