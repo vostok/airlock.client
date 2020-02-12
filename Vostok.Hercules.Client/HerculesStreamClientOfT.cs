@@ -190,6 +190,7 @@ namespace Vostok.Hercules.Client
                 return response;
 
             // CR(iloktionov): What's the point of RemoveHeader call here? We never expose any of these responses to the user.
+            // CR(kungurtsev): To prevent accidental double calling of decompress.
             return response
                 .RemoveHeader(HeaderNames.ContentEncoding)
                 .WithContent(Decompress(response.Content, originalContentLength));
@@ -198,8 +199,14 @@ namespace Vostok.Hercules.Client
         private Content Decompress(Content content, int originalContentLength)
         {
             var buffer = bufferPool.Rent(originalContentLength);
-            // CR(iloktionov): Could Decode return something other than originalContentLength in failure scenarios? Should we check it?
-            LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, buffer, 0, originalContentLength, true);
+
+            var decodedContentLenght = LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, buffer, 0, originalContentLength, true);
+            if (decodedContentLenght != originalContentLength)
+            {
+                bufferPool.Return(buffer);
+                throw new Exception($"Failed to decompress {content.Length} bytes: expected exactly {originalContentLength} bytes, but received {decodedContentLenght} bytes.");
+            }
+
             bufferPool.Return(content.Buffer);
             return new Content(buffer, 0, originalContentLength);
         }
