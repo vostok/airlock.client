@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Vostok.Commons.Collections;
 using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Gate;
 using Vostok.Hercules.Client.Sink.Analyzer;
@@ -28,8 +29,9 @@ namespace Vostok.Hercules.Client.Sink.Sender
         {
             this.log = log;
 
+            var bufferPool = new BufferPool(settings.MaximumBatchSize * 2, settings.MaxParallelStreams * 8);
             apiKeyProvider = settings.ApiKeyProvider;
-            contentFactory = new RequestContentFactory();
+            contentFactory = new RequestContentFactory(bufferPool);
             snapshotBatcher = new BufferSnapshotBatcher(settings.MaximumBatchSize);
 
             requestSender = new GateRequestSender(
@@ -37,6 +39,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 settings.SuppressVerboseLogging 
                     ? log.WithMinimumLevel(LogLevel.Warn).WithLevelsTransformation(SuppressVerboseLoggingLevelsTransformation)
                     : log,
+                bufferPool,
                 settings.AdditionalSetup);
 
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);

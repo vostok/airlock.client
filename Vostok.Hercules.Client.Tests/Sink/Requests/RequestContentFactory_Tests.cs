@@ -4,8 +4,10 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Commons.Binary;
+using Vostok.Commons.Collections;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
+using BufferPool = Vostok.Commons.Collections.BufferPool;
 
 namespace Vostok.Hercules.Client.Tests.Sink.Requests
 {
@@ -17,7 +19,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Requests
         [SetUp]
         public void TestSetup()
         {
-            factory = new RequestContentFactory();
+            factory = new RequestContentFactory(new BufferPool());
         }
 
         [Test]

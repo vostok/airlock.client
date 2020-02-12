@@ -16,21 +16,17 @@ namespace Vostok.Hercules.Client.Gate
 
     internal class GateRequestSender : IGateRequestSender
     {
-        // CR(iloktionov): Move buffer consts to settings.
-
-        private const int MaxPooledBufferSize = 16 * 1024 * 1024;
-        private const int MaxPooledBuffersPerBucket = 8;
-
-        private readonly IClusterClient client;
         private readonly BufferPool bufferPool;
+        private readonly IClusterClient client;
 
         public GateRequestSender(
             [NotNull] IClusterProvider clusterProvider,
             [NotNull] ILog log,
+            [NotNull] BufferPool bufferPool,
             [CanBeNull] ClusterClientSetup additionalSetup)
         {
+            this.bufferPool = bufferPool;
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
-            bufferPool = new BufferPool(MaxPooledBufferSize, MaxPooledBuffersPerBucket);
         }
 
         public Task<Response> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) =>
@@ -79,8 +75,15 @@ namespace Vostok.Hercules.Client.Gate
             // CR(iloktionov): Some proof of this formula's correctness would be nice. How do we know for sure that compressed content can't grow larger?
             var maximumCompressedLength = content.Length + content.Length / 255 + 1024;
             var buffer = bufferPool.Rent(maximumCompressedLength);
-            // CR(iloktionov): Better make sure we can't silently return incomplete/corrupted data. Maybe check the result of Encode call?
+
             var compressedLength = LZ4Codec.Encode(content.Buffer, content.Offset, content.Length, buffer, 0, buffer.Length);
+
+            if (compressedLength == 0 || compressedLength > maximumCompressedLength)
+            {
+                bufferPool.Return(buffer);
+                throw new Exception($"Failed to compress {content.Length} bytes: expected no more than {maximumCompressedLength} bytes, but received {compressedLength} bytes.");
+            }
+
             return new Content(buffer, 0, compressedLength);
         }
     }

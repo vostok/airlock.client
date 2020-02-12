@@ -8,6 +8,7 @@ using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Model;
+using Vostok.Commons.Collections;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
@@ -19,6 +20,7 @@ using Vostok.Hercules.Client.Sink.Sender;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Sink.Statistics;
 using Vostok.Logging.Console;
+using BufferPool = Vostok.Commons.Collections.BufferPool;
 
 namespace Vostok.Hercules.Client.Tests.Sink.Sender
 {
@@ -55,7 +57,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             state.Settings.Returns(settings = new StreamSettings());
 
             batcher = new BufferSnapshotBatcher(1);
-            contentFactory = new RequestContentFactory();
+            contentFactory = new RequestContentFactory(new BufferPool());
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
             statusAnalyzer = new StatusAnalyzer();
             
