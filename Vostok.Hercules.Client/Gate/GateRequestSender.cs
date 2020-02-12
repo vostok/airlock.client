@@ -7,13 +7,12 @@ using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Collections;
+using Vostok.Commons.Helpers.Disposable;
 using Vostok.Hercules.Client.Client;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Gate
 {
-    // CR(iloktionov): Dispose of the outer pooled buffer ASAP (be sure to protect against double dispose though)
-
     internal class GateRequestSender : IGateRequestSender
     {
         private readonly BufferPool bufferPool;
@@ -29,17 +28,17 @@ namespace Vostok.Hercules.Client.Gate
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
         }
 
-        public Task<Response> SendAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) =>
+        public Task<Response> SendAsync(string stream, string apiKey, ValueDisposable<Content> content, TimeSpan timeout, CancellationToken cancellationToken) =>
             SendAsync("stream/send", stream, apiKey, content, timeout, cancellationToken);
 
-        public Task<Response> FireAndForgetAsync(string stream, string apiKey, Content content, TimeSpan timeout, CancellationToken cancellationToken) =>
+        public Task<Response> FireAndForgetAsync(string stream, string apiKey, ValueDisposable<Content> content, TimeSpan timeout, CancellationToken cancellationToken) =>
             SendAsync("stream/sendAsync", stream, apiKey, content, timeout, cancellationToken);
 
         private async Task<Response> SendAsync(
             [NotNull] string path,
             [NotNull] string stream,
             [CanBeNull] string apiKey,
-            [NotNull] Content content,
+            [NotNull] ValueDisposable<Content> content,
             TimeSpan timeout,
             CancellationToken cancellationToken)
         {
@@ -47,16 +46,17 @@ namespace Vostok.Hercules.Client.Gate
                 .WithAdditionalQueryParameter(Constants.QueryParameters.Stream, stream)
                 .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
                 .WithContentEncodingHeader(Constants.Compression.Lz4Encoding)
-                .WithHeader(Constants.Compression.OriginalContentLengthHeaderName, content.Length);
+                .WithHeader(Constants.Compression.OriginalContentLengthHeaderName, content.Value.Length);
 
             if (!string.IsNullOrEmpty(apiKey))
                 request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
 
-            content = Compress(content);
+            var compressed = Compress(content.Value);
+            content.Dispose();
 
             try
             {
-                request = request.WithContent(content);
+                request = request.WithContent(compressed);
 
                 var result = await client
                     .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
@@ -66,7 +66,7 @@ namespace Vostok.Hercules.Client.Gate
             }
             finally
             {
-                bufferPool.Return(content.Buffer);
+                bufferPool.Return(compressed.Buffer);
             }
         }
 

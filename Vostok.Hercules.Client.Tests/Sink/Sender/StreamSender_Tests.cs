@@ -8,7 +8,7 @@ using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Model;
-using Vostok.Commons.Collections;
+using Vostok.Commons.Helpers.Disposable;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
@@ -148,7 +148,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), "custom", Arg.Any<Content>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
+            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), "custom", Arg.Any<ValueDisposable<Content>>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -156,7 +156,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), GlobalApiKey, Arg.Any<Content>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
+            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), GlobalApiKey, Arg.Any<ValueDisposable<Content>>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -164,7 +164,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(StreamName, Arg.Any<string>(), Arg.Any<Content>(), Timeout, cancellation.Token);
+            requestSender.Received(3).FireAndForgetAsync(StreamName, Arg.Any<string>(), Arg.Any<ValueDisposable<Content>>(), Timeout, cancellation.Token);
         }
 
         [Test]
@@ -274,7 +274,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             requestSender.FireAndForgetAsync(
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<Content>(),
+                    Arg.Any<ValueDisposable<Content>>(),
                     Arg.Any<TimeSpan>(),
                     Arg.Any<CancellationToken>())
                 .Returns(new Response(codes.First()), codes.Skip(1).Select(code => new Response(code)).ToArray());

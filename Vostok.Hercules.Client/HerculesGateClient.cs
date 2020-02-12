@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Binary;
 using Vostok.Commons.Collections;
+using Vostok.Commons.Helpers.Disposable;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
@@ -49,11 +50,11 @@ namespace Vostok.Hercules.Client
         {
             try
             {
-                using (writersPool.Acquire(out var buffer))
+                using (var disposable = writersPool.Acquire(out var buffer))
                 {
                     buffer.Reset();
 
-                    var content = CreateContent(query, buffer);
+                    var content = new ValueDisposable<Content>(CreateContent(query, buffer), disposable);
 
                     var response = await sender
                         .SendAsync(query.Stream, settings.ApiKeyProvider(), content, timeout, cancellationToken)
