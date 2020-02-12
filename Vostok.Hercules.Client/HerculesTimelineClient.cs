@@ -19,6 +19,8 @@ namespace Vostok.Hercules.Client
 
         public HerculesTimelineClient([NotNull] HerculesTimelineClientSettings settings, [CanBeNull] ILog log)
         {
+            // CR(iloktionov): Could we get rid of manual settings copying with settings inheritance?
+
             var settingsOfT = new HerculesTimelineClientSettings<HerculesEvent>(
                 settings.Cluster,
                 settings.ApiKeyProvider,

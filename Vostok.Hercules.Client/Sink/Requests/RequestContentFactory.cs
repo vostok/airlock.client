@@ -13,6 +13,7 @@ namespace Vostok.Hercules.Client.Sink.Requests
     {
         private const int InitialBodyBufferSize = 4096;
 
+        // CR(iloktionov): Reuse the same buffer pool with GateRequestSender. We don't actually need to pool BinaryBufferWriters here due to size known in advance.
         private readonly UnboundedObjectPool<BinaryBufferWriter> bufferPool
             = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big});
 

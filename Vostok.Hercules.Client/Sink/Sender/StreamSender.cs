@@ -119,6 +119,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
             using (var content = contentFactory.CreateContent(batch, out var recordsCount, out var recordsSize))
             {
+                // CR(iloktionov): What stops us from using SendAsync instead of FireAndForgetAsync (with regard to the recent fuckup)?
                 var response = await gateRequestSender
                     .FireAndForgetAsync(streamState.Name, ObtainApiKey(), content.Value, timeout, cancellationToken)
                     .ConfigureAwait(false);
