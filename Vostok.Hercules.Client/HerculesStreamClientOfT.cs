@@ -189,10 +189,7 @@ namespace Vostok.Hercules.Client
                 || !int.TryParse(response.Headers[Constants.Compression.OriginalContentLengthHeaderName], out var originalContentLength))
                 return response;
 
-            // CR(iloktionov): What's the point of RemoveHeader call here? We never expose any of these responses to the user.
-            // CR(kungurtsev): To prevent accidental double calling of decompress.
             return response
-                .RemoveHeader(HeaderNames.ContentEncoding)
                 .WithContent(Decompress(response.Content, originalContentLength));
         }
 

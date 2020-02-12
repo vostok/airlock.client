@@ -6,7 +6,6 @@ using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
-using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client
@@ -17,21 +16,8 @@ namespace Vostok.Hercules.Client
     {
         private readonly HerculesStreamClient<HerculesEvent> client;
 
-        public HerculesStreamClient([NotNull] HerculesStreamClientSettings settings, [CanBeNull] ILog log)
-        {
-            // CR(iloktionov): Could we get rid of manual settings copying with settings inheritance?
-
-            var settingsOfT = new HerculesStreamClientSettings<HerculesEvent>(
-                settings.Cluster,
-                settings.ApiKeyProvider,
-                _ => new HerculesEventBuilderGeneric())
-            {
-                AdditionalSetup = settings.AdditionalSetup,
-                MaxPooledBufferSize = settings.MaxPooledBufferSize,
-                MaxPooledBuffersPerBucket = settings.MaxPooledBuffersPerBucket
-            };
-            client = new HerculesStreamClient<HerculesEvent>(settingsOfT, log);
-        }
+        public HerculesStreamClient([NotNull] HerculesStreamClientSettings settings, [CanBeNull] ILog log) =>
+            client = new HerculesStreamClient<HerculesEvent>(settings, log);
 
         public async Task<ReadStreamResult> ReadAsync(ReadStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
         {
