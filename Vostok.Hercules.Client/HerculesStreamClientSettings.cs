@@ -2,6 +2,7 @@
 using JetBrains.Annotations;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Topology;
+using Vostok.Hercules.Client.Abstractions.Events;
 
 namespace Vostok.Hercules.Client
 {
