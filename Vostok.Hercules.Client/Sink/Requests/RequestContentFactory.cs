@@ -30,7 +30,10 @@ namespace Vostok.Hercules.Client.Sink.Requests
 
             try
             {
-                var writer = new BinaryBufferWriter(buffer);
+                var writer = new BinaryBufferWriter(buffer)
+                {
+                    Endianness = Endianness.Big
+                };
 
                 writer.Write(recordsCount);
 
