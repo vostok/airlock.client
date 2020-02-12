@@ -35,6 +35,7 @@ namespace Vostok.Hercules.Client.Tests.Integration
             var settings = new HerculesSinkSettings(new FixedClusterProvider(new Uri("http://localhost/")), () => "apiKey")
             {
                 AdditionalSetup = c => c.Transport = transport,
+                SuppressVerboseLogging = false,
                 SendPeriod = 100.Milliseconds()
             };
 

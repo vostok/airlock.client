@@ -49,9 +49,10 @@ namespace Vostok.Hercules.Client.Sink.Requests
                     new Content(writer.FilledSegment),
                     new ActionDisposable(() => bufferPool.Return(buffer)));
             }
-            finally
+            catch
             {
                 bufferPool.Return(buffer);
+                throw;
             }
         }
     }
