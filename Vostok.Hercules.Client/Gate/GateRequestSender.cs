@@ -72,8 +72,7 @@ namespace Vostok.Hercules.Client.Gate
 
         private Content Compress(Content content)
         {
-            // CR(iloktionov): Some proof of this formula's correctness would be nice. How do we know for sure that compressed content can't grow larger?
-            var maximumCompressedLength = content.Length + content.Length / 255 + 1024;
+            var maximumCompressedLength = LZ4Codec.CompressBound(content.Length);
             var buffer = bufferPool.Rent(maximumCompressedLength);
 
             var compressedLength = LZ4Codec.Encode(content.Buffer, content.Offset, content.Length, buffer, 0, buffer.Length);
