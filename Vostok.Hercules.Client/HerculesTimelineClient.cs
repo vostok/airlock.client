@@ -24,7 +24,12 @@ namespace Vostok.Hercules.Client
             var settingsOfT = new HerculesTimelineClientSettings<HerculesEvent>(
                 settings.Cluster,
                 settings.ApiKeyProvider,
-                _ => new HerculesEventBuilderGeneric());
+                _ => new HerculesEventBuilderGeneric())
+            {
+                AdditionalSetup = settings.AdditionalSetup,
+                MaxPooledBufferSize = settings.MaxPooledBufferSize,
+                MaxPooledBuffersPerBucket = settings.MaxPooledBuffersPerBucket
+            };
             client = new HerculesTimelineClient<HerculesEvent>(settingsOfT, log);
         }
 
