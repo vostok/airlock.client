@@ -15,9 +15,9 @@
     <PackageReference Include="NUnit" Version="3.10.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="SharpZipLib" Version="1.1.0" />
-    <PackageReference Include="Confluent.Kafka" Version="1.0.0-RC2" />
-    <PackageReference Include="librdkafka.redist" Version="1.0.0" />
+    <PackageReference Include="SharpZipLib" Version="1.2.0" />
+    <PackageReference Include="Confluent.Kafka" Version="1.3.0" />
+    <PackageReference Include="librdkafka.redist" Version="1.3.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Vostok.Hercules.Client\Vostok.Hercules.Client.csproj" />
