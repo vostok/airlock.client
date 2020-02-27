@@ -15,6 +15,7 @@ namespace Vostok.Hercules.Client.Gate
 {
     internal class GateRequestSender : IGateRequestSender
     {
+        private readonly ILog log;
         private readonly BufferPool bufferPool;
         private readonly IClusterClient client;
 
@@ -24,6 +25,7 @@ namespace Vostok.Hercules.Client.Gate
             [NotNull] BufferPool bufferPool,
             [CanBeNull] ClusterClientSetup additionalSetup)
         {
+            this.log = log;
             this.bufferPool = bufferPool;
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
         }
@@ -51,7 +53,17 @@ namespace Vostok.Hercules.Client.Gate
             if (!string.IsNullOrEmpty(apiKey))
                 request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
 
-            var compressed = Compress(content.Value);
+            Content compressed;
+            try
+            {
+                compressed = Compress(content.Value);
+            }
+            catch (Exception e)
+            {
+                log.Error(e, "Failed to compress content.");
+                return new Response(ResponseCode.UnknownFailure);
+            }
+
             content.Dispose();
 
             try
