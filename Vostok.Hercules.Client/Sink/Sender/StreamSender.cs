@@ -117,29 +117,32 @@ namespace Vostok.Hercules.Client.Sink.Sender
         {
             var watch = Stopwatch.StartNew();
 
-            var body = contentFactory.CreateContent(batch, out var recordsCount, out var recordsSize);
-
-            var response = await gateRequestSender
-                .FireAndForgetAsync(streamState.Name, ObtainApiKey(), body, timeout, cancellationToken)
-                .ConfigureAwait(false);
-
-            var status = responseAnalyzer.Analyze(response, out _);
-            if (statusAnalyzer.ShouldDropStoredRecords(status))
+            using (var content = contentFactory.CreateContent(batch, out var recordsCount, out var recordsSize))
             {
-                RequestGarbageCollection(batch);
+                // CR(iloktionov): What stops us from using SendAsync instead of FireAndForgetAsync (with regard to the recent fuckup)?
+                // CR(kungurtsev): Will do as separate task.
+                var response = await gateRequestSender
+                    .FireAndForgetAsync(streamState.Name, ObtainApiKey(), content, timeout, cancellationToken)
+                    .ConfigureAwait(false);
+
+                var status = responseAnalyzer.Analyze(response, out _);
+                if (statusAnalyzer.ShouldDropStoredRecords(status))
+                {
+                    RequestGarbageCollection(batch);
+
+                    if (status == HerculesStatus.Success)
+                        streamState.Statistics.ReportSuccessfulSending(recordsCount, recordsSize);
+                    else
+                        streamState.Statistics.ReportSendingFailure(recordsCount, recordsSize);
+                }
 
                 if (status == HerculesStatus.Success)
-                    streamState.Statistics.ReportSuccessfulSending(recordsCount, recordsSize);
+                    LogBatchSendSuccess(recordsCount, recordsSize, watch.Elapsed);
                 else
-                    streamState.Statistics.ReportSendingFailure(recordsCount, recordsSize);
+                    LogBatchSendFailure(recordsCount, recordsSize, response.Code, status);
+
+                return status;
             }
-
-            if (status == HerculesStatus.Success)
-                LogBatchSendSuccess(recordsCount, recordsSize, watch.Elapsed);
-            else
-                LogBatchSendFailure(recordsCount, recordsSize, response.Code, status);
-
-            return status;
         }
 
         private void LogBatchSendSuccess(int recordsCount, long recordsSize, TimeSpan elapsed)

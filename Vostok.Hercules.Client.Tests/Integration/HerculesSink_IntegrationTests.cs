@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using FluentAssertions;
+using Kontur.Lz4;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Model;
@@ -35,6 +37,7 @@ namespace Vostok.Hercules.Client.Tests.Integration
             var settings = new HerculesSinkSettings(new FixedClusterProvider(new Uri("http://localhost/")), () => "apiKey")
             {
                 AdditionalSetup = c => c.Transport = transport,
+                SuppressVerboseLogging = false,
                 SendPeriod = 100.Milliseconds()
             };
 
@@ -105,8 +108,12 @@ namespace Vostok.Hercules.Client.Tests.Integration
             new Action(
                 () =>
                 {
-                    var actualRecordsCountContent = lastRequest?.CompositeContent?.Parts[0]?.ToArraySegment();
-                    var actualRecordContent = lastRequest?.CompositeContent?.Parts[1]?.ToArray();
+                    var content = lastRequest?.Content?.ToArray();
+                    if (content != null)
+                        content = LZ4Codec.Decode(content, 0, content.Length, int.Parse(lastRequest.Headers[Constants.Compression.OriginalContentLengthHeaderName]));
+
+                    var actualRecordsCountContent = content?.Take(sizeof(int)).ToArray();
+                    var actualRecordContent = content?.Skip(sizeof(int)).ToArray();
                     actualRecordContent.Should().NotBeNull();
                     EraseEventId(actualRecordContent);
 

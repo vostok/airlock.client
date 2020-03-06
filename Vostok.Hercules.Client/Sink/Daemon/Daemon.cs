@@ -32,7 +32,10 @@ namespace Vostok.Hercules.Client.Sink.Daemon
         {
             if (state == NotInitialized && state.TryIncreaseTo(Initialized))
             {
-                Interlocked.Exchange(ref schedulerTask, Task.Run(() => scheduler?.RunAsync(schedulerCancellation.Token)));
+                using (ExecutionContext.SuppressFlow())
+                {
+                    Interlocked.Exchange(ref schedulerTask, Task.Run(() => scheduler?.RunAsync(schedulerCancellation.Token)));
+                }
 
                 schedulerTaskBarrier.Set();
             }

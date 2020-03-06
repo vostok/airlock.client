@@ -8,6 +8,7 @@ using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Model;
+using Vostok.Commons.Helpers.Disposable;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
@@ -19,6 +20,7 @@ using Vostok.Hercules.Client.Sink.Sender;
 using Vostok.Hercules.Client.Sink.State;
 using Vostok.Hercules.Client.Sink.Statistics;
 using Vostok.Logging.Console;
+using BufferPool = Vostok.Commons.Collections.BufferPool;
 
 namespace Vostok.Hercules.Client.Tests.Sink.Sender
 {
@@ -55,7 +57,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             state.Settings.Returns(settings = new StreamSettings());
 
             batcher = new BufferSnapshotBatcher(1);
-            contentFactory = new RequestContentFactory();
+            contentFactory = new RequestContentFactory(new BufferPool());
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
             statusAnalyzer = new StatusAnalyzer();
             
@@ -146,7 +148,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
 
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), "custom", Arg.Any<CompositeContent>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
+            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), "custom", Arg.Any<ValueDisposable<Content>>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -154,7 +156,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), GlobalApiKey, Arg.Any<CompositeContent>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
+            requestSender.Received(3).FireAndForgetAsync(Arg.Any<string>(), GlobalApiKey, Arg.Any<ValueDisposable<Content>>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
         }
 
         [Test]
@@ -162,7 +164,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         {
             Send();
 
-            requestSender.Received(3).FireAndForgetAsync(StreamName, Arg.Any<string>(), Arg.Any<CompositeContent>(), Timeout, cancellation.Token);
+            requestSender.Received(3).FireAndForgetAsync(StreamName, Arg.Any<string>(), Arg.Any<ValueDisposable<Content>>(), Timeout, cancellation.Token);
         }
 
         [Test]
@@ -272,7 +274,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             requestSender.FireAndForgetAsync(
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<CompositeContent>(),
+                    Arg.Any<ValueDisposable<Content>>(),
                     Arg.Any<TimeSpan>(),
                     Arg.Any<CancellationToken>())
                 .Returns(new Response(codes.First()), codes.Skip(1).Select(code => new Response(code)).ToArray());

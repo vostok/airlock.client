@@ -4,8 +4,10 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Commons.Binary;
+using Vostok.Commons.Collections;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
+using BufferPool = Vostok.Commons.Collections.BufferPool;
 
 namespace Vostok.Hercules.Client.Tests.Sink.Requests
 {
@@ -17,7 +19,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Requests
         [SetUp]
         public void TestSetup()
         {
-            factory = new RequestContentFactory();
+            factory = new RequestContentFactory(new BufferPool());
         }
 
         [Test]
@@ -31,18 +33,21 @@ namespace Vostok.Hercules.Client.Tests.Sink.Requests
             var snapshot2 = Snapshot(data2, 5);
             var snapshot3 = Snapshot(data3, 1);
 
-            var body = factory.CreateContent(new[] {snapshot1, snapshot2, snapshot3}, out var recordsCount, out var recordsSize);
+            using (var content = factory.CreateContent(new[] {snapshot1, snapshot2, snapshot3}, out var recordsCount, out var recordsSize))
+            {
+                var body = content.Value;
 
-            recordsCount.Should().Be(8);
-            recordsSize.Should().Be(48);
+                recordsCount.Should().Be(8);
+                recordsSize.Should().Be(48);
 
-            body.Parts.Should().HaveCount(4);
+                var reader = new BinaryBufferReader(body.Buffer, 0) {Endianness = Endianness.Big};
+                reader.ReadInt32().Should().Be(recordsCount);
 
-            new BinaryBufferReader(body.Parts[0].Buffer, 0) {Endianness = Endianness.Big}.ReadInt32().Should().Be(recordsCount);
-
-            body.Parts[1].ToArray().Should().Equal(data1);
-            body.Parts[2].ToArray().Should().Equal(data2);
-            body.Parts[3].ToArray().Should().Equal(data3);
+                body.Buffer.Skip((int)reader.Position).Take((int)(body.Length - reader.Position))
+                    .ToArray()
+                    .Should()
+                    .Equal(data1.Concat(data2).Concat(data3));
+            }
         }
 
         private static BufferSnapshot Snapshot(byte[] data, int records)

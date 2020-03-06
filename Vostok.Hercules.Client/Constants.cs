@@ -31,5 +31,12 @@ namespace Vostok.Hercules.Client
             public const string OctetStream = "application/octet-stream";
             public const string Json = "application/json";
         }
+
+        internal static class Compression
+        {
+            public const string Lz4Encoding = "lz4";
+
+            public const string OriginalContentLengthHeaderName = "Original-Content-Length";
+        }
     }
 }

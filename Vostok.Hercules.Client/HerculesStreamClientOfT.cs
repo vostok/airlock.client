@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Kontur.Lz4;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Transport;
@@ -24,9 +25,6 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesStreamClient<T> : IHerculesStreamClient<T>
     {
-        private const int MaxPooledBufferSize = 16 * 1024 * 1024;
-        private const int MaxPooledBuffersPerBucket = 8;
-
         private readonly Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider;
         private readonly ResponseAnalyzer responseAnalyzer;
         private readonly BufferPool bufferPool;
@@ -37,7 +35,7 @@ namespace Vostok.Hercules.Client
         {
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesStreamClient>();
 
-            bufferPool = new BufferPool(MaxPooledBufferSize, MaxPooledBuffersPerBucket);
+            bufferPool = new BufferPool(settings.MaxPooledBufferSize, settings.MaxPooledBuffersPerBucket);
 
             client = ClusterClientFactory.Create(
                 settings.Cluster,
@@ -51,6 +49,7 @@ namespace Vostok.Hercules.Client
                             BufferFactory = bufferPool.Rent
                         });
                     config.AddRequestTransform(new ApiKeyRequestTransform(settings.ApiKeyProvider));
+                    config.AddResponseTransform(TryDecompress);
                     settings.AdditionalSetup?.Invoke(config);
                 });
 
@@ -77,6 +76,7 @@ namespace Vostok.Hercules.Client
                 var request = Request
                     .Post(url)
                     .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
+                    .WithAcceptEncodingHeader(Constants.Compression.Lz4Encoding)
                     .WithContent(body);
 
                 var result = await client
@@ -180,6 +180,32 @@ namespace Vostok.Hercules.Client
             var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider, log);
 
             return new ReadStreamPayload<T>(events, coordinates);
+        }
+
+        private Response TryDecompress(Response response)
+        {
+            if (!response.HasContent
+                || response.Headers[HeaderNames.ContentEncoding] != Constants.Compression.Lz4Encoding
+                || !int.TryParse(response.Headers[Constants.Compression.OriginalContentLengthHeaderName], out var originalContentLength))
+                return response;
+
+            return response
+                .WithContent(Decompress(response.Content, originalContentLength));
+        }
+
+        private Content Decompress(Content content, int originalContentLength)
+        {
+            var buffer = bufferPool.Rent(originalContentLength);
+
+            var decodedContentLenght = LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, buffer, 0, originalContentLength, true);
+            if (decodedContentLenght != originalContentLength)
+            {
+                bufferPool.Return(buffer);
+                throw new Exception($"Failed to decompress {content.Length} bytes: expected exactly {originalContentLength} bytes, but received {decodedContentLenght} bytes.");
+            }
+
+            bufferPool.Return(content.Buffer);
+            return new Content(buffer, 0, originalContentLength);
         }
     }
 }

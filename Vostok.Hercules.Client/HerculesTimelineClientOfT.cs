@@ -25,9 +25,6 @@ namespace Vostok.Hercules.Client
     [PublicAPI]
     public class HerculesTimelineClient<T> : IHerculesTimelineClient<T>
     {
-        private const int MaxPooledBufferSize = 16 * 1024 * 1024;
-        private const int MaxPooledBuffersPerBucket = 8;
-
         private readonly Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider;
         private readonly ResponseAnalyzer responseAnalyzer;
         private readonly BufferPool bufferPool;
@@ -38,7 +35,7 @@ namespace Vostok.Hercules.Client
         {
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesTimelineClient>();
 
-            bufferPool = new BufferPool(MaxPooledBufferSize, MaxPooledBuffersPerBucket);
+            bufferPool = new BufferPool(settings.MaxPooledBufferSize, settings.MaxPooledBuffersPerBucket);
 
             client = ClusterClientFactory.Create(
                 settings.Cluster,
