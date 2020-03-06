@@ -1,3 +1,7 @@
+## 0.1.4 (06-03-2020):
+
+Compress traffic with lz4.
+
 ## 0.1.3 (03-10-2019):
 
 Implemented garbage collection of unused buffers.
