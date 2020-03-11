@@ -10,12 +10,7 @@ namespace Vostok.Hercules.Client.Serialization.Readers
 {
     internal static class EventsBinaryReader
     {
-        public static IList<HerculesEvent> Read(byte[] bytes, long offset, ILog log)
-        {
-            return Read(bytes, offset, _ => new HerculesEventBuilderGeneric(), log);
-        }
-
-        public static IList<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider, ILog log)
+        public static IEnumerable<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider, ILog log)
         {
             var reader = new BinaryBufferReader(bytes, offset)
             {
@@ -23,15 +18,15 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             };
 
             var count = reader.ReadInt32();
-            var result = new List<T>(count);
 
             for (var i = 0; i < count; i++)
             {
                 var startPosition = reader.Position;
+                T @event = default;
 
                 try
                 {
-                    result.Add(ReadEvent(reader, eventBuilderProvider(reader)));
+                    @event = ReadEvent(reader, eventBuilderProvider(reader));
                 }
                 catch (Exception e)
                 {
@@ -40,9 +35,10 @@ namespace Vostok.Hercules.Client.Serialization.Readers
                     reader.Position = startPosition;
                     ReadEvent(reader, DummyEventBuilder.Instance);
                 }
-            }
 
-            return result;
+                if (@event != null)
+                    yield return @event;
+            }
         }
 
         private static T ReadEvent<T>(IBinaryReader reader, IHerculesEventBuilder<T> builder)

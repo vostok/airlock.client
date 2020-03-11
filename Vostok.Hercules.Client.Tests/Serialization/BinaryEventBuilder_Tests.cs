@@ -148,14 +148,18 @@ namespace Vostok.Hercules.Client.Tests.Serialization
                 }
             }
 
+            // ReSharper disable PossibleMultipleEnumeration
+
             var events = EventsBinaryReader.Read(binaryWriter.Buffer, 0, _ => new HerculesEventBuilderGeneric(), new SynchronousConsoleLog());
-            events.Count.Should().Be(3);
+            events.Count().Should().Be(3);
             events.Should().AllBeEquivalentTo(memoryEvent);
 
             var dummyEvents = EventsBinaryReader.Read(binaryWriter.Buffer, 0, b => DummyEventBuilder.Instance, new SynchronousConsoleLog());
-            dummyEvents.Count.Should().Be(3);
+            dummyEvents.Count().Should().Be(3);
 
             return events.Last();
+
+            // ReSharper restore PossibleMultipleEnumeration
         }
     }
 }

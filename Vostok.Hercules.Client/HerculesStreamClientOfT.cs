@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -14,6 +15,7 @@ using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
+using Vostok.Hercules.Client.Helpers;
 using Vostok.Hercules.Client.Serialization.Readers;
 using Vostok.Hercules.Client.Serialization.Writers;
 using Vostok.Logging.Abstractions;
@@ -60,47 +62,51 @@ namespace Vostok.Hercules.Client
         /// <inheritdoc />
         public async Task<ReadStreamResult<T>> ReadAsync(ReadStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = default)
         {
+            ClusterResult result = null;
             try
             {
-                var url = new RequestUrlBuilder("stream/read")
-                    {
-                        {Constants.QueryParameters.Stream, query.Name},
-                        {Constants.QueryParameters.Limit, query.Limit},
-                        {Constants.QueryParameters.ClientShard, query.ClientShard},
-                        {Constants.QueryParameters.ClientShardCount, query.ClientShardCount}
-                    }
-                    .Build();
+                result = await ReadStreamAsync(query, timeout, cancellationToken).ConfigureAwait(false);
 
-                var body = CreateRequestBody(query.Coordinates ?? StreamCoordinates.Empty);
+                var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
+                if (operationStatus != HerculesStatus.Success)
+                    return new ReadStreamResult<T>(operationStatus, null, errorMessage);
 
-                var request = Request
-                    .Post(url)
-                    .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
-                    .WithAcceptEncodingHeader(Constants.Compression.Lz4Encoding)
-                    .WithContent(body);
-
-                var result = await client
-                    .SendAsync(request, timeout, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-
-                try
-                {
-                    var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
-                    if (operationStatus != HerculesStatus.Success)
-                        return new ReadStreamResult<T>(operationStatus, null, errorMessage);
-
-                    return new ReadStreamResult<T>(operationStatus, ParseReadResponseBody(result.Response));
-                }
-                finally
-                {
-                    if (result.Response.HasContent)
-                        bufferPool.Return(result.Response.Content.Buffer);
-                }
+                return new ReadStreamResult<T>(operationStatus, ParseReadResponseBody(result.Response));
             }
             catch (Exception error)
             {
                 log.Warn(error);
                 return new ReadStreamResult<T>(HerculesStatus.UnknownError, null, error.Message);
+            }
+            finally
+            {
+                if (result?.Response.HasContent == true)
+                    bufferPool.Return(result.Response.Content.Buffer);
+            }
+        }
+
+        public async Task<ReadStreamIEnumerableResult<T>> ReadIEnumerableAsync(ReadStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
+        {
+            ClusterResult result = null;
+
+            try
+            {
+                result = await ReadStreamAsync(query, timeout, cancellationToken).ConfigureAwait(false);
+
+                var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
+                if (operationStatus != HerculesStatus.Success)
+                    return new ReadStreamIEnumerableResult<T>(operationStatus, null, errorMessage);
+
+                return new ReadStreamIEnumerableResult<T>(operationStatus, ParseReadIEnumerableResponseBody(result, query.Coordinates));
+            }
+            catch (Exception error)
+            {
+                log.Warn(error);
+
+                if (result?.Response.HasContent == true)
+                    bufferPool.Return(result.Response.Content.Buffer);
+
+                return new ReadStreamIEnumerableResult<T>(HerculesStatus.UnknownError, null, error.Message);
             }
         }
 
@@ -144,6 +150,31 @@ namespace Vostok.Hercules.Client
             }
         }
 
+        private async Task<ClusterResult> ReadStreamAsync(ReadStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            var url = new RequestUrlBuilder("stream/read")
+                {
+                    {Constants.QueryParameters.Stream, query.Name},
+                    {Constants.QueryParameters.Limit, query.Limit},
+                    {Constants.QueryParameters.ClientShard, query.ClientShard},
+                    {Constants.QueryParameters.ClientShardCount, query.ClientShardCount}
+                }
+                .Build();
+
+            var body = CreateRequestBody(query.Coordinates ?? StreamCoordinates.Empty);
+
+            var request = Request
+                .Post(url)
+                .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
+                .WithAcceptEncodingHeader(Constants.Compression.Lz4Encoding)
+                .WithContent(body);
+
+            var result = await client
+                .SendAsync(request, timeout, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            return result;
+        }
+
         private static ArraySegment<byte> CreateRequestBody([NotNull] StreamCoordinates coordinates)
         {
             var writer = new BinaryBufferWriter(sizeof(int) + coordinates.Positions.Length * (sizeof(int) + sizeof(long)))
@@ -177,9 +208,27 @@ namespace Vostok.Hercules.Client
 
             var coordinates = StreamCoordinatesReader.Read(reader);
 
-            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider, log);
+            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider, log).ToList();
 
             return new ReadStreamPayload<T>(events, coordinates);
+        }
+
+        private ReadStreamIEnumerablePayload<T> ParseReadIEnumerableResponseBody(ClusterResult result, StreamCoordinates queryCoordinates)
+        {
+            var response = result.Response;
+
+            var reader = new BinaryBufferReader(response.Content.Buffer, response.Content.Offset)
+            {
+                Endianness = Endianness.Big
+            };
+
+            var next = StreamCoordinatesReader.Read(reader);
+            var current = StreamCoordinatesHelper.FixQueryCoordinates(queryCoordinates, next);
+
+            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider, log);
+
+            return new ReadStreamIEnumerablePayload<T>(events, current, next, () =>
+                bufferPool.Return(result.Response.Content.Buffer));
         }
 
         private Response TryDecompress(Response response)

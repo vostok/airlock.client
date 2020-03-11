@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -126,7 +127,7 @@ namespace Vostok.Hercules.Client
 
             var coordinates = TimelineCoordinatesReader.Read(reader);
 
-            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider, log);
+            var events = EventsBinaryReader.Read(response.Content.Buffer, reader.Position, eventBuilderProvider, log).ToList();
 
             return new ReadTimelinePayload<T>(events, coordinates);
         }

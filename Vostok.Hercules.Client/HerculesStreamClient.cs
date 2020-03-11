@@ -25,6 +25,12 @@ namespace Vostok.Hercules.Client
             return result.FromGenericResult();
         }
 
+        public async Task<ReadStreamIEnumerableResult> ReadIEnumerableAsync(ReadStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var result = await client.ReadIEnumerableAsync(query, timeout, cancellationToken).ConfigureAwait(false);
+            return result.FromGenericResult();
+        }
+
         public Task<SeekToEndStreamResult> SeekToEndAsync(SeekToEndStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken()) =>
             client.SeekToEndAsync(query, timeout, cancellationToken);
     }
