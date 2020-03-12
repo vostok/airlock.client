@@ -11,7 +11,7 @@ using Vostok.Commons.Helpers.Disposable;
 using Vostok.Hercules.Client.Client;
 using Vostok.Logging.Abstractions;
 
-namespace Vostok.Hercules.Client.Gate
+namespace Vostok.Hercules.Client.Internal
 {
     internal class GateRequestSender : IGateRequestSender
     {

@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Helpers.Disposable;
 
-namespace Vostok.Hercules.Client.Gate
+namespace Vostok.Hercules.Client.Internal
 {
     internal interface IGateRequestSender
     {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Vostok.Commons.Collections;
 using Vostok.Hercules.Client.Client;
-using Vostok.Hercules.Client.Gate;
+using Vostok.Hercules.Client.Internal;
 using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Requests;
 using Vostok.Hercules.Client.Sink.State;

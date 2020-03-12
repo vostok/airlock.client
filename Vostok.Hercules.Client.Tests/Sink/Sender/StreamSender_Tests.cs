@@ -12,7 +12,7 @@ using Vostok.Commons.Helpers.Disposable;
 using Vostok.Hercules.Client.Abstractions.Models;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
-using Vostok.Hercules.Client.Gate;
+using Vostok.Hercules.Client.Internal;
 using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;

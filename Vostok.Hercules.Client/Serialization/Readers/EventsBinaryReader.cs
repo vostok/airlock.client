@@ -10,10 +10,8 @@ namespace Vostok.Hercules.Client.Serialization.Readers
 {
     internal static class EventsBinaryReader
     {
-        public static IList<HerculesEvent> Read(byte[] bytes, long offset, ILog log)
-        {
-            return Read(bytes, offset, _ => new HerculesEventBuilderGeneric(), log);
-        }
+        public static IList<T> Read<T>(ArraySegment<byte> bytes, Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider, ILog log) =>
+            Read(bytes.Array, bytes.Offset, eventBuilderProvider, log);
 
         public static IList<T> Read<T>(byte[] bytes, long offset, Func<IBinaryBufferReader, IHerculesEventBuilder<T>> eventBuilderProvider, ILog log)
         {

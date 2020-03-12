@@ -12,7 +12,7 @@ using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
-using Vostok.Hercules.Client.Gate;
+using Vostok.Hercules.Client.Internal;
 using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Logging.Abstractions;
 

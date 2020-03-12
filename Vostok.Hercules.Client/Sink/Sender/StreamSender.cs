@@ -9,7 +9,7 @@ using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
-using Vostok.Hercules.Client.Gate;
+using Vostok.Hercules.Client.Internal;
 using Vostok.Hercules.Client.Sink.Analyzer;
 using Vostok.Hercules.Client.Sink.Buffers;
 using Vostok.Hercules.Client.Sink.Requests;
