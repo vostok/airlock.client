@@ -43,7 +43,7 @@ namespace Vostok.Hercules.Client
             try
             {
                 var events = EventsBinaryReader.Read(payload.Content, settings.EventBuilderProvider, log);
-                return new ReadStreamResult<T>(result.Status, new ReadStreamPayload<T>(events, payload.Coordinates));
+                return new ReadStreamResult<T>(result.Status, new ReadStreamPayload<T>(events, payload.Next));
             }
             catch (Exception error)
             {

@@ -8,16 +8,16 @@ namespace Vostok.Hercules.Client.Internal
     {
         private readonly ValueDisposable<ArraySegment<byte>> content;
         
-        public RawReadStreamPayload(ValueDisposable<ArraySegment<byte>> content, StreamCoordinates coordinates)
+        public RawReadStreamPayload(ValueDisposable<ArraySegment<byte>> content, StreamCoordinates next)
         {
             this.content = content;
             Content = content.Value;
-            Coordinates = coordinates;
+            Next = next;
         }
         
         public ArraySegment<byte> Content { get; }
 
-        public StreamCoordinates Coordinates { get; }
+        public StreamCoordinates Next { get; }
 
         public void Dispose() => content?.Dispose();
     }

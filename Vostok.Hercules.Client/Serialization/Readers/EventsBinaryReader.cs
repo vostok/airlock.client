@@ -43,7 +43,8 @@ namespace Vostok.Hercules.Client.Serialization.Readers
             return result;
         }
 
-        private static T ReadEvent<T>(IBinaryReader reader, IHerculesEventBuilder<T> builder)
+        // ReSharper disable once MemberCanBePrivate.Global
+        public static T ReadEvent<T>(IBinaryReader reader, IHerculesEventBuilder<T> builder)
         {
             reader.EnsureBigEndian();
 
