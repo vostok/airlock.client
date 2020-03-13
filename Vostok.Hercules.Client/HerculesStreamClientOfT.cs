@@ -57,6 +57,6 @@ namespace Vostok.Hercules.Client
         }
 
         public Task<SeekToEndStreamResult> SeekToEndAsync(SeekToEndStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken()) =>
-            client.SeekToEndAsync(query, timeout, cancellationToken);
+            client.SeekToEndAsync(query, settings.ApiKeyProvider(), timeout, cancellationToken);
     }
 }

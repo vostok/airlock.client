@@ -101,7 +101,7 @@ namespace Vostok.Hercules.Client.Internal
             }
         }
 
-        public async Task<SeekToEndStreamResult> SeekToEndAsync(SeekToEndStreamQuery query, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<SeekToEndStreamResult> SeekToEndAsync(SeekToEndStreamQuery query, string apiKey, TimeSpan timeout, CancellationToken cancellationToken = new CancellationToken())
         {
             try
             {
@@ -115,6 +115,9 @@ namespace Vostok.Hercules.Client.Internal
 
                 var request = Request
                     .Get(url);
+
+                if (!string.IsNullOrEmpty(apiKey))
+                    request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
 
                 var result = await client
                     .SendAsync(request, timeout, cancellationToken: cancellationToken)
