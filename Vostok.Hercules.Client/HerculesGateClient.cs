@@ -11,7 +11,6 @@ using Vostok.Hercules.Client.Abstractions;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Abstractions.Queries;
 using Vostok.Hercules.Client.Abstractions.Results;
-using Vostok.Hercules.Client.Client;
 using Vostok.Hercules.Client.Internal;
 using Vostok.Hercules.Client.Serialization.Builders;
 using Vostok.Logging.Abstractions;
@@ -28,7 +27,6 @@ namespace Vostok.Hercules.Client
             = new UnboundedObjectPool<BinaryBufferWriter>(() => new BinaryBufferWriter(InitialBodyBufferSize) {Endianness = Endianness.Big});
 
         private readonly HerculesGateClientSettings settings;
-        private readonly ResponseAnalyzer responseAnalyzer;
         private readonly IGateRequestSender sender;
         private readonly ILog log;
 
@@ -37,9 +35,8 @@ namespace Vostok.Hercules.Client
             this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
             this.log = log = (log ?? LogProvider.Get()).ForContext<HerculesGateClient>();
 
-            var bufferPool = new BufferPool(settings.MaxPooledBufferSize , settings.MaxPooledBuffersPerBucket);
+            var bufferPool = new BufferPool(settings.MaxPooledBufferSize, settings.MaxPooledBuffersPerBucket);
             sender = new GateRequestSender(settings.Cluster, log, bufferPool, settings.AdditionalSetup);
-            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
         }
 
         /// <inheritdoc />
@@ -60,9 +57,7 @@ namespace Vostok.Hercules.Client
                         .SendAsync(query.Stream, settings.ApiKeyProvider(), content, timeout, cancellationToken)
                         .ConfigureAwait(false);
 
-                    var operationStatus = responseAnalyzer.Analyze(response, out var errorMessage);
-
-                    return new InsertEventsResult(operationStatus, errorMessage);
+                    return response;
                 }
             }
             catch (Exception error)
