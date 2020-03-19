@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Vostok.Clusterclient.Core.Model;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
@@ -125,7 +124,8 @@ namespace Vostok.Hercules.Client.Sink.Sender
                     .FireAndForgetAsync(streamState.Name, ObtainApiKey(), content, timeout, cancellationToken)
                     .ConfigureAwait(false);
 
-                var status = responseAnalyzer.Analyze(response, out _);
+                var status = response.Status;
+
                 if (statusAnalyzer.ShouldDropStoredRecords(status))
                 {
                     RequestGarbageCollection(batch);
@@ -139,7 +139,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 if (status == HerculesStatus.Success)
                     LogBatchSendSuccess(recordsCount, recordsSize, watch.Elapsed);
                 else
-                    LogBatchSendFailure(recordsCount, recordsSize, response.Code, status);
+                    LogBatchSendFailure(recordsCount, recordsSize, status);
 
                 return status;
             }
@@ -153,19 +153,17 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 streamState.Name,
                 elapsed.ToPrettyString());
 
-        private void LogBatchSendFailure(int recordsCount, long recordsSize, ResponseCode code, HerculesStatus status)
+        private void LogBatchSendFailure(int recordsCount, long recordsSize, HerculesStatus status)
         {
             if (status == HerculesStatus.Canceled)
                 return;
 
             log.Warn(
                 "Failed to send {RecordsCount} record(s) of size {RecordsSize} to stream '{StreamName}'. " +
-                "Response code = {NumericResponseCode} ({ResponseCode}). Status = {ResponseStatus}.",
+                "Status = {ResponseStatus}.",
                 recordsCount,
                 recordsSize,
                 streamState.Name,
-                (int)code,
-                code,
                 status);
 
             if (statusAnalyzer.ShouldDropStoredRecords(status))

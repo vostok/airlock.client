@@ -76,7 +76,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             cancellation = new CancellationTokenSource();
 
             SetupBuffers(50, 100, 150);
-            SetupResponses(ResponseCode.Ok);
+            SetupResponses(HerculesStatus.Success);
         }
 
         [Test]
@@ -120,7 +120,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_stop_on_first_transient_failure()
         {
-            SetupResponses(ResponseCode.InternalServerError, ResponseCode.Ok);
+            SetupResponses(HerculesStatus.ServerError, HerculesStatus.Success);
 
             var result = Send();
 
@@ -132,7 +132,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_stop_on_first_definitive_failure()
         {
-            SetupResponses(ResponseCode.NotFound, ResponseCode.NotFound, ResponseCode.Ok);
+            SetupResponses(HerculesStatus.StreamNotFound, HerculesStatus.StreamNotFound, HerculesStatus.Success);
 
             var result = Send();
 
@@ -181,7 +181,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_perform_gc_on_definitive_failure()
         {
-            SetupResponses(ResponseCode.BadRequest);
+            SetupResponses(HerculesStatus.IncorrectRequest);
 
             Send();
 
@@ -194,7 +194,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_not_perform_gc_on_transient_failure()
         {
-            SetupResponses(ResponseCode.RequestTimeout);
+            SetupResponses(HerculesStatus.Timeout);
 
             Send();
 
@@ -219,7 +219,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_report_failed_sends_that_drop_data()
         {
-            SetupResponses(ResponseCode.RequestEntityTooLarge);
+            SetupResponses(HerculesStatus.RequestTooLarge);
 
             SetupBuffers(56, 132, 13);
 
@@ -233,7 +233,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
         [Test]
         public void Should_not_report_transitively_failed_sends()
         {
-            SetupResponses(ResponseCode.ServiceUnavailable);
+            SetupResponses(HerculesStatus.ServerError);
 
             Send();
 
@@ -266,9 +266,9 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
             pool.GetEnumerator().Returns(_ => (buffers as IReadOnlyList<IBuffer>).GetEnumerator());
         }
 
-        private void SetupResponses(params ResponseCode[] codes)
+        private void SetupResponses(params HerculesStatus[] statuses)
         {
-            if (codes.Length == 0)
+            if (statuses.Length == 0)
                 return;
 
             requestSender.FireAndForgetAsync(
@@ -277,7 +277,7 @@ namespace Vostok.Hercules.Client.Tests.Sink.Sender
                     Arg.Any<ValueDisposable<Content>>(),
                     Arg.Any<TimeSpan>(),
                     Arg.Any<CancellationToken>())
-                .Returns(new Response(codes.First()), codes.Skip(1).Select(code => new Response(code)).ToArray());
+                .Returns(new InsertEventsResult(statuses.First()), statuses.Skip(1).Select(status => new InsertEventsResult(status)).ToArray());
         }
 
         private StreamSendResult Send()
