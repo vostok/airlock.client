@@ -139,7 +139,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 if (status == HerculesStatus.Success)
                     LogBatchSendSuccess(recordsCount, recordsSize, watch.Elapsed);
                 else
-                    LogBatchSendFailure(recordsCount, recordsSize, status);
+                    LogBatchSendFailure(recordsCount, recordsSize, status, response.ErrorDetails);
 
                 return status;
             }
@@ -153,18 +153,19 @@ namespace Vostok.Hercules.Client.Sink.Sender
                 streamState.Name,
                 elapsed.ToPrettyString());
 
-        private void LogBatchSendFailure(int recordsCount, long recordsSize, HerculesStatus status)
+        private void LogBatchSendFailure(int recordsCount, long recordsSize, HerculesStatus status, string error)
         {
             if (status == HerculesStatus.Canceled)
                 return;
 
             log.Warn(
                 "Failed to send {RecordsCount} record(s) of size {RecordsSize} to stream '{StreamName}'. " +
-                "Status = {ResponseStatus}.",
+                "Status: {Status}. Error: '{Error}'.",
                 recordsCount,
                 recordsSize,
                 streamState.Name,
-                status);
+                status,
+                error);
 
             if (statusAnalyzer.ShouldDropStoredRecords(status))
                 log.Warn("Dropped {RecordsCount} record(s) as a result of non-retriable failure.", recordsCount);
