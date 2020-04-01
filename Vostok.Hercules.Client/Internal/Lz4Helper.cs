@@ -18,7 +18,7 @@ namespace Vostok.Hercules.Client.Internal
             }
             catch (Exception e)
             {
-                LogProvider.Get().ForContext("HerculesClient").Warn(e, "LZ4 compression compression disabled due to error.");
+                LogProvider.Get().ForContext("HerculesClient").Warn(e, "LZ4 compression disabled due to error.");
                 Enabled = false;
             }
         }
