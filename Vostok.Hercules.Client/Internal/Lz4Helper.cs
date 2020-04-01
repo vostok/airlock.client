@@ -7,17 +7,19 @@ namespace Vostok.Hercules.Client.Internal
     // ReSharper disable once InconsistentNaming
     internal static class LZ4Helper
     {
-        public static bool Enabled(ILog log)
+        public static readonly bool Enabled;
+
+        static LZ4Helper()
         {
             try
             {
                 LZ4Codec.CompressBound(42);
-                return true;
+                Enabled = true;
             }
             catch (Exception e)
             {
-                log.Warn(e, "LZ4 compression compression disabled due to error.");
-                return false;
+                LogProvider.Get().ForContext("HerculesClient").Warn(e, "LZ4 compression compression disabled due to error.");
+                Enabled = false;
             }
         }
     }

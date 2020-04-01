@@ -32,7 +32,7 @@ namespace Vostok.Hercules.Client.Internal
             this.bufferPool = bufferPool;
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
-            compressionEnabled = LZ4Helper.Enabled(log);
+            compressionEnabled = LZ4Helper.Enabled;
         }
 
         public Task<InsertEventsResult> SendAsync(string stream, string apiKey, ValueDisposable<Content> content, TimeSpan timeout, CancellationToken cancellationToken) =>

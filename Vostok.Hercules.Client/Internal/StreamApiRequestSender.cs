@@ -54,7 +54,7 @@ namespace Vostok.Hercules.Client.Internal
                 });
 
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
-            compressionEnabled = LZ4Helper.Enabled(log);
+            compressionEnabled = LZ4Helper.Enabled;
         }
 
         public async Task<RawReadStreamResult> ReadAsync(ReadStreamQuery query, string apiKey, TimeSpan timeout, CancellationToken cancellationToken = default)
