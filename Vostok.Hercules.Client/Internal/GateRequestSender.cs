@@ -20,7 +20,8 @@ namespace Vostok.Hercules.Client.Internal
         private readonly BufferPool bufferPool;
         private readonly IClusterClient client;
         private readonly ResponseAnalyzer responseAnalyzer;
-        
+        private readonly bool compressionEnabled;
+
         public GateRequestSender(
             [NotNull] IClusterProvider clusterProvider,
             [NotNull] ILog log,
@@ -31,6 +32,7 @@ namespace Vostok.Hercules.Client.Internal
             this.bufferPool = bufferPool;
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+            compressionEnabled = LZ4Helper.Enabled(log);
         }
 
         public Task<InsertEventsResult> SendAsync(string stream, string apiKey, ValueDisposable<Content> content, TimeSpan timeout, CancellationToken cancellationToken) =>
@@ -51,43 +53,43 @@ namespace Vostok.Hercules.Client.Internal
             {
                 var request = Request.Post(path)
                     .WithAdditionalQueryParameter(Constants.QueryParameters.Stream, stream)
-                    .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
-                    .WithContentEncodingHeader(Constants.Compression.Lz4Encoding)
-                    .WithHeader(Constants.Compression.OriginalContentLengthHeaderName, content.Value.Length);
+                    .WithContentTypeHeader(Constants.ContentTypes.OctetStream);
 
                 if (!string.IsNullOrEmpty(apiKey))
                     request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
 
-                var compressed = Compress(content.Value);
-
-                content.Dispose();
-
-                try
+                if (compressionEnabled)
                 {
-                    request = request.WithContent(compressed);
-
-                    var result = await client
-                        .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
-                        .ConfigureAwait(false);
-
-                    var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
-
-                    return new InsertEventsResult(operationStatus, errorMessage);
+                    request = request
+                        .WithContentEncodingHeader(Constants.Compression.Lz4Encoding)
+                        .WithHeader(Constants.Compression.OriginalContentLengthHeaderName, content.Value.Length);
+                    content = Compress(content);
                 }
-                finally
-                {
-                    bufferPool.Return(compressed.Buffer);
-                }
+
+                request = request.WithContent(content.Value);
+
+                var result = await client
+                    .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
+                    .ConfigureAwait(false);
+
+                var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
+
+                return new InsertEventsResult(operationStatus, errorMessage);
             }
             catch (Exception error)
             {
                 log.Warn(error);
                 return new InsertEventsResult(HerculesStatus.UnknownError, error.Message);
             }
+            finally
+            {
+                content.Dispose();
+            }
         }
 
-        private Content Compress(Content content)
+        private ValueDisposable<Content> Compress(ValueDisposable<Content> disposableContent)
         {
+            var content = disposableContent.Value;
             var maximumCompressedLength = LZ4Codec.CompressBound(content.Length);
             var buffer = bufferPool.Rent(maximumCompressedLength);
 
@@ -99,7 +101,11 @@ namespace Vostok.Hercules.Client.Internal
                 throw new Exception($"Failed to compress {content.Length} bytes: expected no more than {maximumCompressedLength} bytes, but received {compressedLength} bytes.");
             }
 
-            return new Content(buffer, 0, compressedLength);
+            disposableContent.Dispose();
+
+            return new ValueDisposable<Content>(
+                new Content(buffer, 0, compressedLength),
+                new ActionDisposable(() => bufferPool.Return(buffer)));
         }
     }
 }

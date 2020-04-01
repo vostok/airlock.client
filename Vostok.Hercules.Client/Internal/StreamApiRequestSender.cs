@@ -27,6 +27,7 @@ namespace Vostok.Hercules.Client.Internal
         private readonly BufferPool bufferPool;
         private readonly ClusterClient client;
         private readonly ResponseAnalyzer responseAnalyzer;
+        private readonly bool compressionEnabled;
 
         public StreamApiRequestSender(
             [NotNull] IClusterProvider clusterProvider,
@@ -53,6 +54,7 @@ namespace Vostok.Hercules.Client.Internal
                 });
 
             responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+            compressionEnabled = LZ4Helper.Enabled(log);
         }
 
         public async Task<RawReadStreamResult> ReadAsync(ReadStreamQuery query, string apiKey, TimeSpan timeout, CancellationToken cancellationToken = default)
@@ -73,8 +75,10 @@ namespace Vostok.Hercules.Client.Internal
                 var request = Request
                     .Post(url)
                     .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
-                    .WithAcceptEncodingHeader(Constants.Compression.Lz4Encoding)
                     .WithContent(body);
+
+                if (compressionEnabled)
+                    request = request.WithAcceptEncodingHeader(Constants.Compression.Lz4Encoding);
 
                 if (!string.IsNullOrEmpty(apiKey))
                     request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
