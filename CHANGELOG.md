@@ -1,3 +1,7 @@
+## 0.1.5 (30-03-2020):
+
+Update lz4 library.
+
 ## 0.1.4 (06-03-2020):
 
 Compress traffic with lz4.
