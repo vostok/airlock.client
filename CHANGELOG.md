@@ -1,6 +1,6 @@
 ## 0.1.6 (06-04-2020):
 
-Lz4 library is no longer required for correct work.
+Make lz4 library dependency optional.
 
 ## 0.1.5 (30-03-2020):
 
