@@ -1,6 +1,7 @@
 using System;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
+using Vostok.Commons.Collections;
 using Vostok.Hercules.Local;
 using Vostok.Logging.Abstractions;
 using Vostok.Logging.Console;
@@ -10,10 +11,11 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
     public class Hercules : IDisposable
     {
         private readonly HerculesCluster cluster;
+        private readonly ILog log;
 
         public Hercules()
         {
-            var log = new SynchronousConsoleLog();
+            log = new SynchronousConsoleLog();
 
             cluster = HerculesCluster.DeployNew(TestContext.CurrentContext.TestDirectory, log.WithMinimumLevel(LogLevel.Warn));
 
@@ -56,6 +58,8 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
 
         public void Dispose()
         {
+            log.Info("Rented in BufferPools: {Rented}.", BufferPool.Rented);
+
             Sink?.Dispose();
             cluster?.Dispose();
         }

@@ -8,16 +8,19 @@ using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Topology;
 using Vostok.Commons.Collections;
 using Vostok.Commons.Helpers.Disposable;
+using Vostok.Hercules.Client.Abstractions.Results;
 using Vostok.Hercules.Client.Client;
 using Vostok.Logging.Abstractions;
 
-namespace Vostok.Hercules.Client.Gate
+namespace Vostok.Hercules.Client.Internal
 {
     internal class GateRequestSender : IGateRequestSender
     {
         private readonly ILog log;
         private readonly BufferPool bufferPool;
         private readonly IClusterClient client;
+        private readonly ResponseAnalyzer responseAnalyzer;
+        private readonly bool compressionEnabled;
 
         public GateRequestSender(
             [NotNull] IClusterProvider clusterProvider,
@@ -28,15 +31,17 @@ namespace Vostok.Hercules.Client.Gate
             this.log = log;
             this.bufferPool = bufferPool;
             client = ClusterClientFactory.Create(clusterProvider, log, Constants.ServiceNames.Gate, additionalSetup);
+            responseAnalyzer = new ResponseAnalyzer(ResponseAnalysisContext.Stream);
+            compressionEnabled = LZ4Helper.Enabled;
         }
 
-        public Task<Response> SendAsync(string stream, string apiKey, ValueDisposable<Content> content, TimeSpan timeout, CancellationToken cancellationToken) =>
+        public Task<InsertEventsResult> SendAsync(string stream, string apiKey, ValueDisposable<Content> content, TimeSpan timeout, CancellationToken cancellationToken) =>
             SendAsync("stream/send", stream, apiKey, content, timeout, cancellationToken);
 
-        public Task<Response> FireAndForgetAsync(string stream, string apiKey, ValueDisposable<Content> content, TimeSpan timeout, CancellationToken cancellationToken) =>
+        public Task<InsertEventsResult> FireAndForgetAsync(string stream, string apiKey, ValueDisposable<Content> content, TimeSpan timeout, CancellationToken cancellationToken) =>
             SendAsync("stream/sendAsync", stream, apiKey, content, timeout, cancellationToken);
 
-        private async Task<Response> SendAsync(
+        private async Task<InsertEventsResult> SendAsync(
             [NotNull] string path,
             [NotNull] string stream,
             [CanBeNull] string apiKey,
@@ -44,46 +49,47 @@ namespace Vostok.Hercules.Client.Gate
             TimeSpan timeout,
             CancellationToken cancellationToken)
         {
-            var request = Request.Post(path)
-                .WithAdditionalQueryParameter(Constants.QueryParameters.Stream, stream)
-                .WithContentTypeHeader(Constants.ContentTypes.OctetStream)
-                .WithContentEncodingHeader(Constants.Compression.Lz4Encoding)
-                .WithHeader(Constants.Compression.OriginalContentLengthHeaderName, content.Value.Length);
-
-            if (!string.IsNullOrEmpty(apiKey))
-                request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
-
-            Content compressed;
             try
             {
-                compressed = Compress(content.Value);
-            }
-            catch (Exception e)
-            {
-                log.Error(e, "Failed to compress content.");
-                return new Response(ResponseCode.UnknownFailure);
-            }
+                var request = Request.Post(path)
+                    .WithAdditionalQueryParameter(Constants.QueryParameters.Stream, stream)
+                    .WithContentTypeHeader(Constants.ContentTypes.OctetStream);
 
-            content.Dispose();
+                if (!string.IsNullOrEmpty(apiKey))
+                    request = request.WithHeader(Constants.HeaderNames.ApiKey, apiKey);
 
-            try
-            {
-                request = request.WithContent(compressed);
+                if (compressionEnabled)
+                {
+                    request = request
+                        .WithContentEncodingHeader(Constants.Compression.Lz4Encoding)
+                        .WithHeader(Constants.Compression.OriginalContentLengthHeaderName, content.Value.Length);
+                    content = Compress(content);
+                }
+
+                request = request.WithContent(content.Value);
 
                 var result = await client
                     .SendAsync(request, cancellationToken: cancellationToken, timeout: timeout)
                     .ConfigureAwait(false);
 
-                return result.Response;
+                var operationStatus = responseAnalyzer.Analyze(result.Response, out var errorMessage);
+
+                return new InsertEventsResult(operationStatus, errorMessage);
+            }
+            catch (Exception error)
+            {
+                log.Warn(error);
+                return new InsertEventsResult(HerculesStatus.UnknownError, error.Message);
             }
             finally
             {
-                bufferPool.Return(compressed.Buffer);
+                content.Dispose();
             }
         }
 
-        private Content Compress(Content content)
+        private ValueDisposable<Content> Compress(ValueDisposable<Content> disposableContent)
         {
+            var content = disposableContent.Value;
             var maximumCompressedLength = LZ4Codec.CompressBound(content.Length);
             var buffer = bufferPool.Rent(maximumCompressedLength);
 
@@ -95,7 +101,11 @@ namespace Vostok.Hercules.Client.Gate
                 throw new Exception($"Failed to compress {content.Length} bytes: expected no more than {maximumCompressedLength} bytes, but received {compressedLength} bytes.");
             }
 
-            return new Content(buffer, 0, compressedLength);
+            disposableContent.Dispose();
+
+            return new ValueDisposable<Content>(
+                new Content(buffer, 0, compressedLength),
+                new ActionDisposable(() => bufferPool.Return(buffer)));
         }
     }
 }
