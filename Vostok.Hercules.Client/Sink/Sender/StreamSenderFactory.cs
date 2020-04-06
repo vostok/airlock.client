@@ -12,7 +12,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
 {
     internal class StreamSenderFactory : IStreamSenderFactory
     {
-        private static readonly IReadOnlyDictionary<LogLevel, LogLevel> SuppressVerboseLoggingLevelsTransformation = new Dictionary<LogLevel, LogLevel>()
+        private static readonly IReadOnlyDictionary<LogLevel, LogLevel> SuppressVerboseLoggingLevelsTransformation = new Dictionary<LogLevel, LogLevel>
         {
             [LogLevel.Error] = LogLevel.Warn
         };
@@ -36,7 +36,7 @@ namespace Vostok.Hercules.Client.Sink.Sender
 
             requestSender = new GateRequestSender(
                 settings.Cluster,
-                settings.SuppressVerboseLogging 
+                settings.SuppressVerboseLogging
                     ? log.WithMinimumLevel(LogLevel.Warn).WithLevelsTransformation(SuppressVerboseLoggingLevelsTransformation)
                     : log,
                 bufferPool,

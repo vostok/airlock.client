@@ -1,3 +1,7 @@
+## 0.1.7 (06-04-2020):
+
+Install lz4 library from nuget.
+
 ## 0.1.6 (06-04-2020):
 
 Make lz4 library dependency optional.
