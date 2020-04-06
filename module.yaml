@@ -9,7 +9,7 @@ notests *default:
     - Vostok.Hercules.Client/bin/Release/netstandard2.0/Vostok.Hercules.Client.dll
     - module vostok.hercules.client.abstractions
     - module vostok.clusterclient.core
-    - nuget Kontur.Lz4/0.1.10
+    - nuget Kontur.Lz4/0.1.11
 
   deps:
     - vostok.devtools
