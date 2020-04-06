@@ -58,8 +58,6 @@ namespace Vostok.Hercules.Client.Tests.Functional.Helpers
 
         public void Dispose()
         {
-            log.Info("Rented in BufferPools: {Rented}.", BufferPool.Rented);
-
             Sink?.Dispose();
             cluster?.Dispose();
         }

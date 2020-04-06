@@ -3,8 +3,11 @@ using System.Linq;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
+using Vostok.Commons.Collections;
 using Vostok.Hercules.Client.Abstractions.Events;
 using Vostok.Hercules.Client.Tests.Functional.Helpers;
+using Vostok.Logging.Abstractions;
+using Vostok.Logging.Console;
 
 namespace Vostok.Hercules.Client.Tests.Functional
 {
@@ -23,9 +26,17 @@ namespace Vostok.Hercules.Client.Tests.Functional
                 Hercules = new Helpers.Hercules();
         }
 
-        [OneTimeTearDown]
+        [TearDown]
         public void TearDown()
         {
+            new SynchronousConsoleLog().Info("Rented in BufferPools: {Rented}.", BufferPool.Rented);
+            BufferPool.Rented.Should().Be(0);
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            new SynchronousConsoleLog().Info("Rented in BufferPools: {Rented}.", BufferPool.Rented);
             Hercules?.Dispose();
         }
 
