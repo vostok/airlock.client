@@ -14,6 +14,7 @@ namespace Vostok.Hercules.Client.Internal
             try
             {
                 LZ4Codec.CompressBound(42);
+                LogProvider.Get().ForContext("HerculesClient").Info("LZ4 compression enabled.");
                 Enabled = true;
             }
             catch (Exception e)
