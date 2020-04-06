@@ -1,3 +1,7 @@
+## 0.1.6 (06-04-2020):
+
+Lz4 library is no longer required for correct work.
+
 ## 0.1.5 (30-03-2020):
 
 Update lz4 library.
