@@ -42,9 +42,6 @@
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\BufferPool.cs" Link="Commons\BufferPool.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\HerculesInternals.props" Link="Auxiliary\HerculesInternals.props" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="Vostok.Hercules.Client.Abstractions">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\vostok.hercules.client.abstractions\Vostok.Hercules.Client.Abstractions\bin\Release\netstandard2.0\Vostok.Hercules.Client.Abstractions.dll</HintPath>
@@ -63,7 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Kontur.Lz4" Version="0.1.10" PrivateAssets="all" />
+    <PackageReference Include="Kontur.Lz4" Version="0.1.9" PrivateAssets="all" />
     <PackageReference Update="@(PackageReference)">
       <PrivateAssets>All</PrivateAssets>
       <Publish Condition=" '%(PackageReference.Publish)' != 'false' ">true</Publish>
@@ -78,7 +75,7 @@
   <Target Name="RestorePackageReferences" BeforeTargets="Build">
     <ItemGroup>
       <PackageReference Remove="Kontur.Lz4" />
-      <PackageReference Include="Kontur.Lz4" Version="0.1.10" />
+      <PackageReference Include="Kontur.Lz4" Version="0.1.9" />
     </ItemGroup>
   </Target>
   <Target Name="SetupILRepackProperties" AfterTargets="Build">
