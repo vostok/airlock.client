@@ -1,6 +1,6 @@
-## 0.1.7 (06-04-2020):
+## 0.1.8 (07-04-2020):
 
-Install lz4 library from nuget.
+Update lz4 library (now contains native libraries inside package).
 
 ## 0.1.6 (06-04-2020):
 
