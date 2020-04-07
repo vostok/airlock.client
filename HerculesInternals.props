@@ -6,20 +6,31 @@
 
   <Import Project="$(MSBuildThisFileDirectory)\..\vostok.commons.binary\BinaryBufferReader.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\vostok.commons.binary\BinaryBufferWriter.props" />
-  
+
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.binary\Vostok.Commons.Helpers\Disposable\*.cs" LinkBase="Commons\" />
-    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.helpers\Vostok.Commons.Helpers\Disposable\*.cs" LinkBase="Commons\" />
-    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.collections\Vostok.Commons.Collections\BufferPool.cs" Link="Commons\" />
-    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.time\Vostok.Commons.Time\TimeSpanConversions.cs" Link="Commons\" />
-    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.collections\Vostok.Commons.Collections\UnboundedObjectPool.cs" Link="Commons\" />
-    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.helpers\Vostok.Commons.Helpers\Extensions\TaskExtensions.cs" Link="Commons\" />
-    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.time\Vostok.Commons.Time\EpochHelper.cs" Link="Commons\" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.binary\Vostok.Commons.Helpers\Disposable\*.cs"
+             LinkBase="Commons\" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.helpers\Vostok.Commons.Helpers\Disposable\*.cs"
+             LinkBase="Commons\" />
+    <Compile
+      Include="$(MSBuildThisFileDirectory)\..\vostok.commons.collections\Vostok.Commons.Collections\BufferPool.cs"
+      Link="Commons\" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.time\Vostok.Commons.Time\TimeSpanConversions.cs"
+             Link="Commons\" />
+    <Compile
+      Include="$(MSBuildThisFileDirectory)\..\vostok.commons.collections\Vostok.Commons.Collections\UnboundedObjectPool.cs"
+      Link="Commons\" />
+    <Compile
+      Include="$(MSBuildThisFileDirectory)\..\vostok.commons.helpers\Vostok.Commons.Helpers\Extensions\TaskExtensions.cs"
+      Link="Commons\" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.time\Vostok.Commons.Time\EpochHelper.cs"
+             Link="Commons\" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)\Vostok.Hercules.Client\Internal\*.cs" LinkBase="Hercules\Internal" />
-    <Compile Include="$(MSBuildThisFileDirectory)\Vostok.Hercules.Client\Serialization\**\*.cs" LinkBase="Hercules\Serialization" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Vostok.Hercules.Client\Serialization\**\*.cs"
+             LinkBase="Hercules\Serialization" />
     <Compile Include="$(MSBuildThisFileDirectory)\Vostok.Hercules.Client\Client\**\*.cs" LinkBase="Hercules\Client" />
     <Compile Include="$(MSBuildThisFileDirectory)\Vostok.Hercules.Client\Constants.cs" LinkBase="Hercules\" />
   </ItemGroup>
@@ -63,7 +74,8 @@
       <MergeAssemblies Include="$(ProjectDir)$(OutputPath)$(AssemblyName).dll" />
       <MergeAssemblies Include="$(PubDir)Kontur.Lz4.dll" />
     </ItemGroup>
-    <Exec WorkingDirectory="$(PubDir)" Command="$(ILRepackExecutable) /internalize /renameInternalized /log:ilrepack.log /lib:&quot;$(PubDirWithoutSlash)&quot; /out:$(ProjectDir)$(OutputPath)$(AssemblyName).dll @(MergeAssemblies->'%(RelativeDir)%(FileName)%(Extension)', ' ')" />
+    <Exec WorkingDirectory="$(PubDir)"
+          Command="$(ILRepackExecutable) /internalize /renameInternalized /log:ilrepack.log /lib:&quot;$(PubDirWithoutSlash)&quot; /out:$(ProjectDir)$(OutputPath)$(AssemblyName).dll @(MergeAssemblies->'%(RelativeDir)%(FileName)%(Extension)', ' ')" />
   </Target>
-  
+
 </Project>

@@ -63,7 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Kontur.Lz4" Version="0.1.12" />
+    <PackageReference Include="Kontur.Lz4" Version="0.1.12" IncludeAssets="All" PrivateAssets="None"/>
   </ItemGroup>
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
     <ILRepackExecutable>"$(MSBuildThisFileDirectory)..\..\vostok.devtools.ilrepack.bin\net40\ILRepack.exe"</ILRepackExecutable>
