@@ -1,8 +1,4 @@
-## 0.1.9 (07-04-2020):
-
-Use `IncludeAssets="All" PrivateAssets="None"` for lz4 reference. 
-
-## 0.1.8 (07-04-2020):
+## 0.1.10 (07-04-2020):
 
 Update lz4 library (now contains native libraries inside package).
 
