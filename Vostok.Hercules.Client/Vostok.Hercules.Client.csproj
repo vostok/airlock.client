@@ -63,7 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Kontur.Lz4" Version="0.1.11" />
+    <PackageReference Include="Kontur.Lz4" Version="0.1.12" />
   </ItemGroup>
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
     <ILRepackExecutable>"$(MSBuildThisFileDirectory)..\..\vostok.devtools.ilrepack.bin\net40\ILRepack.exe"</ILRepackExecutable>
@@ -74,7 +74,7 @@
   <Target Name="RestorePackageReferences" BeforeTargets="Build">
     <ItemGroup>
       <PackageReference Remove="Kontur.Lz4" />
-      <PackageReference Include="Kontur.Lz4" Version="0.1.11" />
+      <PackageReference Include="Kontur.Lz4" Version="0.1.12" />
     </ItemGroup>
   </Target>
   <Target Name="SetupILRepackProperties" AfterTargets="Build">

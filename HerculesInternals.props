@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kontur.Lz4" Version="0.1.11" PrivateAssets="all" />
+    <PackageReference Include="Kontur.Lz4" Version="0.1.12" PrivateAssets="all" />
     <PackageReference Update="@(PackageReference)">
       <PrivateAssets>All</PrivateAssets>
       <Publish Condition=" '%(PackageReference.Publish)' != 'false' ">true</Publish>
@@ -40,7 +40,7 @@
   <Target Name="RestorePackageReferences" BeforeTargets="Build">
     <ItemGroup>
       <PackageReference Remove="Kontur.Lz4" />
-      <PackageReference Include="Kontur.Lz4" Version="0.1.11" />
+      <PackageReference Include="Kontur.Lz4" Version="0.1.12" />
     </ItemGroup>
   </Target>
   <Target Name="SetupILRepackProperties" AfterTargets="Build">
