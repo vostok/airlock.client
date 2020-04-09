@@ -14,17 +14,17 @@
              LinkBase="Commons\" />
     <Compile
       Include="$(MSBuildThisFileDirectory)\..\vostok.commons.collections\Vostok.Commons.Collections\BufferPool.cs"
-      Link="Commons\" />
+      LinkBase="Commons\" />
     <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.time\Vostok.Commons.Time\TimeSpanConversions.cs"
-             Link="Commons\" />
+             LinkBase="Commons\" />
     <Compile
       Include="$(MSBuildThisFileDirectory)\..\vostok.commons.collections\Vostok.Commons.Collections\UnboundedObjectPool.cs"
-      Link="Commons\" />
+      LinkBase="Commons\" />
     <Compile
       Include="$(MSBuildThisFileDirectory)\..\vostok.commons.helpers\Vostok.Commons.Helpers\Extensions\TaskExtensions.cs"
-      Link="Commons\" />
+      LinkBase="Commons\" />
     <Compile Include="$(MSBuildThisFileDirectory)\..\vostok.commons.time\Vostok.Commons.Time\EpochHelper.cs"
-             Link="Commons\" />
+             LinkBase="Commons\" />
   </ItemGroup>
 
   <ItemGroup>
