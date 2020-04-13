@@ -1,3 +1,7 @@
+## 0.1.11 (03-04-2020):
+
+Update lz4 library (fixed bin directory location in ASP.NET apps).
+
 ## 0.1.10 (07-04-2020):
 
 Update lz4 library (now contains native libraries inside package).
