@@ -40,6 +40,7 @@
     <Compile Include="..\..\vostok.commons.threading\Vostok.Commons.Threading\AtomicInt.cs" Link="Commons\AtomicInt.cs" />
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\UnboundedObjectPool.cs" Link="Commons\UnboundedObjectPool.cs" />
     <Compile Include="..\..\vostok.commons.collections\Vostok.Commons.Collections\BufferPool.cs" Link="Commons\BufferPool.cs" />
+    <Compile Include="..\..\vostok.commons.helpers\Vostok.Commons.Helpers\LZ4\*.cs" LinkBase="Commons\LZ4" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\HerculesInternals.props" Link="Auxiliary\HerculesInternals.props" />
@@ -62,41 +63,4 @@
       <HintPath>..\..\vostok.logging.abstractions\Vostok.Logging.Abstractions\bin\Release\netstandard2.0\Vostok.Logging.Abstractions.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Kontur.Lz4" Version="0.1.14" />
-  </ItemGroup>
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <ILRepackExecutable>"$(MSBuildThisFileDirectory)..\..\vostok.devtools.ilrepack.bin\net40\ILRepack.exe"</ILRepackExecutable>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-    <ILRepackExecutable>dotnet "$(MSBuildThisFileDirectory)../../vostok.devtools.ilrepack.bin/netcoreapp2.1/ILRepack.Core.dll"</ILRepackExecutable>
-  </PropertyGroup>
-  <Target Name="RestorePackageReferences" BeforeTargets="Build">
-    <ItemGroup>
-      <PackageReference Remove="Kontur.Lz4" />
-      <PackageReference Include="Kontur.Lz4" Version="0.1.14" />
-    </ItemGroup>
-  </Target>
-  <Target Name="SetupILRepackProperties" AfterTargets="Build">
-    <PropertyGroup>
-      <PubDirWithoutSlash>$(ProjectDir)bin\Publish\$(TargetFramework)\publish</PubDirWithoutSlash>
-      <PubDir>$(PubDirWithoutSlash)\</PubDir>
-    </PropertyGroup>
-  </Target>
-  <Target Name="CleanPublishDir" AfterTargets="SetupILRepackProperties" Condition="'$(Configuration)' != 'Publish'">
-    <ItemGroup>
-      <OldPubDirFiles Include="$(PubDir)**/*" />
-    </ItemGroup>
-    <Delete Files="@(OldPubDirFiles)" />
-  </Target>
-  <Target Name="Publishing" AfterTargets="CleanPublishDir" Condition="'$(Configuration)' != 'Publish'">
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet publish -c Publish -f $(TargetFramework)" />
-  </Target>
-  <Target Name="RepackAssemblies" AfterTargets="Publishing" Condition="'$(Configuration)' != 'Publish'">
-    <ItemGroup>
-      <MergeAssemblies Include="$(ProjectDir)$(OutputPath)$(AssemblyName).dll" />
-      <MergeAssemblies Include="$(PubDir)Kontur.Lz4.dll" />
-    </ItemGroup>
-    <Exec WorkingDirectory="$(PubDir)" Command="$(ILRepackExecutable) /internalize /renameInternalized /log:ilrepack.log /lib:&quot;$(PubDirWithoutSlash)&quot; /out:$(ProjectDir)$(OutputPath)$(AssemblyName).dll @(MergeAssemblies->'%(RelativeDir)%(FileName)%(Extension)', ' ')" />
-  </Target>
 </Project>

@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Kontur.Lz4;
+using K4os.Compression.LZ4;
 using NUnit.Framework;
 using Vostok.Hercules.Client.Internal;
 // ReSharper disable InconsistentNaming
@@ -18,7 +18,7 @@ namespace Vostok.Hercules.Client.Tests.Internal
         [Test]
         public void Should_not_throw()
         {
-            LZ4Codec.CompressBound(42);
+            LZ4Codec.MaximumOutputSize(42).Should().Be(58);
         }
     }
 }

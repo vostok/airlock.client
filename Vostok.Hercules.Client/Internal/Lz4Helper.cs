@@ -1,5 +1,5 @@
 ﻿using System;
-using Kontur.Lz4;
+using K4os.Compression.LZ4;
 using Vostok.Logging.Abstractions;
 
 namespace Vostok.Hercules.Client.Internal
@@ -13,13 +13,13 @@ namespace Vostok.Hercules.Client.Internal
         {
             try
             {
-                LZ4Codec.CompressBound(42);
-                LogProvider.Get().ForContext("HerculesClient").Info("LZ4 compression enabled.");
+                LZ4Codec.MaximumOutputSize(42);
+                LogProvider.Get().ForContext("HerculesClient").Info("Lz4 compression enabled.");
                 Enabled = true;
             }
             catch (Exception e)
             {
-                LogProvider.Get().ForContext("HerculesClient").Warn(e, "LZ4 compression disabled due to error.");
+                LogProvider.Get().ForContext("HerculesClient").Warn(e, "Lz4 compression disabled due to error.");
                 Enabled = false;
             }
         }

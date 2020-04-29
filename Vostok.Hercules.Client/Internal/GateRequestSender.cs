@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Kontur.Lz4;
+using K4os.Compression.LZ4;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Topology;
@@ -90,7 +90,7 @@ namespace Vostok.Hercules.Client.Internal
         private ValueDisposable<Content> Compress(ValueDisposable<Content> disposableContent)
         {
             var content = disposableContent.Value;
-            var maximumCompressedLength = LZ4Codec.CompressBound(content.Length);
+            var maximumCompressedLength = LZ4Codec.MaximumOutputSize(content.Length);
             var buffer = bufferPool.Rent(maximumCompressedLength);
 
             var compressedLength = LZ4Codec.Encode(content.Buffer, content.Offset, content.Length, buffer, 0, buffer.Length);
