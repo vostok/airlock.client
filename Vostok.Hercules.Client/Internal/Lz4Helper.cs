@@ -23,7 +23,10 @@ namespace Vostok.Hercules.Client.Internal
                 var compressedLength = LZ4Codec.Encode(source, 0, source.Length, compressed, 0, compressed.Length);
 
                 var decompressed = new byte[source.Length];
-                LZ4Codec.Decode(compressed, 0, compressedLength, decompressed, 0, decompressed.Length);
+                var decompressedLentgh = LZ4Codec.Decode(compressed, 0, compressedLength, decompressed, 0, decompressed.Length);
+
+                if (source.Length != decompressedLentgh)
+                    throw new Exception("Decompressed bytes length not equal to source bytes length.");
 
                 if (!StructuralComparisons.StructuralEqualityComparer.Equals(source, decompressed))
                     throw new Exception("Decompressed bytes not equal to source bytes.");
