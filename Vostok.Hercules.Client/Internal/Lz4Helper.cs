@@ -15,7 +15,7 @@ namespace Vostok.Hercules.Client.Internal
             try
             {
                 var random = new Random(42);
-                
+
                 var source = new byte[42];
                 random.NextBytes(source);
 
