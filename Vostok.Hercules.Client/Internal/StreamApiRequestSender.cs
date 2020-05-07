@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Kontur.Lz4;
+using K4os.Compression.LZ4;
 using Vostok.Clusterclient.Core;
 using Vostok.Clusterclient.Core.Model;
 using Vostok.Clusterclient.Core.Topology;
@@ -211,7 +211,7 @@ namespace Vostok.Hercules.Client.Internal
         {
             var buffer = bufferPool.Rent(originalContentLength);
 
-            var decodedContentLenght = LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, buffer, 0, originalContentLength, true);
+            var decodedContentLenght = LZ4Codec.Decode(content.Buffer, content.Offset, content.Length, buffer, 0, originalContentLength);
             if (decodedContentLenght != originalContentLength)
             {
                 bufferPool.Return(buffer);

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using FluentAssertions;
-using Kontur.Lz4;
+using K4os.Compression.LZ4;
 using NSubstitute;
 using NUnit.Framework;
 using Vostok.Clusterclient.Core.Model;
@@ -110,7 +110,14 @@ namespace Vostok.Hercules.Client.Tests.Integration
                 {
                     var content = lastRequest?.Content?.ToArray();
                     if (content != null)
-                        content = LZ4Codec.Decode(content, 0, content.Length, int.Parse(lastRequest.Headers[Constants.Compression.OriginalContentLengthHeaderName]));
+                    {
+                        // ReSharper disable once PossibleNullReferenceException
+                        // ReSharper disable once AssignNullToNotNullAttribute
+                        var targetLength = int.Parse(lastRequest.Headers[Constants.Compression.OriginalContentLengthHeaderName]);
+                        var target = new byte[targetLength];
+                        LZ4Codec.Decode(content, 0, content.Length, target, 0, targetLength);
+                        content = target;
+                    }
 
                     var actualRecordsCountContent = content?.Take(sizeof(int)).ToArray();
                     var actualRecordContent = content?.Skip(sizeof(int)).ToArray();

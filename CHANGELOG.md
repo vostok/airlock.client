@@ -1,3 +1,7 @@
+## 0.1.12 (07-05-2020):
+
+Migrate to K4os.Compression.LZ4 instead of native implementation.
+
 ## 0.1.11 (03-04-2020):
 
 Update lz4 library (fixed bin directory location in ASP.NET apps).
