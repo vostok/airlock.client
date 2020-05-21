@@ -61,14 +61,18 @@ namespace Vostok.Hercules.Client.Internal
         {
             try
             {
-                var url = new RequestUrlBuilder("stream/read")
-                    {
-                        {Constants.QueryParameters.Stream, query.Name},
-                        {Constants.QueryParameters.Limit, query.Limit},
-                        {Constants.QueryParameters.ClientShard, query.ClientShard},
-                        {Constants.QueryParameters.ClientShardCount, query.ClientShardCount}
-                    }
-                    .Build();
+                var urlBuilder = new RequestUrlBuilder("stream/read")
+                {
+                    {Constants.QueryParameters.Stream, query.Name},
+                    {Constants.QueryParameters.Limit, query.Limit},
+                    {Constants.QueryParameters.ClientShard, query.ClientShard},
+                    {Constants.QueryParameters.ClientShardCount, query.ClientShardCount}
+                };
+
+                if (query.FetchTimeout.HasValue)
+                    urlBuilder.AppendToQuery(Constants.QueryParameters.FetchTimeoutMs, query.FetchTimeout.Value.TotalMilliseconds);
+
+                var url = urlBuilder.Build();
 
                 var body = CreateRequestBody(query.Coordinates ?? StreamCoordinates.Empty);
 
