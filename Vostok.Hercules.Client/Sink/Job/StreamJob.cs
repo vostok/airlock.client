@@ -26,7 +26,14 @@ namespace Vostok.Hercules.Client.Sink.Job
             this.requestTimeout = requestTimeout;
         }
 
-        public bool IsHealthy => lastSendResult.Status == HerculesStatus.Success || lastSendResult.Status == HerculesStatus.Canceled;
+        public bool IsHealthy
+        {
+            get
+            {
+                var status = lastSendResult.Status;
+                return status == HerculesStatus.Success || status == HerculesStatus.Canceled;
+            }
+        }
 
         public async Task SendAsync(CancellationToken cancellationToken)
         {
