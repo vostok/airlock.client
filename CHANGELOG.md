@@ -1,3 +1,7 @@
+## 0.1.13 (18-02-2021):
+
+Fix cancellation token race bug on startup.
+
 ## 0.1.12 (07-05-2020):
 
 Migrate to K4os.Compression.LZ4 instead of native implementation.
