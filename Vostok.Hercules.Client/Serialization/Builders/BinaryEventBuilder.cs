@@ -124,10 +124,10 @@ namespace Vostok.Hercules.Client.Serialization.Builders
             var bytes = stackalloc byte[16];
             var dst = bytes;
 
-            var j = 0;
+            var random = ThreadSafeRandom.ObtainThreadStaticRandom();
             for (var i = 0; i < 4; i++)
             {
-                *(int*)dst = ThreadSafeRandom.Next();
+                *(int*)dst = random.Next();
                 dst += 4;
             }
 
