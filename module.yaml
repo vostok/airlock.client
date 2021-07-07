@@ -24,7 +24,7 @@ notests *default:
 
 full-build > notests: 
   deps:
-    - vostok.hercules.local
+    - vostok.hercules.local@FixHerculesLocalStreamDelete
     - vostok.logging.console
     - vostok.commons.testing/src
 
