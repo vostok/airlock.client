@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Vostok.Commons.Binary;
+using Vostok.Commons.Threading;
 using Vostok.Commons.Time;
 using Vostok.Hercules.Client.Abstractions.Events;
 
@@ -8,6 +10,10 @@ namespace Vostok.Hercules.Client.Serialization.Builders
 {
     internal class BinaryEventBuilder : IHerculesEventBuilder, IDisposable
     {
+        private static readonly Func<Guid> GenerateGuid = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+            ? (Func<Guid>)GuidGenerator.GenerateNotCryptoQualityGuid
+            : Guid.NewGuid;
+
         private readonly IBinaryWriter binaryWriter;
         private readonly Func<DateTimeOffset> timeProvider;
 
@@ -25,7 +31,7 @@ namespace Vostok.Hercules.Client.Serialization.Builders
 
             timestampPosition = binaryWriter.Position;
             binaryWriter.Write(0L);
-            binaryWriter.Write(Guid.NewGuid());
+            binaryWriter.Write(GenerateGuid());
 
             tagsBuilder = new BinaryCountingTagsBuilder(binaryWriter);
         }
