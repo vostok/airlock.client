@@ -1,3 +1,7 @@
+## 0.1.14 (20-07-2021):
+
+Optimize GUID creation on Linux
+
 ## 0.1.13 (18-02-2021):
 
 Fix cancellation token race bug on startup.
